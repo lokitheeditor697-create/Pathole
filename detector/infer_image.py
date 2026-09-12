@@ -1,4 +1,4 @@
-﻿"""
+"""
 Real-time Image & Frame Inference Service
 Runs fine-tuned YOLOv8 on image files or base64 frames and returns real detections.
 """
@@ -11,11 +11,26 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
-def analyze_image(image_input, model_path="detector/pothole_yolov8.pt", conf_thresh=0.30):
-    if not os.path.exists(model_path):
-        return {"error": f"Model not found: {model_path}"}
+def resolve_model_path(provided_path=None):
+    if provided_path and os.path.exists(provided_path):
+        return provided_path
+    candidates = [
+        "detector/best.pt",
+        "best.pt",
+        "detector/pothole_yolov8.pt",
+        "pothole_yolov8.pt"
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return provided_path or "detector/pothole_yolov8.pt"
 
-    model = YOLO(model_path)
+def analyze_image(image_input, model_path=None, conf_thresh=0.30):
+    actual_model = resolve_model_path(model_path)
+    if not os.path.exists(actual_model):
+        return {"error": f"Model not found: {actual_model}"}
+
+    model = YOLO(actual_model)
 
     # image_input can be a file path, base64 data url, or raw base64
     if os.path.exists(image_input):

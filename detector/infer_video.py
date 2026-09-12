@@ -9,13 +9,29 @@ import json
 import cv2
 from ultralytics import YOLO
 
-def analyze_video(video_path, model_path="detector/pothole_yolov8.pt", conf_thresh=0.35, sample_fps=4):
+def resolve_model_path(provided_path=None):
+    if provided_path and os.path.exists(provided_path):
+        return provided_path
+    candidates = [
+        "detector/best.pt",
+        "best.pt",
+        "detector/pothole_yolov8.pt",
+        "pothole_yolov8.pt"
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return provided_path or "detector/pothole_yolov8.pt"
+
+def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=4):
     if not os.path.exists(video_path):
         return {"error": f"Video not found: {video_path}"}
-    if not os.path.exists(model_path):
-        return {"error": f"Model not found: {model_path}"}
+    
+    actual_model = resolve_model_path(model_path)
+    if not os.path.exists(actual_model):
+        return {"error": f"Model not found: {actual_model}"}
 
-    model = YOLO(model_path)
+    model = YOLO(actual_model)
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         return {"error": f"Failed to open video: {video_path}"}

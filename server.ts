@@ -1254,7 +1254,9 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
       ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
       : "python";
     const scriptPath = path.join(process.cwd(), "detector", "infer_image.py");
-    const modelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
+    const bestModelPath = path.join(process.cwd(), "detector", "best.pt");
+    const defaultModelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
+    const modelPath = fs.existsSync(bestModelPath) ? bestModelPath : defaultModelPath;
 
     if (imagePayload && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
       const tempPath = path.join(process.cwd(), "detector", `temp_${Date.now()}.jpg`);
@@ -1380,7 +1382,9 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
       ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
       : "python";
     const scriptPath = path.join(process.cwd(), "detector", "infer_video.py");
-    const modelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
+    const bestModelPath = path.join(process.cwd(), "detector", "best.pt");
+    const defaultModelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
+    const modelPath = fs.existsSync(bestModelPath) ? bestModelPath : defaultModelPath;
 
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
       const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.35`;

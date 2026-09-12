@@ -391,7 +391,10 @@ def main():
     default_video = "detector/real_dashcam.mp4" if os.path.exists("detector/real_dashcam.mp4") else "detector/sample_road.mp4"
     parser.add_argument("--video", type=str, default=default_video,
                         help=f"Path to video file or camera index (default: {default_video})")
-    default_model = os.getenv("YOLO_MODEL_PATH") or ("detector/pothole_yolov8.pt" if os.path.exists("detector/pothole_yolov8.pt") else "yolov8n.pt")
+    default_model = os.getenv("YOLO_MODEL_PATH") or (
+        "detector/best.pt" if os.path.exists("detector/best.pt")
+        else ("detector/pothole_yolov8.pt" if os.path.exists("detector/pothole_yolov8.pt") else "yolov8n.pt")
+    )
     parser.add_argument("--model", type=str, default=default_model,
                         help=f"YOLO model path or name (default: {default_model})")
     parser.add_argument("--bus-id", type=str, default="MTC 46G",
