@@ -1,8 +1,10 @@
-﻿import os
+import os
 import sys
 import glob
 import random
 import shutil
+import zipfile
+import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -72,12 +74,35 @@ def convert_voc_xml_to_yolo(xml_path, img_width, img_height):
         box_w = (xmax - xmin) / img_width
         box_h = (ymax - ymin) / img_height
 
-        yolo_lines.append(f\"{class_id} {x_center:.6f} {y_center:.6f} {box_w:.6f} {box_h:.6f}\")
+        yolo_lines.append(f"{class_id} {x_center:.6f} {y_center:.6f} {box_w:.6f} {box_h:.6f}")
         
     return yolo_lines
 
+def ensure_rdd2022_dataset(raw_dir):
+    """Downloads sample RDD2022 / Roboflow dataset if raw_dir has no data."""
+    os.makedirs(raw_dir, exist_ok=True)
+    xmls = glob.glob(os.path.join(raw_dir, '**', '*.xml'), recursive=True)
+    if xmls:
+        return True
+
+    print(f"[INFO] Raw annotations not found in {raw_dir}. Downloading pre-packaged RDD dataset...")
+    # Sample multi-class road defect dataset download for instant Colab execution
+    url = "https://github.com/sekilab/RoadDamageDetector/releases/download/v1.0/RDD2020_sample.zip"
+    zip_path = os.path.join(raw_dir, "dataset.zip")
+    try:
+        print(f"Downloading dataset archive from {url}...")
+        urllib.request.urlretrieve(url, zip_path)
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(raw_dir)
+        print("Extraction complete!")
+        return True
+    except Exception as e:
+        print(f"[WARN] Automatic download had an issue: {e}")
+        print(f"Please place your RDD2022 files (images and XML annotations) into {raw_dir}")
+        return False
+
 def process_rdd2022_dataset(raw_dir, output_dir, train_ratio=0.8, val_ratio=0.15):
-    print(f'Starting conversion from: {raw_dir} -> {output_dir}')
+    print(f"Starting conversion from: {raw_dir} -> {output_dir}")
     
     # Destination directories
     for split in ['train', 'val', 'test']:
@@ -87,10 +112,32 @@ def process_rdd2022_dataset(raw_dir, output_dir, train_ratio=0.8, val_ratio=0.15
     # Search for XML annotations in all subdirectories (e.g., India/annotations/xmls/*.xml)
     xml_files = glob.glob(os.path.join(raw_dir, '**', '*.xml'), recursive=True)
     if not xml_files:
-        print(f'[WARN] No XML files found in {raw_dir}. Please ensure RDD2022 is extracted there.')
+        ensure_rdd2022_dataset(raw_dir)
+        xml_files = glob.glob(os.path.join(raw_dir, '**', '*.xml'), recursive=True)
+
+    if not xml_files:
+        print(f"[WARN] No XML files found in {raw_dir}. Creating fallback dataset specification.")
+        yaml_content = f"""# YOLOv8 Dataset Spec for RDD2022 Road Defect Training
+path: {os.path.abspath(output_dir).replace(chr(92), '/')}
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: pothole
+  1: longitudinal_crack
+  2: transverse_crack
+  3: alligator_crack
+  4: road_patch
+  5: rutting
+  6: waterlogging
+"""
+        yaml_path = os.path.join(output_dir, 'rdd2022.yaml')
+        with open(yaml_path, 'w', encoding='utf-8') as f:
+            f.write(yaml_content)
         return 0
 
-    print(f'Found {len(xml_files)} annotation files in RDD2022 dataset.')
+    print(f"Found {len(xml_files)} annotation files in RDD dataset.")
     random.seed(42)
     random.shuffle(xml_files)
 
@@ -99,7 +146,6 @@ def process_rdd2022_dataset(raw_dir, output_dir, train_ratio=0.8, val_ratio=0.15
 
     for xml_file in xml_files:
         xml_dir = os.path.dirname(xml_file)
-        # Standard RDD2022 layout: India/annotations/xmls/India_000001.xml -> India/images/India_000001.jpg
         base_name = os.path.splitext(os.path.basename(xml_file))[0]
         
         # Look for corresponding image
@@ -150,8 +196,8 @@ def process_rdd2022_dataset(raw_dir, output_dir, train_ratio=0.8, val_ratio=0.15
         total_annotations += len(yolo_lines)
 
     # Generate data.yaml
-    yaml_content = f\"\"\"# YOLOv8 Dataset Spec for RDD2022 Road Defect Training
-path: {os.path.abspath(output_dir).replace('\\\\', '/')}
+    yaml_content = f"""# YOLOv8 Dataset Spec for RDD2022 Road Defect Training
+path: {os.path.abspath(output_dir).replace(chr(92), '/')}
 train: images/train
 val: images/val
 test: images/test
@@ -164,13 +210,13 @@ names:
   4: road_patch
   5: rutting
   6: waterlogging
-\"\"\"
+"""
     yaml_path = os.path.join(output_dir, 'rdd2022.yaml')
     with open(yaml_path, 'w', encoding='utf-8') as f:
         f.write(yaml_content)
 
-    print(f'\n[SUCCESS] Converted {total_converted} images with {total_annotations} defect bounding boxes!')
-    print(f'YOLO Dataset Config: {yaml_path}')
+    print(f"\n[SUCCESS] Converted {total_converted} images with {total_annotations} defect bounding boxes!")
+    print(f"YOLO Dataset Config: {yaml_path}")
     return total_converted
 
 if __name__ == '__main__':
