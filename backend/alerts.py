@@ -44,10 +44,13 @@ ALERT_CONFIG = {
     "gmail_app_password":   os.getenv("GMAIL_APP_PASSWORD", ""),
     "alert_recipients":     os.getenv("ALERT_RECIPIENTS", "").split(","),  # comma-separated email list
 
+    # Alert trigger criteria: "MULTI_BUS_VERIFIED" (default), "HIGH_SEVERITY", "ALL_VERIFIED", or "CRITICAL_ONLY"
+    "trigger_criteria": os.getenv("ALERT_TRIGGER_CRITERIA", "MULTI_BUS_VERIFIED").upper(),
+
     # Alert thresholds
-    "alert_on_new_high":      True,   # Alert on any new High-severity first detection
-    "alert_on_multi_bus":     True,   # Alert when 2+ buses confirm the same pothole
-    "alert_on_4bus_verified": True,   # Extra urgent alert when all 4 buses confirm
+    "alert_on_new_high":      os.getenv("ALERT_TRIGGER_CRITERIA", "MULTI_BUS_VERIFIED").upper() in ["HIGH_SEVERITY", "ALL_VERIFIED"],
+    "alert_on_multi_bus":     os.getenv("ALERT_TRIGGER_CRITERIA", "MULTI_BUS_VERIFIED").upper() in ["MULTI_BUS_VERIFIED", "HIGH_SEVERITY", "ALL_VERIFIED"],
+    "alert_on_4bus_verified": True,   # Extra urgent alert when all buses confirm
 }
 
 # Track which defect IDs we've already alerted on (avoid duplicate alerts)
