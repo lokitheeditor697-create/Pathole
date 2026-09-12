@@ -5,7 +5,6 @@ import random
 import shutil
 import zipfile
 import tarfile
-import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -19,45 +18,31 @@ CLASS_MAPPING = {
     'D43': None # crosswalk blur
 }
 
-CLASS_NAMES = [
-    'pothole',
-    'longitudinal_crack',
-    'transverse_crack',
-    'alligator_crack',
-    'road_patch',
-    'rutting',
-    'waterlogging'
-]
-
 def auto_find_and_extract_archives():
-    """Finds any RDD or dataset zip/tar files in /content or project dir and unpacks them."""
-    search_dirs = [
-        '.',
-        '..',
-        '/content',
-        '/content/Pathole',
-        'ml/raw',
-        'ml/datasets'
-    ]
-    for d in search_dirs:
-        if not os.path.exists(d):
+    """Extracts uploaded zip/tar archives in Colab/local directory."""
+    check_paths = ['.', '/content', 'ml/raw', 'ml/datasets']
+    for p in check_paths:
+        if not os.path.exists(p):
             continue
-        for z in glob.glob(os.path.join(d, '*.zip')) + glob.glob(os.path.join(d, '*.tar.gz')) + glob.glob(os.path.join(d, '*.tgz')):
-            if 'sample_data' in z or 'node_modules' in z:
-                continue
-            print(f"[INFO] Found archive {z}. Extracting into ml/raw/RDD2022...")
-            target_raw = os.path.abspath('ml/raw/RDD2022')
-            os.makedirs(target_raw, exist_ok=True)
-            try:
-                if z.endswith('.zip'):
-                    with zipfile.ZipFile(z, 'r') as zip_ref:
-                        zip_ref.extractall(target_raw)
-                else:
-                    with tarfile.open(z, 'r:*') as tar_ref:
-                        tar_ref.extractall(target_raw)
-                print(f"[SUCCESS] Extracted {z}")
-            except Exception as e:
-                print(f"[WARN] Failed extracting {z}: {e}")
+        try:
+            for entry in os.listdir(p):
+                if entry.lower().endswith(('.zip', '.tar.gz', '.tgz')) and not entry.startswith('.') and 'node_modules' not in entry:
+                    full_p = os.path.join(p, entry)
+                    if os.path.isfile(full_p):
+                        target_dir = os.path.abspath('ml/raw/RDD2022')
+                        os.makedirs(target_dir, exist_ok=True)
+                        print(f"[INFO] Extracting archive: {entry} -> ml/raw/RDD2022")
+                        try:
+                            if entry.lower().endswith('.zip'):
+                                with zipfile.ZipFile(full_p, 'r') as zf:
+                                    zf.extractall(target_dir)
+                            else:
+                                with tarfile.open(full_p, 'r:*') as tf:
+                                    tf.extractall(target_dir)
+                        except Exception as ex:
+                            print(f"[WARN] Could not extract {entry}: {ex}")
+        except Exception:
+            pass
 
 def convert_voc_xml_to_yolo(xml_path, img_width, img_height):
     try:
@@ -114,41 +99,44 @@ def convert_voc_xml_to_yolo(xml_path, img_width, img_height):
         
     return yolo_lines
 
-def create_synthetic_road_dataset(output_dir):
-    """Creates a starter dataset if no external dataset is uploaded yet."""
-    import cv2
-    import numpy as np
+def create_starter_road_dataset(output_dir):
+    """Creates a starter multi-class road defect dataset so training can start immediately."""
+    from PIL import Image, ImageDraw
+    print("[INFO] Generating starter multi-class road defect dataset (60 images)...")
     
-    print("[INFO] Creating starter multi-class road defect dataset (50 samples)...")
-    for split, count in [('train', 35), ('val', 10), ('test', 5)]:
+    splits = [('train', 42), ('val', 12), ('test', 6)]
+    for split, count in splits:
         img_dir = os.path.join(output_dir, 'images', split)
         lbl_dir = os.path.join(output_dir, 'labels', split)
         os.makedirs(img_dir, exist_ok=True)
         os.makedirs(lbl_dir, exist_ok=True)
 
         for i in range(count):
-            # Generate asphalt background
-            img = np.random.randint(50, 90, (640, 640, 3), dtype=np.uint8)
-            # Add road lane lines
-            cv2.line(img, (100, 640), (280, 200), (200, 200, 200), 4)
-            cv2.line(img, (540, 640), (360, 200), (200, 200, 200), 4)
+            # Create road surface image (640x640 RGB)
+            img = Image.new('RGB', (640, 640), color=(60 + random.randint(0, 20), 62 + random.randint(0, 20), 65 + random.randint(0, 20)))
+            draw = ImageDraw.Draw(img)
+
+            # Draw road markings
+            draw.line([(80, 640), (260, 180)], fill=(210, 210, 210), width=4)
+            draw.line([(560, 640), (380, 180)], fill=(210, 210, 210), width=4)
 
             labels = []
-            # Draw synthetic pothole (class 0)
-            px, py, prx, pry = 320 + random.randint(-80, 80), 450 + random.randint(-50, 50), random.randint(25, 45), random.randint(15, 30)
-            cv2.ellipse(img, (px, py), (prx, pry), 0, 0, 360, (20, 20, 20), -1)
-            cv2.ellipse(img, (px, py), (prx, pry), 0, 0, 360, (40, 35, 35), 2)
-            labels.append(f"0 {px/640:.6f} {py/640:.6f} {(prx*2)/640:.6f} {(pry*2)/640:.6f}")
+            # Defect 1: Pothole (Class 0)
+            px, py = 320 + random.randint(-90, 90), 450 + random.randint(-60, 60)
+            rx, ry = random.randint(30, 50), random.randint(20, 35)
+            draw.ellipse([px - rx, py - ry, px + rx, py + ry], fill=(25, 25, 25), outline=(15, 15, 15))
+            labels.append(f"0 {px/640:.6f} {py/640:.6f} {(rx*2)/640:.6f} {(ry*2)/640:.6f}")
 
-            # Draw crack (class 1 or 2)
-            cx, cy = 200 + random.randint(0, 100), 380 + random.randint(0, 80)
-            cv2.line(img, (cx, cy), (cx + 60, cy + 40), (15, 15, 15), 2)
-            labels.append(f"1 {(cx+30)/640:.6f} {(cy+20)/640:.6f} {70/640:.6f} {50/640:.6f}")
+            # Defect 2: Longitudinal or Alligator Crack (Class 1 or 3)
+            cx, cy = 220 + random.randint(-50, 50), 360 + random.randint(-40, 40)
+            draw.line([(cx, cy), (cx + 50, cy + 45), (cx + 30, cy + 80)], fill=(20, 20, 20), width=3)
+            labels.append(f"1 {(cx+25)/640:.6f} {(cy+40)/640:.6f} {70/640:.6f} {90/640:.6f}")
 
-            # Save
-            img_name = f"starter_road_{split}_{i:03d}.jpg"
-            cv2.imwrite(os.path.join(img_dir, img_name), img)
-            with open(os.path.join(lbl_dir, f"starter_road_{split}_{i:03d}.txt"), 'w') as lf:
+            # Save image and label
+            img_path = os.path.join(img_dir, f"road_{split}_{i:03d}.jpg")
+            lbl_path = os.path.join(lbl_dir, f"road_{split}_{i:03d}.txt")
+            img.save(img_path, quality=90)
+            with open(lbl_path, 'w', encoding='utf-8') as lf:
                 lf.write('\n'.join(labels) + '\n')
 
 def process_rdd2022_dataset(raw_dir='ml/raw/RDD2022', output_dir='ml/datasets/rdd2022_yolo', train_ratio=0.8, val_ratio=0.15):
@@ -160,19 +148,17 @@ def process_rdd2022_dataset(raw_dir='ml/raw/RDD2022', output_dir='ml/datasets/rd
         os.makedirs(os.path.join(output_dir, 'images', split), exist_ok=True)
         os.makedirs(os.path.join(output_dir, 'labels', split), exist_ok=True)
 
-    # Search for XML annotations in all raw subdirectories or entire workspace
-    xml_files = glob.glob(os.path.join(raw_dir, '**', '*.xml'), recursive=True)
-    if not xml_files:
-        # Search parent or /content as fallback
-        xml_files = glob.glob('/content/**/*.xml', recursive=True) + glob.glob('**/*.xml', recursive=True)
-        xml_files = [x for x in xml_files if 'node_modules' not in x and '.git' not in x]
+    # Search for XML annotations in raw_dir
+    xml_files = []
+    if os.path.exists(raw_dir):
+        xml_files = glob.glob(os.path.join(raw_dir, '**', '*.xml'), recursive=True)
 
     if not xml_files:
-        print("[INFO] No external VOC XML files detected. Generating initial multi-class road dataset for seamless pipeline training...")
-        create_synthetic_road_dataset(output_dir)
-        total_converted = 50
+        print("[INFO] No external VOC XML files found in raw folder. Generating starter multi-class road dataset...")
+        create_starter_road_dataset(output_dir)
+        total_converted = 60
     else:
-        print(f"Found {len(xml_files)} annotation files.")
+        print(f"Found {len(xml_files)} annotation files in {raw_dir}.")
         random.seed(42)
         random.shuffle(xml_files)
 
@@ -225,9 +211,9 @@ def process_rdd2022_dataset(raw_dir='ml/raw/RDD2022', output_dir='ml/datasets/rd
             total_converted += 1
             total_annotations += len(yolo_lines)
 
-        print(f"[SUCCESS] Converted {total_converted} images with {total_annotations} defect bounding boxes!")
+        print(f"[SUCCESS] Converted {total_converted} images with {total_annotations} defect annotations!")
 
-    # Always generate valid data.yaml with absolute paths
+    # Write rdd2022.yaml with absolute path
     abs_out = os.path.abspath(output_dir).replace(chr(92), '/')
     yaml_content = f"""# YOLOv8 Dataset Spec for RDD2022 Road Defect Training
 path: {abs_out}
@@ -248,7 +234,7 @@ names:
     with open(yaml_path, 'w', encoding='utf-8') as f:
         f.write(yaml_content)
 
-    print(f"YOLO Dataset Config Ready: {yaml_path}")
+    print(f"[SUCCESS] YOLO Dataset Ready: {yaml_path}")
     return total_converted
 
 if __name__ == '__main__':
