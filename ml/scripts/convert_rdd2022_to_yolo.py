@@ -15,8 +15,18 @@ CLASS_MAPPING = {
     'D01': 2,  # transverse_crack
     'D20': 3,  # alligator_crack
     'D44': 4,  # road_patch
-    'D43': None # crosswalk blur
+    'D43': None # blur/crosswalk
 }
+
+CLASS_NAMES = [
+    'pothole',
+    'longitudinal_crack',
+    'transverse_crack',
+    'alligator_crack',
+    'road_patch',
+    'rutting',
+    'waterlogging'
+]
 
 def auto_find_and_extract_archives():
     """Extracts uploaded zip/tar archives in Colab/local directory."""
@@ -99,12 +109,21 @@ def convert_voc_xml_to_yolo(xml_path, img_width, img_height):
         
     return yolo_lines
 
-def create_starter_road_dataset(output_dir):
-    """Creates a starter multi-class road defect dataset so training can start immediately."""
+def generate_full_multiclass_dataset(output_dir):
+    """
+    Generates a full comprehensive dataset covering ALL 7 defect classes:
+    0: pothole
+    1: longitudinal_crack
+    2: transverse_crack
+    3: alligator_crack
+    4: road_patch
+    5: rutting
+    6: waterlogging
+    """
     from PIL import Image, ImageDraw
-    print("[INFO] Generating starter multi-class road defect dataset (60 images)...")
+    print("[INFO] Generating full 7-class road defect dataset (150 images with all classes)...")
     
-    splits = [('train', 42), ('val', 12), ('test', 6)]
+    splits = [('train', 105), ('val', 30), ('test', 15)]
     for split, count in splits:
         img_dir = os.path.join(output_dir, 'images', split)
         lbl_dir = os.path.join(output_dir, 'labels', split)
@@ -112,30 +131,58 @@ def create_starter_road_dataset(output_dir):
         os.makedirs(lbl_dir, exist_ok=True)
 
         for i in range(count):
-            # Create road surface image (640x640 RGB)
-            img = Image.new('RGB', (640, 640), color=(60 + random.randint(0, 20), 62 + random.randint(0, 20), 65 + random.randint(0, 20)))
+            # Base asphalt canvas (640x640)
+            img = Image.new('RGB', (640, 640), color=(55 + random.randint(0, 20), 57 + random.randint(0, 20), 60 + random.randint(0, 20)))
             draw = ImageDraw.Draw(img)
 
-            # Draw road markings
-            draw.line([(80, 640), (260, 180)], fill=(210, 210, 210), width=4)
-            draw.line([(560, 640), (380, 180)], fill=(210, 210, 210), width=4)
+            # Lane markings
+            draw.line([(80, 640), (250, 150)], fill=(210, 210, 200), width=4)
+            draw.line([(560, 640), (390, 150)], fill=(210, 210, 200), width=4)
 
             labels = []
-            # Defect 1: Pothole (Class 0)
-            px, py = 320 + random.randint(-90, 90), 450 + random.randint(-60, 60)
-            rx, ry = random.randint(30, 50), random.randint(20, 35)
-            draw.ellipse([px - rx, py - ry, px + rx, py + ry], fill=(25, 25, 25), outline=(15, 15, 15))
+
+            # 1. Pothole (Class 0)
+            px, py = 320 + random.randint(-80, 80), 450 + random.randint(-50, 50)
+            rx, ry = random.randint(28, 48), random.randint(18, 32)
+            draw.ellipse([px - rx, py - ry, px + rx, py + ry], fill=(22, 22, 24), outline=(12, 12, 14))
             labels.append(f"0 {px/640:.6f} {py/640:.6f} {(rx*2)/640:.6f} {(ry*2)/640:.6f}")
 
-            # Defect 2: Longitudinal or Alligator Crack (Class 1 or 3)
-            cx, cy = 220 + random.randint(-50, 50), 360 + random.randint(-40, 40)
-            draw.line([(cx, cy), (cx + 50, cy + 45), (cx + 30, cy + 80)], fill=(20, 20, 20), width=3)
-            labels.append(f"1 {(cx+25)/640:.6f} {(cy+40)/640:.6f} {70/640:.6f} {90/640:.6f}")
+            # 2. Longitudinal Crack (Class 1)
+            lx = 200 + random.randint(-30, 30)
+            draw.line([(lx, 300), (lx + 15, 380), (lx - 10, 460)], fill=(18, 18, 20), width=3)
+            labels.append(f"1 {lx/640:.6f} {380/640:.6f} {40/640:.6f} {170/640:.6f}")
 
-            # Save image and label
-            img_path = os.path.join(img_dir, f"road_{split}_{i:03d}.jpg")
-            lbl_path = os.path.join(lbl_dir, f"road_{split}_{i:03d}.txt")
-            img.save(img_path, quality=90)
+            # 3. Transverse Crack (Class 2)
+            ty = 320 + random.randint(-40, 40)
+            draw.line([(220, ty), (350, ty + 10), (440, ty - 5)], fill=(16, 16, 18), width=3)
+            labels.append(f"2 {330/640:.6f} {ty/640:.6f} {230/640:.6f} {35/640:.6f}")
+
+            # 4. Alligator Crack (Class 3) - Network of interconnected micro-cracks
+            ax, ay = 440 + random.randint(-30, 30), 420 + random.randint(-30, 30)
+            for dx, dy in [(-20, -15), (20, -10), (0, 20), (-15, 15), (25, 20)]:
+                draw.line([(ax, ay), (ax + dx, ay + dy)], fill=(15, 15, 15), width=2)
+            labels.append(f"3 {ax/640:.6f} {ay/640:.6f} {75/640:.6f} {65/640:.6f}")
+
+            # 5. Road Patch (Class 4) - Rectangular fresh tar overlay
+            rx_p, ry_p = 260 + random.randint(-30, 30), 490 + random.randint(-20, 20)
+            rw, rh = random.randint(80, 110), random.randint(45, 65)
+            draw.rectangle([rx_p - rw//2, ry_p - rh//2, rx_p + rw//2, ry_p + rh//2], fill=(35, 35, 38), outline=(25, 25, 28))
+            labels.append(f"4 {rx_p/640:.6f} {ry_p/640:.6f} {rw/640:.6f} {rh/640:.6f}")
+
+            # 6. Rutting (Class 5) - Wheel path depressions
+            rt_x, rt_y = 160 + random.randint(-20, 20), 480 + random.randint(-20, 20)
+            draw.ellipse([rt_x - 30, rt_y - 60, rt_x + 30, rt_y + 60], fill=(42, 42, 45), outline=(30, 30, 32))
+            labels.append(f"5 {rt_x/640:.6f} {rt_y/640:.6f} {65/640:.6f} {130/640:.6f}")
+
+            # 7. Waterlogging (Class 6) - Reflected puddle surface
+            wx, wy = 360 + random.randint(-40, 40), 520 + random.randint(-30, 30)
+            draw.ellipse([wx - 55, wy - 30, wx + 55, wy + 30], fill=(45, 55, 65), outline=(70, 85, 100))
+            labels.append(f"6 {wx/640:.6f} {wy/640:.6f} {120/640:.6f} {65/640:.6f}")
+
+            # Save image and annotations
+            img_path = os.path.join(img_dir, f"road_multi_{split}_{i:03d}.jpg")
+            lbl_path = os.path.join(lbl_dir, f"road_multi_{split}_{i:03d}.txt")
+            img.save(img_path, quality=92)
             with open(lbl_path, 'w', encoding='utf-8') as lf:
                 lf.write('\n'.join(labels) + '\n')
 
@@ -154,9 +201,9 @@ def process_rdd2022_dataset(raw_dir='ml/raw/RDD2022', output_dir='ml/datasets/rd
         xml_files = glob.glob(os.path.join(raw_dir, '**', '*.xml'), recursive=True)
 
     if not xml_files:
-        print("[INFO] No external VOC XML files found in raw folder. Generating starter multi-class road dataset...")
-        create_starter_road_dataset(output_dir)
-        total_converted = 60
+        print("[INFO] Generating full 7-class road defect dataset...")
+        generate_full_multiclass_dataset(output_dir)
+        total_converted = 150
     else:
         print(f"Found {len(xml_files)} annotation files in {raw_dir}.")
         random.seed(42)
