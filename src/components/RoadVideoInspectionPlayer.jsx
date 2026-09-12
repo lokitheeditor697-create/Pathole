@@ -13,7 +13,6 @@ import {
   AlertTriangle,
   RotateCcw,
   Sparkles,
-  Layers,
   FileVideo
 } from 'lucide-react';
 import { API_BASE } from '../config';
@@ -37,6 +36,12 @@ export default function RoadVideoInspectionPlayer({
   const [videoError, setVideoError] = useState(null);
   const [videoReady, setVideoReady] = useState(false);
 
+  // Video Source Management
+  const [videoSourceUrl, setVideoSourceUrl] = useState(uploadedPreview || '/videos/real_dashcam.mp4');
+  const [videoSourceFilename, setVideoSourceFilename] = useState(uploadedFile?.name || 'real_dashcam.mp4');
+  const [sampleVideoOptions, setSampleVideoOptions] = useState([]);
+  const fileInputRef = useRef(null);
+
   // AI Inspection scan states
   const [isAiScanning, setIsAiScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0);
@@ -44,6 +49,7 @@ export default function RoadVideoInspectionPlayer({
   const [scanStatusMessage, setScanStatusMessage] = useState('');
   const [detectedMoments, setDetectedMoments] = useState([]);
   const [activeDefectOnScreen, setActiveDefectOnScreen] = useState(null);
+  const [activeDefectsOnScreen, setActiveDefectsOnScreen] = useState([]);
   const [autoPauseOnDefects, setAutoPauseOnDefects] = useState(false);
   const [lastAutoPausedMoment, setLastAutoPausedMoment] = useState(null);
 
@@ -52,6 +58,23 @@ export default function RoadVideoInspectionPlayer({
   const [selectedClass, setSelectedClass] = useState('pothole');
   const [notificationToast, setNotificationToast] = useState(null);
 
+  // Fetch available sample videos
+  useEffect(() => {
+    fetch(`${API_BASE}/api/sample-videos`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) setSampleVideoOptions(data);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (uploadedPreview) {
+      setVideoSourceUrl(uploadedPreview);
+      setVideoSourceFilename(uploadedFile?.name || 'uploaded_video.mp4');
+    }
+  }, [uploadedPreview, uploadedFile]);
+
   // Show notification helper
   const showToast = (msg, type = 'success') => {
     setNotificationToast({ msg, type });
@@ -59,44 +82,36 @@ export default function RoadVideoInspectionPlayer({
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Automated AI Video Inspection Routine
+  // Automated AI Video Inspection Routine (Real fine-tuned YOLOv8)
   // ─────────────────────────────────────────────────────────────────────────────
-  const runAiVideoInspection = useCallback(async (videoDurationSec) => {
+  const runAiVideoInspection = useCallback(async (videoDurationSec, fileOverride = null) => {
     const dur = Math.max(4, videoDurationSec || duration || 10);
+    const targetFile = fileOverride || videoSourceFilename || uploadedFile?.name || 'real_dashcam.mp4';
     setIsAiScanning(true);
     setScanTotalSteps(3);
     setScanStep(1);
-    setScanStatusMessage('Initializing YOLOv8-road-v1 inference engine on video frames...');
-
-    // Compute sample timestamps proportional to duration
-    const timestamps = [
-      Math.round(Math.max(1.0, dur * 0.18) * 10) / 10,
-      Math.round(Math.max(2.5, dur * 0.48) * 10) / 10,
-      Math.round(Math.max(4.0, dur * 0.78) * 10) / 10
-    ];
+    setScanStatusMessage('Initializing fine-tuned YOLOv8 on actual video frames...');
 
     try {
       setScanStep(2);
-      setScanStatusMessage(`Extracting keyframes at ${timestamps.map(t => `${t}s`).join(', ')}...`);
+      setScanStatusMessage(`Running real AI inference on "${targetFile}"...`);
 
-      // Call backend video-scan API
       const res = await fetch(`${API_BASE}/api/detect/video-scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          file_name: uploadedFile?.name || 'dashcam_survey.mp4',
+          file_name: targetFile,
           duration_sec: dur,
           latitude: activeVehicle?.latitude || 13.0780,
           longitude: activeVehicle?.longitude || 80.2330,
-          vehicle_id: activeVehicle?.vehicle_id || 'Transit Video Inspection',
-          sample_timestamps: timestamps
+          vehicle_id: activeVehicle?.vehicle_id || 'Transit Video Inspection'
         })
       });
 
       if (res.ok) {
         const data = await res.json();
         setScanStep(3);
-        setScanStatusMessage(`Inference complete: ${data.total_defects} road distresses identified & mapped.`);
+        setScanStatusMessage(`Inference complete: ${data.total_defects} real road distresses identified.`);
 
         if (Array.isArray(data.moments) && data.moments.length > 0) {
           setDetectedMoments(data.moments);
@@ -112,67 +127,34 @@ export default function RoadVideoInspectionPlayer({
               x: d.bbox?.x_min || 200,
               y: d.bbox?.y_min || 150,
               w: (d.bbox?.x_max || 320) - (d.bbox?.x_min || 200),
-              h: (d.bbox?.y_max || 220) - (d.bbox?.y_min || 150)
+              h: (d.bbox?.y_max || 220) - (d.bbox?.y_min || 150),
+              video_w: d.moment_bbox?.video_w || 1280,
+              video_h: d.moment_bbox?.video_h || 720
             },
             detection_id: d.detection_id
           }));
           setDetectedMoments(mappedMoments);
+        } else {
+          setDetectedMoments([]);
         }
 
-        // Notify parent application of defects for map/inventory update
         if (onDefectLogged && Array.isArray(data.defects)) {
           data.defects.forEach((d) => onDefectLogged(d));
         }
 
-        showToast(`AI Video Scan: ${data.total_defects} defects verified & logged into municipal GIS.`, 'success');
+        showToast(`AI Video Scan: ${data.total_defects} real defects verified & logged into GIS.`, 'success');
       } else {
-        // Fallback realistic moments if server route is degraded
-        setFallbackMoments(dur);
+        setDetectedMoments([]);
       }
     } catch (err) {
-      console.warn('AI Video inspection fallback notice:', err);
-      setFallbackMoments(dur);
+      console.warn('AI Video inspection error:', err);
+      setDetectedMoments([]);
     } finally {
       setTimeout(() => {
         setIsAiScanning(false);
-      }, 1000);
+      }, 500);
     }
-  }, [duration, uploadedFile, activeVehicle, onDefectLogged]);
-
-  // Fallback moments generator
-  const setFallbackMoments = (dur) => {
-    const fallback = [
-      {
-        time: Math.round(dur * 0.18 * 10) / 10,
-        class_name: 'pothole',
-        conf: 0.92,
-        severity: 'Critical',
-        wCm: 58,
-        lCm: 44,
-        bbox: { x: 220, y: 160, w: 130, h: 70 }
-      },
-      {
-        time: Math.round(dur * 0.50 * 10) / 10,
-        class_name: 'alligator_crack',
-        conf: 0.86,
-        severity: 'High',
-        wCm: 75,
-        lCm: 60,
-        bbox: { x: 180, y: 145, w: 160, h: 85 }
-      },
-      {
-        time: Math.round(dur * 0.80 * 10) / 10,
-        class_name: 'waterlogging',
-        conf: 0.89,
-        severity: 'Medium',
-        wCm: 160,
-        lCm: 90,
-        bbox: { x: 140, y: 180, w: 220, h: 80 }
-      }
-    ];
-    setDetectedMoments(fallback);
-    showToast('AI Model YOLOv8-road-v1 analyzed video keyframes.', 'success');
-  };
+  }, [duration, videoSourceFilename, uploadedFile, activeVehicle, onDefectLogged]);
 
   // Video metadata loaded handler
   const handleLoadedMetadata = () => {
@@ -194,24 +176,81 @@ export default function RoadVideoInspectionPlayer({
     runAiVideoInspection(validDuration);
   };
 
-  // Video playback time update
+  // Video playback time update - checks all defects in current moment
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const cur = videoRef.current.currentTime;
     setCurrentTime(cur);
 
-    // Find defect within ±0.9s of current timestamp
-    const match = detectedMoments.find((m) => Math.abs(m.time - cur) < 0.95);
-    setActiveDefectOnScreen(match || null);
+    // Find defects within ±0.60s of current playback timestamp
+    const matches = detectedMoments.filter((m) => Math.abs(m.time - cur) < 0.60);
+    setActiveDefectsOnScreen(matches);
+    setActiveDefectOnScreen(matches[0] || null);
 
     // Auto-pause feature if enabled
-    if (autoPauseOnDefects && match && lastAutoPausedMoment !== match.time) {
+    if (autoPauseOnDefects && matches.length > 0 && lastAutoPausedMoment !== matches[0].time) {
       videoRef.current.pause();
       setIsPlaying(false);
-      setLastAutoPausedMoment(match.time);
-      showToast(`Auto-paused at defect: ${match.class_name.toUpperCase()}`, 'info');
+      setLastAutoPausedMoment(matches[0].time);
+      showToast(`Auto-paused at defect: ${matches[0].class_name.toUpperCase()}`, 'info');
     }
   };
+
+  const handleSelectSampleVideo = (item) => {
+    setVideoSourceUrl(item.url);
+    setVideoSourceFilename(item.file_name);
+    setDetectedMoments([]);
+    setActiveDefectsOnScreen([]);
+    setActiveDefectOnScreen(null);
+    setCurrentTime(0);
+    if (videoRef.current) {
+      videoRef.current.src = item.url;
+      videoRef.current.load();
+      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    }
+    runAiVideoInspection(duration, item.file_name);
+  };
+
+  const handleDirectVideoUpload = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    showToast(`Uploading "${file.name}" to server for AI analysis...`, 'info');
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/upload-video`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            file_name: file.name,
+            file_data: reader.result
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setVideoSourceUrl(data.video_url);
+          setVideoSourceFilename(data.file_name);
+          setDetectedMoments([]);
+          setActiveDefectsOnScreen([]);
+          setActiveDefectOnScreen(null);
+          setCurrentTime(0);
+          if (videoRef.current) {
+            videoRef.current.src = data.video_url;
+            videoRef.current.load();
+            videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+          }
+          runAiVideoInspection(10, data.file_name);
+          showToast(`Uploaded "${data.file_name}". Running YOLOv8 inference...`, 'success');
+        }
+      } catch (err) {
+        console.error('Upload error:', err);
+        showToast('Upload failed, playing locally.', 'error');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
 
   // Play/Pause toggle
   const togglePlay = () => {
@@ -358,6 +397,98 @@ export default function RoadVideoInspectionPlayer({
         position: 'relative'
       }}
     >
+      {/* Sample Video Selector Bar */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '8px 12px',
+        backgroundColor: '#0f172a',
+        borderBottom: '1px solid #1e293b',
+        gap: '8px',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <FileVideo size={13} color="#38bdf8" /> Video Source:
+          </span>
+          <select
+            value={videoSourceFilename}
+            onChange={(e) => {
+              const selected = sampleVideoOptions.find(s => s.file_name === e.target.value);
+              if (selected) {
+                handleSelectSampleVideo(selected);
+              }
+            }}
+            style={{
+              backgroundColor: '#1e293b',
+              color: '#38bdf8',
+              border: '1px solid #0284c7',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            {sampleVideoOptions.map(opt => (
+              <option key={opt.file_name} value={opt.file_name}>
+                {opt.name} ({opt.size_mb}MB)
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="video/*,.mp4,.webm,.mov"
+            style={{ display: 'none' }}
+            onChange={handleDirectVideoUpload}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              backgroundColor: '#1e293b',
+              color: '#f8fafc',
+              border: '1px solid #334155',
+              padding: '4px 10px',
+              borderRadius: '5px',
+              fontSize: '11px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <Camera size={12} />
+            <span>Upload My Video</span>
+          </button>
+          <button
+            onClick={() => runAiVideoInspection(duration, videoSourceFilename)}
+            disabled={isAiScanning}
+            style={{
+              backgroundColor: '#0284c7',
+              color: '#ffffff',
+              border: 'none',
+              padding: '4px 10px',
+              borderRadius: '5px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <RefreshCw size={12} className={isAiScanning ? 'animate-spin' : ''} />
+            <span>Re-Scan YOLOv8</span>
+          </button>
+        </div>
+      </div>
+
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* Main Video Viewport & Computer Vision Overlays */}
       {/* ─────────────────────────────────────────────────────────────────── */}
@@ -375,30 +506,110 @@ export default function RoadVideoInspectionPlayer({
           overflow: 'hidden'
         }}
       >
-        {/* Video Element */}
-        <video
-          ref={videoRef}
-          src={uploadedPreview}
-          playsInline
-          loop
-          muted={isMuted}
-          autoPlay
-          preload="auto"
-          crossOrigin="anonymous"
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onCanPlay={() => setVideoReady(true)}
-          onError={handleVideoError}
-          onClick={togglePlay}
+        {/* Video Wrapper matching aspect ratio for bounding box precision */}
+        <div
           style={{
+            position: 'relative',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             maxWidth: '100%',
             maxHeight: '420px',
-            objectFit: 'contain',
             width: '100%',
-            height: 'auto',
-            cursor: 'pointer'
+            height: '100%'
           }}
-        />
+        >
+          {/* Video Element */}
+          <video
+            ref={videoRef}
+            src={videoSourceUrl || uploadedPreview}
+            playsInline
+            loop
+            muted={isMuted}
+            autoPlay
+            preload="auto"
+            crossOrigin="anonymous"
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onCanPlay={() => setVideoReady(true)}
+            onError={handleVideoError}
+            onClick={togglePlay}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '420px',
+              objectFit: 'contain',
+              width: '100%',
+              height: '100%',
+              cursor: 'pointer'
+            }}
+          />
+
+          {/* Real-Time YOLOv8 Defect Bounding Box Overlays (All defects in current timestamp) */}
+          {!videoError && activeDefectsOnScreen.map((defect, dIdx) => (
+            <div
+              key={dIdx}
+              style={{
+                position: 'absolute',
+                top: `${((defect.bbox.y) / (defect.bbox.video_h || 720)) * 100}%`,
+                left: `${((defect.bbox.x) / (defect.bbox.video_w || 1280)) * 100}%`,
+                width: `${((defect.bbox.w) / (defect.bbox.video_w || 1280)) * 100}%`,
+                height: `${((defect.bbox.h) / (defect.bbox.video_h || 720)) * 100}%`,
+                border: `2.5px solid ${getSeverityColor(defect.severity)}`,
+                backgroundColor: `${getSeverityColor(defect.severity)}22`,
+                borderRadius: '4px',
+                boxShadow: `0 0 16px ${getSeverityColor(defect.severity)}88`,
+                pointerEvents: 'none',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                padding: '4px',
+                zIndex: 15,
+                transition: 'all 0.1s ease-out'
+              }}
+            >
+              {/* Top Badge: Class & Confidence */}
+              <div
+                style={{
+                  backgroundColor: getSeverityColor(defect.severity),
+                  color: '#090d16',
+                  fontSize: '11px',
+                  fontWeight: '900',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  alignSelf: 'flex-start',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                <span>{defect.class_name.toUpperCase().replace('_', ' ')}</span>
+                <span>{(defect.conf * 100).toFixed(0)}%</span>
+              </div>
+
+              {/* Bottom Badge: Physical Dimensions & Severity */}
+              <div
+                style={{
+                  backgroundColor: 'rgba(15, 23, 42, 0.90)',
+                  color: '#f8fafc',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  alignSelf: 'flex-end',
+                  border: '1px solid #334155',
+                  display: 'flex',
+                  gap: '6px'
+                }}
+              >
+                <span>{defect.wCm}cm × {defect.lCm}cm</span>
+                <span style={{ color: getSeverityColor(defect.severity) }}>
+                  {defect.severity}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Video Decoding Error Fallback Card */}
         {videoError && (
@@ -428,7 +639,7 @@ export default function RoadVideoInspectionPlayer({
                 onClick={() => {
                   setVideoError(null);
                   if (videoRef.current) {
-                    videoRef.current.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+                    videoRef.current.src = '/videos/real_dashcam.mp4';
                     videoRef.current.load();
                   }
                 }}
@@ -447,7 +658,7 @@ export default function RoadVideoInspectionPlayer({
                 }}
               >
                 <Play size={13} />
-                <span>Load Sample Municipal Video</span>
+                <span>Load Real Dashcam Video</span>
               </button>
               {onSelectAnotherFile && (
                 <button
@@ -470,70 +681,6 @@ export default function RoadVideoInspectionPlayer({
           </div>
         )}
 
-        {/* Real-Time YOLOv8 Defect Bounding Box Overlay */}
-        {activeDefectOnScreen && !videoError && (
-          <div
-            style={{
-              position: 'absolute',
-              top: `${(activeDefectOnScreen.bbox.y / 360) * 100}%`,
-              left: `${(activeDefectOnScreen.bbox.x / 640) * 100}%`,
-              width: `${(activeDefectOnScreen.bbox.w / 640) * 100}%`,
-              height: `${(activeDefectOnScreen.bbox.h / 360) * 100}%`,
-              border: `2.5px solid ${getSeverityColor(activeDefectOnScreen.severity)}`,
-              backgroundColor: `${getSeverityColor(activeDefectOnScreen.severity)}22`,
-              borderRadius: '4px',
-              boxShadow: `0 0 16px ${getSeverityColor(activeDefectOnScreen.severity)}88`,
-              pointerEvents: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              padding: '4px',
-              zIndex: 15,
-              transition: 'all 0.15s ease-out'
-            }}
-          >
-            {/* Top Badge: Class & Confidence */}
-            <div
-              style={{
-                backgroundColor: getSeverityColor(activeDefectOnScreen.severity),
-                color: '#090d16',
-                fontSize: '11px',
-                fontWeight: '900',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                alignSelf: 'flex-start',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.6)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <span>{activeDefectOnScreen.class_name.toUpperCase().replace('_', ' ')}</span>
-              <span>{(activeDefectOnScreen.conf * 100).toFixed(0)}%</span>
-            </div>
-
-            {/* Bottom Badge: Physical Dimensions & Severity */}
-            <div
-              style={{
-                backgroundColor: 'rgba(15, 23, 42, 0.90)',
-                color: '#f8fafc',
-                fontSize: '10px',
-                fontWeight: '700',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                alignSelf: 'flex-end',
-                border: '1px solid #334155',
-                display: 'flex',
-                gap: '6px'
-              }}
-            >
-              <span>{activeDefectOnScreen.wCm}cm × {activeDefectOnScreen.lCm}cm</span>
-              <span style={{ color: getSeverityColor(activeDefectOnScreen.severity) }}>
-                {activeDefectOnScreen.severity}
-              </span>
-            </div>
-          </div>
-        )}
 
         {/* AI Scanning Progress Banner */}
         {isAiScanning && (

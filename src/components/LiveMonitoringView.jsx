@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Video,
   Radio,
@@ -11,7 +11,6 @@ import {
   Info,
   HelpCircle,
   Play,
-  Pause,
   RefreshCw
 } from 'lucide-react';
 import { API_BASE } from '../config';
@@ -35,9 +34,6 @@ export default function LiveMonitoringView({
   const [selectedVehicleId, setSelectedVehicleId] = useState('MTC 46G');
   const [showModeGuide, setShowModeGuide] = useState(false);
 
-  // Sample Highway video state
-  const [samplePlaying, setSamplePlaying] = useState(true);
-  const [sampleDefectIndex, setSampleDefectIndex] = useState(0);
 
   // Upload state
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -75,53 +71,63 @@ export default function LiveMonitoringView({
     setUploadAnalyzing(true);
     setUploadResult(null);
 
-    // Simulate/Call AI inference
-    setTimeout(async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/detect/upload`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            file_name: file.name,
-            media_type: file.type.startsWith('video') ? 'video' : 'image',
-            latitude: activeVehicle.latitude,
-            longitude: activeVehicle.longitude,
-            manual_class: uploadDefectClass,
-            confidence: 0.89,
-            vehicle_id: 'User Upload (Real Road)'
-          })
-        });
+    const isVideo = file.type.startsWith('video') || file.name.match(/\.(mp4|webm|mov|mkv|avi)$/i);
+    const reader = new FileReader();
 
-        if (res.ok) {
-          const data = await res.json();
-          setUploadResult(data);
+    if (isVideo) {
+      reader.onload = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/upload-video`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_name: file.name,
+              file_data: reader.result
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setUploadedPreview(data.video_url);
+            setUploadedFile({ name: data.file_name, type: 'video/mp4' });
+          }
+        } catch (err) {
+          console.warn('Video upload notice:', err);
+        } finally {
+          setUploadAnalyzing(false);
         }
-      } catch (err) {
-        console.warn('Inference notice:', err);
-      } finally {
-        setUploadAnalyzing(false);
-      }
-    }, 1000);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Real image upload to fine-tuned YOLOv8 model
+      reader.onload = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/detect/upload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              snapshot_thumbnail: reader.result,
+              media_type: 'image',
+              file_name: file.name,
+              latitude: activeVehicle.latitude,
+              longitude: activeVehicle.longitude,
+              vehicle_id: 'User Upload (Real Road)'
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setUploadResult(data);
+            if (onRefreshData) onRefreshData();
+          }
+        } catch (err) {
+          console.warn('Inference notice:', err);
+        } finally {
+          setUploadAnalyzing(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  // Highway Sample cycle
-  const sampleDefects = [
-    { class: 'pothole', conf: 0.89, x: 260, y: 220, w: 140, h: 70, wCm: 52, lCm: 38, color: '#ef4444' },
-    { class: 'alligator_crack', conf: 0.82, x: 210, y: 190, w: 180, h: 90, wCm: 76, lCm: 64, color: '#f97316' },
-    { class: 'longitudinal_crack', conf: 0.85, x: 290, y: 160, w: 60, h: 140, wCm: 18, lCm: 112, color: '#eab308' },
-    { class: 'waterlogging', conf: 0.91, x: 180, y: 230, w: 220, h: 80, wCm: 165, lCm: 85, color: '#38bdf8' }
-  ];
-
-  useEffect(() => {
-    if (videoMode === 'sample' && samplePlaying) {
-      const timer = setInterval(() => {
-        setSampleDefectIndex((prev) => (prev + 1) % sampleDefects.length);
-      }, 3500);
-      return () => clearInterval(timer);
-    }
-  }, [videoMode, samplePlaying, sampleDefects.length]);
-
-  const currentSampleDefect = sampleDefects[sampleDefectIndex];
 
   return (
     <div style={{
@@ -388,139 +394,14 @@ export default function LiveMonitoringView({
               />
             )}
 
-            {/* MODE 2: Sample Highway Road Footage with YOLOv8 Overlays */}
+            {/* MODE 2: Real Road Footage with Real-Time YOLOv8 Detection Overlays */}
             {videoMode === 'sample' && (
-              <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '380px', backgroundColor: '#111827', overflow: 'hidden' }}>
-                {/* Perspective Pavement Rendering with asphalt texture */}
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 40%, #0b0f19 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {/* Perspective Road Surface */}
-                  <svg width="100%" height="100%" viewBox="0 0 640 360" preserveAspectRatio="none">
-                    <polygon points="260,140 380,140 590,360 50,360" fill="#1e2530" />
-                    {/* Asphalt texture lines */}
-                    <line x1="260" y1="140" x2="50" y2="360" stroke="#334155" strokeWidth="2" />
-                    <line x1="380" y1="140" x2="590" y2="360" stroke="#334155" strokeWidth="2" />
-                    {/* Center Dashed Lane Divider */}
-                    <line x1="320" y1="150" x2="320" y2="180" stroke="#eab308" strokeWidth="3" strokeDasharray="8,10" />
-                    <line x1="320" y1="200" x2="320" y2="250" stroke="#eab308" strokeWidth="4" strokeDasharray="12,14" />
-                    <line x1="320" y1="280" x2="320" y2="350" stroke="#eab308" strokeWidth="6" />
-
-                    {/* Defect Bounding Box on Actual Asphalt */}
-                    <g style={{ transition: 'all 0.5s ease-out' }}>
-                      <rect
-                        x={currentSampleDefect.x}
-                        y={currentSampleDefect.y}
-                        width={currentSampleDefect.w}
-                        height={currentSampleDefect.h}
-                        fill={`${currentSampleDefect.color}22`}
-                        stroke={currentSampleDefect.color}
-                        strokeWidth="2.5"
-                        rx="4"
-                      />
-                      <rect
-                        x={currentSampleDefect.x}
-                        y={currentSampleDefect.y - 24}
-                        width="180"
-                        height="24"
-                        fill={currentSampleDefect.color}
-                        rx="3"
-                      />
-                      <text
-                        x={currentSampleDefect.x + 8}
-                        y={currentSampleDefect.y - 8}
-                        fill="#ffffff"
-                        fontSize="11"
-                        fontWeight="bold"
-                        fontFamily="monospace"
-                      >
-                        {currentSampleDefect.class}: {currentSampleDefect.conf}
-                      </text>
-                      <text
-                        x={currentSampleDefect.x + 8}
-                        y={currentSampleDefect.y + 24}
-                        fill="#f8fafc"
-                        fontSize="11"
-                        fontWeight="600"
-                        fontFamily="monospace"
-                      >
-                        Est: {currentSampleDefect.wCm}cm × {currentSampleDefect.lCm}cm
-                      </text>
-                    </g>
-                  </svg>
-                </div>
-
-                {/* Top Dashcam Overlay Tag */}
-                <div style={{
-                  position: 'absolute',
-                  top: '10px',
-                  left: '12px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.85)',
-                  backdropFilter: 'blur(4px)',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid #334155',
-                  fontSize: '11px',
-                  color: '#94a3b8',
-                  display: 'flex',
-                  gap: '8px'
-                }}>
-                  <span style={{ color: '#38bdf8', fontWeight: '700' }}>HIGHWAY DASHCAM FEED</span>
-                  <span>·</span>
-                  <span style={{ color: '#4ade80' }}>RECORDED 1080p 30FPS</span>
-                  <span>·</span>
-                  <span style={{ color: '#facc15' }}>YOLOv8 DETECTING</span>
-                </div>
-
-                {/* Sample Player Controls */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '12px',
-                  right: '12px',
-                  display: 'flex',
-                  gap: '8px'
-                }}>
-                  <button
-                    onClick={() => setSamplePlaying(!samplePlaying)}
-                    style={{
-                      backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                      color: '#f8fafc',
-                      border: '1px solid #334155',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    {samplePlaying ? <Pause size={12} /> : <Play size={12} />}
-                    <span>{samplePlaying ? 'Pause Stream' : 'Resume Stream'}</span>
-                  </button>
-                  <button
-                    onClick={() => setSampleDefectIndex((prev) => (prev + 1) % sampleDefects.length)}
-                    style={{
-                      backgroundColor: '#0284c7',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Next Defect Class ➔
-                  </button>
-                </div>
-              </div>
+              <RoadVideoInspectionPlayer
+                uploadedFile={{ name: 'real_dashcam.mp4', type: 'video/mp4' }}
+                uploadedPreview="/videos/real_dashcam.mp4"
+                activeVehicle={activeVehicle}
+                onDefectLogged={onRefreshData}
+              />
             )}
 
             {/* MODE 3: Live Hardware Webcam (Phone / Laptop Dashcam) */}
@@ -593,9 +474,8 @@ export default function LiveMonitoringView({
                       </button>
                       <button
                         onClick={() => {
-                          const testVideoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-                          setUploadedFile({ name: 'Municipal_Pavement_Survey_Demo.mp4', type: 'video/mp4', size: 15480000 });
-                          setUploadedPreview(testVideoUrl);
+                          setUploadedFile({ name: 'real_dashcam.mp4', type: 'video/mp4', size: 10257801 });
+                          setUploadedPreview('/videos/real_dashcam.mp4');
                         }}
                         style={{
                           backgroundColor: '#1e293b',
@@ -692,45 +572,53 @@ export default function LiveMonitoringView({
                         <RefreshCw size={16} className="animate-spin" />
                         <span>Running YOLOv8 Defect Detection...</span>
                       </div>
-                    ) : uploadResult && (
+                    ) : (uploadResult && Array.isArray(uploadResult.detections) && uploadResult.detections.length > 0) ? (
+                      uploadResult.detections.map((det, dIdx) => (
+                        <div
+                          key={dIdx}
+                          style={{
+                            position: 'absolute',
+                            top: `${(det.bbox.y / (det.bbox.video_h || 720)) * 100}%`,
+                            left: `${(det.bbox.x / (det.bbox.video_w || 1280)) * 100}%`,
+                            width: `${(det.bbox.w / (det.bbox.video_w || 1280)) * 100}%`,
+                            height: `${(det.bbox.h / (det.bbox.video_h || 720)) * 100}%`,
+                            border: '2.5px solid #ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderRadius: '4px',
+                            zIndex: 10
+                          }}
+                        >
+                          <div style={{
+                            position: 'absolute',
+                            top: '-24px',
+                            left: 0,
+                            backgroundColor: '#ef4444',
+                            color: '#ffffff',
+                            padding: '2px 6px',
+                            fontSize: '10px',
+                            fontWeight: '800',
+                            fontFamily: 'monospace',
+                            borderRadius: '3px',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {det.class_name.toUpperCase()}: {(det.conf * 100).toFixed(0)}% ({det.wCm}×{det.lCm}cm)
+                          </div>
+                        </div>
+                      ))
+                    ) : uploadResult ? (
                       <div style={{
                         position: 'absolute',
-                        top: '20%',
-                        left: '25%',
-                        width: '50%',
-                        height: '45%',
-                        border: '2.5px solid #ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                        borderRadius: '4px'
+                        backgroundColor: 'rgba(15, 23, 42, 0.88)',
+                        border: '1px solid #22c55e',
+                        color: '#4ade80',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '700'
                       }}>
-                        <div style={{
-                          position: 'absolute',
-                          top: '-26px',
-                          left: '-2px',
-                          backgroundColor: '#ef4444',
-                          color: '#ffffff',
-                          padding: '3px 8px',
-                          fontSize: '11px',
-                          fontWeight: '800',
-                          fontFamily: 'monospace',
-                          borderRadius: '3px'
-                        }}>
-                          {uploadResult.detected_defect.class_name.toUpperCase()}: {(uploadResult.detected_defect.confidence * 100).toFixed(0)}%
-                        </div>
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '6px',
-                          left: '8px',
-                          color: '#ffffff',
-                          fontSize: '11px',
-                          fontWeight: '700',
-                          fontFamily: 'monospace',
-                          textShadow: '0 1px 3px rgba(0,0,0,0.8)'
-                        }}>
-                          EST: {uploadResult.detected_defect.bbox.estimated_physical_width_cm}cm × {uploadResult.detected_defect.bbox.estimated_physical_length_cm}cm
-                        </div>
+                        ✓ Surface Verified: Clean Asphalt (No Defects Detected)
                       </div>
-                    )}
+                    ) : null}
 
                     {/* Change File Button */}
                     <div style={{

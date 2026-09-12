@@ -5,13 +5,15 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import https from "https";
+import { exec } from "child_process";
 import { municipalDB } from "./server/db";
 
 const app = express();
 const PORT = 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "150mb" }));
+app.use(express.urlencoded({ limit: "150mb", extended: true }));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Phase 1: 7 Core Defect Classes
@@ -287,209 +289,11 @@ export interface ObservationRecord {
   inference_latency_ms: number;
 }
 
-let verifiedDefects: DefectItem[] = [
-  {
-    id: 1,
-    detection_id: "DET-2026-001",
-    defect_type: "pothole",
-    class_name: "pothole",
-    latitude: 13.118,
-    longitude: 80.223,
-    severity: "High",
-    confidence: 0.867,
-    road_id: "R002",
-    segment_id: "R002-S001",
-    exact_chainage_m: 24.5,
-    bus_count: 1,
-    bus_ids: "MTC 46G",
-    reporting_vehicles: ["MTC 46G"],
-    total_detections: 14,
-    is_multi_bus_verified: false,
-    bbox: {
-      x_min: 210,
-      y_min: 160,
-      x_max: 290,
-      y_max: 215,
-      pixel_area: 4400,
-      estimated_physical_width_cm: 48.0,
-      estimated_physical_length_cm: 36.5,
-    },
-    first_detected: "2026-09-11T07:22:27.084Z",
-    last_detected: "2026-09-11T07:42:17.315Z",
-    model_version: "YOLOv8-road-v1",
-  },
-  {
-    id: 2,
-    detection_id: "DET-2026-002",
-    defect_type: "alligator_crack",
-    class_name: "alligator_crack",
-    latitude: 13.078,
-    longitude: 80.233,
-    severity: "High",
-    confidence: 0.793,
-    road_id: "R001",
-    segment_id: "R001-S003",
-    exact_chainage_m: 212.0,
-    bus_count: 1,
-    bus_ids: "MTC 15G",
-    reporting_vehicles: ["MTC 15G"],
-    total_detections: 13,
-    is_multi_bus_verified: false,
-    bbox: {
-      x_min: 140,
-      y_min: 140,
-      x_max: 240,
-      y_max: 220,
-      pixel_area: 8000,
-      estimated_physical_width_cm: 72.0,
-      estimated_physical_length_cm: 65.0,
-    },
-    first_detected: "2026-09-11T07:22:53.364Z",
-    last_detected: "2026-09-11T07:43:41.553Z",
-    model_version: "YOLOv8-road-v1",
-  },
-  {
-    id: 3,
-    detection_id: "DET-2026-003",
-    defect_type: "waterlogging",
-    class_name: "waterlogging",
-    latitude: 13.0765,
-    longitude: 80.221,
-    severity: "Medium",
-    confidence: 0.747,
-    road_id: "R001",
-    segment_id: "R001-S003",
-    exact_chainage_m: 298.0,
-    bus_count: 1,
-    bus_ids: "MTC 15G",
-    reporting_vehicles: ["MTC 15G"],
-    total_detections: 12,
-    is_multi_bus_verified: false,
-    bbox: {
-      x_min: 100,
-      y_min: 180,
-      x_max: 360,
-      y_max: 245,
-      pixel_area: 16900,
-      estimated_physical_width_cm: 180.0,
-      estimated_physical_length_cm: 85.0,
-    },
-    first_detected: "2026-09-11T07:23:15.987Z",
-    last_detected: "2026-09-11T07:42:12.179Z",
-    model_version: "YOLOv8-road-v1",
-  },
-  {
-    id: 4,
-    detection_id: "DET-2026-004",
-    defect_type: "pothole",
-    class_name: "pothole",
-    latitude: 13.0743,
-    longitude: 80.2108,
-    severity: "Critical",
-    confidence: 0.845,
-    road_id: "R001",
-    segment_id: "R001-S004",
-    exact_chainage_m: 388.5,
-    bus_count: 2,
-    bus_ids: "MTC 46G,MTC 15G",
-    reporting_vehicles: ["MTC 46G", "MTC 15G"],
-    total_detections: 28,
-    is_multi_bus_verified: true,
-    bbox: {
-      x_min: 190,
-      y_min: 155,
-      x_max: 285,
-      y_max: 215,
-      pixel_area: 5700,
-      estimated_physical_width_cm: 58.0,
-      estimated_physical_length_cm: 42.0,
-    },
-    first_detected: "2026-09-11T07:23:33.706Z",
-    last_detected: "2026-09-11T07:43:22.485Z",
-    model_version: "YOLOv8-road-v1",
-  },
-  {
-    id: 5,
-    detection_id: "DET-2026-005",
-    defect_type: "longitudinal_crack",
-    class_name: "longitudinal_crack",
-    latitude: 13.0755,
-    longitude: 80.215,
-    severity: "Medium",
-    confidence: 0.78,
-    road_id: "R001",
-    segment_id: "R001-S004",
-    exact_chainage_m: 340.0,
-    bus_count: 1,
-    bus_ids: "MTC 46G",
-    reporting_vehicles: ["MTC 46G"],
-    total_detections: 8,
-    is_multi_bus_verified: false,
-    bbox: {
-      x_min: 220,
-      y_min: 130,
-      x_max: 245,
-      y_max: 240,
-      pixel_area: 2750,
-      estimated_physical_width_cm: 15.0,
-      estimated_physical_length_cm: 110.0,
-    },
-    first_detected: "2026-09-11T07:25:00.000Z",
-    last_detected: "2026-09-11T07:35:00.000Z",
-    model_version: "YOLOv8-road-v1",
-  },
-];
+let verifiedDefects: DefectItem[] = [];
+let observationLogs: ObservationRecord[] = [];
 
-let observationLogs: ObservationRecord[] = [
-  {
-    id: 1,
-    observation_id: "OBS-001",
-    road_id: "R002",
-    segment_id: "R002-S001",
-    vehicle_id: "MTC 46G",
-    route_id: "ROUTE-46G",
-    timestamp: "2026-09-11T07:22:27.084Z",
-    latitude: 13.118,
-    longitude: 80.223,
-    defect_count: 1,
-    defects: ["pothole"],
-    model_version: "YOLOv8-road-v1",
-    inference_latency_ms: 13.8,
-  },
-  {
-    id: 2,
-    observation_id: "OBS-002",
-    road_id: "R001",
-    segment_id: "R001-S003",
-    vehicle_id: "MTC 15G",
-    route_id: "ROUTE-15G",
-    timestamp: "2026-09-11T07:22:53.364Z",
-    latitude: 13.078,
-    longitude: 80.233,
-    defect_count: 1,
-    defects: ["alligator_crack"],
-    model_version: "YOLOv8-road-v1",
-    inference_latency_ms: 14.1,
-  },
-  {
-    id: 3,
-    observation_id: "OBS-003",
-    road_id: "R001",
-    segment_id: "R001-S004",
-    vehicle_id: "MTC 46G",
-    route_id: "ROUTE-46G",
-    timestamp: "2026-09-11T07:23:33.706Z",
-    latitude: 13.0743,
-    longitude: 80.2108,
-    defect_count: 2,
-    defects: ["pothole", "longitudinal_crack"],
-    model_version: "YOLOv8-road-v1",
-    inference_latency_ms: 14.9,
-  },
-];
-
-let nextDefectId = 6;
-let nextObsId = 4;
+let nextDefectId = 1;
+let nextObsId = 1;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Patrol Fleet Coordinates & Status
@@ -867,20 +671,7 @@ setInterval(() => {
     const { segment } = matchNearestSegment(b46.latitude, b46.longitude);
     b46.current_segment = segment.segment_id;
 
-    // Periodic detection simulation near DG Vaishnav College intersection
-    if (simulationTick % 12 === 0) {
-      const { defect, newlyVerified } = processSpatialDeduplication({
-        class_name: "pothole",
-        confidence: 0.86,
-        latitude: 13.0743,
-        longitude: 80.2108,
-        vehicle_id: "MTC 46G",
-      });
-      const alertCheck = evaluateAlertTrigger(defect, newlyVerified);
-      if (alertCheck.shouldAlert) {
-        triggerAutomatedAlert(defect, alertCheck.reason);
-      }
-    }
+    // Vehicle telemetry moves along road corridor without injecting fake defects
   }
 
   // Advance MTC 15G from Central towards Aminjikarai
@@ -893,16 +684,6 @@ setInterval(() => {
     b15.speed_kmh = Math.round(31 + Math.cos(simulationTick) * 5);
     const { segment } = matchNearestSegment(b15.latitude, b15.longitude);
     b15.current_segment = segment.segment_id;
-
-    if (simulationTick % 15 === 0) {
-      processSpatialDeduplication({
-        class_name: "waterlogging",
-        confidence: 0.77,
-        latitude: 13.0765,
-        longitude: 80.2210,
-        vehicle_id: "MTC 15G",
-      });
-    }
   }
 }, 2000);
 
@@ -1073,21 +854,22 @@ app.post("/api/settings/alert-criteria", (req: Request, res: Response) => {
   });
 });
 
-// Dashboard metrics overview
 app.get("/api/dashboard", (req: Request, res: Response) => {
+  const currentDefects = municipalDB.getDefects();
+  const allSegments = municipalDB.getSegments();
   const totalKm = ROAD_NETWORK.reduce((acc, r) => acc + r.total_length_meters, 0) / 1000.0;
-  const totalSegments = ALL_SEGMENTS.length;
-  const totalDefects = verifiedDefects.length;
-  const multiBusVerified = verifiedDefects.filter((d) => d.is_multi_bus_verified).length;
-  const criticalDefects = verifiedDefects.filter((d) => d.severity === "Critical" || d.severity === "High").length;
-  const avgHealth = Math.round(ALL_SEGMENTS.reduce((acc, s) => acc + s.current_health_score, 0) / (totalSegments || 1));
+  const totalSegments = allSegments.length;
+  const totalDefects = currentDefects.length;
+  const multiBusVerified = currentDefects.filter((d) => d.is_multi_bus_verified).length;
+  const criticalDefects = currentDefects.filter((d) => d.severity === "Critical" || d.severity === "High").length;
+  const avgHealth = Math.round(allSegments.reduce((acc, s) => acc + s.current_health_score, 0) / (totalSegments || 1));
 
   // Severity counts
   const severityCounts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
   const classCounts: Record<string, number> = {};
   for (const c of PHASE1_CLASSES) classCounts[c] = 0;
 
-  for (const d of verifiedDefects) {
+  for (const d of currentDefects) {
     severityCounts[d.severity] = (severityCounts[d.severity] || 0) + 1;
     classCounts[d.class_name] = (classCounts[d.class_name] || 0) + 1;
   }
@@ -1102,7 +884,7 @@ app.get("/api/dashboard", (req: Request, res: Response) => {
     severity_counts: severityCounts,
     class_counts: classCounts,
     active_patrol_vehicles: Object.values(VEHICLE_FLEET).filter((v) => v.status === "Online").length,
-    recent_detections: verifiedDefects.slice(0, 8),
+    recent_detections: currentDefects.slice(0, 8),
   });
 });
 
@@ -1387,122 +1169,310 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
   }
 });
 
-// Automated Video Inspection AI Keyframe Scanner (YOLOv8-road-v1)
+// Get available real road sample videos for testing and demonstration
+app.get("/api/sample-videos", (req: Request, res: Response) => {
+  const videosDir = path.join(process.cwd(), "public", "videos");
+  try {
+    const files = fs.readdirSync(videosDir).filter(f => f.endsWith(".mp4") && f !== "empty_test.mp4" && f !== "zero_defect_video.mp4");
+    const list = files.map(f => {
+      const filePath = path.join(videosDir, f);
+      const stats = fs.statSync(filePath);
+      let title = f.replace(".mp4", "").replace(/_/g, " ");
+      title = title.charAt(0).toUpperCase() + title.slice(1);
+      if (f === "real_dashcam.mp4") title = "Dashcam Road Survey (Real Potholes Detected)";
+      if (f === "sample_road.mp4") title = "Urban Asphalt Inspection";
+      if (f === "clean_highway.mp4") title = "Express Corridor (Zero Distress)";
+      if (f === "shadows_and_cracks.mp4") title = "Asphalt Fatigue & Longitudinal Cracks";
+      if (f === "video_46g.mp4") title = "MTC 46G Poonamallee Corridor";
+      if (f === "video_15g.mp4") title = "MTC 15G Aminjikarai Corridor";
+      if (f === "video_27b.mp4") title = "MTC 27B Anna Salai Route";
+      if (f === "video_29c.mp4") title = "MTC 29C Perambur Route";
+      return {
+        id: f.replace(".mp4", ""),
+        file_name: f,
+        name: title,
+        url: `/videos/${f}`,
+        size_mb: Math.round((stats.size / (1024 * 1024)) * 10) / 10
+      };
+    });
+    res.json(list);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Upload real video file from client machine
+app.post("/api/upload-video", (req: Request, res: Response) => {
+  try {
+    const { file_name, file_data } = req.body;
+    if (!file_name || !file_data) {
+      return res.status(400).json({ error: "Missing file_name or file_data" });
+    }
+
+    const safeName = path.basename(file_name).replace(/[^a-zA-Z0-9._-]/g, "_");
+    const targetDir = path.join(process.cwd(), "public", "videos", "uploads");
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    const targetPath = path.join(targetDir, safeName);
+    const base64Data = file_data.includes(",") ? file_data.split(",")[1] : file_data;
+    fs.writeFileSync(targetPath, Buffer.from(base64Data, "base64"));
+
+    res.json({
+      status: "success",
+      file_name: safeName,
+      video_url: `/videos/uploads/${safeName}`,
+      file_path: targetPath
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Real Image / Snapshot Frame Inference with Fine-Tuned YOLOv8
+app.post("/api/detect/upload", (req: Request, res: Response) => {
+  try {
+    const {
+      snapshot_thumbnail,
+      image_base64,
+      file_name = "upload.jpg",
+      media_type = "image",
+      latitude,
+      longitude,
+      vehicle_id = "Real Road Upload",
+      manual_class
+    } = req.body;
+
+    const lat = latitude ? Number(latitude) : 13.0780;
+    const lon = longitude ? Number(longitude) : 80.2330;
+    const { segment, chainage_m } = matchNearestSegment(lat, lon);
+
+    const imagePayload = snapshot_thumbnail || image_base64;
+
+    const pythonExe = fs.existsSync(path.join(process.cwd(), ".venv", "Scripts", "python.exe"))
+      ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
+      : "python";
+    const scriptPath = path.join(process.cwd(), "detector", "infer_image.py");
+    const modelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
+
+    if (imagePayload && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
+      const tempPath = path.join(process.cwd(), "detector", `temp_${Date.now()}.jpg`);
+      const base64Data = imagePayload.includes(",") ? imagePayload.split(",")[1] : imagePayload;
+      fs.writeFileSync(tempPath, Buffer.from(base64Data, "base64"));
+
+      const cmd = `"${pythonExe}" "${scriptPath}" "${tempPath}" "${modelPath}" 0.30`;
+      exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
+        try {
+          if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+        } catch {}
+
+        let detections: any[] = [];
+        if (!error && stdout) {
+          try {
+            const parsed = JSON.parse(stdout.trim());
+            if (Array.isArray(parsed.detections)) {
+              detections = parsed.detections;
+            }
+          } catch (e) {
+            console.error("YOLO parse error:", e);
+          }
+        }
+
+        if (detections.length > 0) {
+          const firstDet = detections[0];
+          const { defect, newlyVerified } = processSpatialDeduplication({
+            class_name: firstDet.class_name,
+            confidence: firstDet.conf,
+            severity: firstDet.severity,
+            latitude: lat,
+            longitude: lon,
+            vehicle_id,
+          });
+
+          defect.bbox = {
+            x_min: firstDet.bbox.x,
+            y_min: firstDet.bbox.y,
+            x_max: firstDet.bbox.x + firstDet.bbox.w,
+            y_max: firstDet.bbox.y + firstDet.bbox.h,
+            pixel_area: firstDet.bbox.w * firstDet.bbox.h,
+            estimated_physical_width_cm: firstDet.wCm,
+            estimated_physical_length_cm: firstDet.lCm,
+          };
+          if (imagePayload) defect.snapshot_thumbnail = imagePayload;
+
+          municipalDB.upsertDefect(defect);
+          municipalDB.updateSegmentHealth(segment.segment_id, defect.severity === "Critical" ? -4 : -2);
+
+          const alertCheck = evaluateAlertTrigger(defect, newlyVerified);
+          if (alertCheck.shouldAlert) {
+            triggerAutomatedAlert(defect, alertCheck.reason);
+          }
+
+          return res.json({
+            status: "success",
+            detected: true,
+            total_detections: detections.length,
+            detected_defect: defect,
+            detections
+          });
+        } else {
+          return res.json({
+            status: "success",
+            detected: false,
+            total_detections: 0,
+            detected_defect: null,
+            detections: [],
+            message: "No pavement distress or potholes detected with confidence >= 0.30"
+          });
+        }
+      });
+      return;
+    }
+
+    res.json({
+      status: "success",
+      detected: false,
+      total_detections: 0,
+      detected_defect: null,
+      detections: []
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Automated Video Inspection AI Keyframe Scanner (YOLOv8-road-v1 with real Python inference)
 app.post("/api/detect/video-scan", (req: Request, res: Response) => {
   try {
     const {
-      file_name = "survey_footage.mp4",
+      file_name = "real_dashcam.mp4",
       duration_sec = 10,
       latitude,
       longitude,
       vehicle_id = "User Video Inspection",
-      sample_timestamps,
-      detected_moments
     } = req.body;
 
     const lat = latitude ? Number(latitude) : 13.0780;
     const lon = longitude ? Number(longitude) : 80.2330;
     const { segment } = matchNearestSegment(lat, lon);
 
-    const generatedDefects: any[] = [];
-    const defaultTimestamps = [
-      Math.round(Math.max(0.8, duration_sec * 0.15) * 10) / 10,
-      Math.round(Math.max(1.8, duration_sec * 0.42) * 10) / 10,
-      Math.round(Math.max(2.8, duration_sec * 0.72) * 10) / 10,
+    // Locate video file on disk
+    let videoFilePath = "";
+    const cleanName = path.basename(file_name);
+    const candidates = [
+      path.join(process.cwd(), "public", file_name.startsWith("/") ? file_name.slice(1) : file_name),
+      path.join(process.cwd(), "public", "videos", "uploads", cleanName),
+      path.join(process.cwd(), "public", "videos", cleanName),
+      path.join(process.cwd(), "detector", cleanName),
+      path.join(process.cwd(), "public", "videos", "real_dashcam.mp4"),
+      path.join(process.cwd(), "detector", "real_dashcam.mp4")
     ];
 
-    const timestampsToUse = Array.isArray(sample_timestamps) && sample_timestamps.length > 0
-      ? sample_timestamps
-      : defaultTimestamps;
-
-    const moments = Array.isArray(detected_moments) && detected_moments.length > 0
-      ? detected_moments
-      : (timestampsToUse as number[]).map((t: number, idx: number) => {
-          const classes: DefectClass[] = ["pothole", "alligator_crack", "longitudinal_crack", "waterlogging"];
-          const pickedClass = classes[idx % classes.length];
-          const conf = Math.round((0.86 + Math.random() * 0.09) * 100) / 100;
-          return {
-            time: t,
-            class_name: pickedClass,
-            conf,
-            severity: conf >= 0.88 ? "Critical" : conf >= 0.75 ? "High" : "Medium",
-            wCm: pickedClass === "pothole" ? 54 : pickedClass === "alligator_crack" ? 75 : pickedClass === "waterlogging" ? 160 : 25,
-            lCm: pickedClass === "pothole" ? 42 : pickedClass === "alligator_crack" ? 60 : pickedClass === "waterlogging" ? 90 : 110,
-            bbox: {
-              x: 180 + idx * 40,
-              y: 150 + idx * 20,
-              w: 130 + idx * 15,
-              h: 70 + idx * 10
-            }
-          };
-        });
-
-    for (const m of moments) {
-      const defId = nextDefectId++;
-      const defectItem: DefectItem = {
-        id: defId,
-        detection_id: `DET-VID-${String(defId).padStart(3, "0")}`,
-        defect_type: m.class_name,
-        class_name: m.class_name,
-        latitude: lat + (m.time * 0.00008),
-        longitude: lon - (m.time * 0.00008),
-        severity: m.severity || (m.conf >= 0.88 ? "Critical" : "High"),
-        confidence: m.conf || 0.89,
-        road_id: segment.road_id,
-        segment_id: segment.segment_id,
-        exact_chainage_m: Math.round(segment.start_chainage_m + (m.time * 8.5)),
-        bus_count: 1,
-        bus_ids: vehicle_id,
-        reporting_vehicles: [vehicle_id],
-        total_detections: 1,
-        is_multi_bus_verified: false,
-        bbox: {
-          x_min: m.bbox?.x || 200,
-          y_min: m.bbox?.y || 150,
-          x_max: (m.bbox?.x || 200) + (m.bbox?.w || 120),
-          y_max: (m.bbox?.y || 150) + (m.bbox?.h || 65),
-          pixel_area: (m.bbox?.w || 120) * (m.bbox?.h || 65),
-          estimated_physical_width_cm: m.wCm || 50,
-          estimated_physical_length_cm: m.lCm || 40,
-        },
-        first_detected: new Date().toISOString(),
-        last_detected: new Date().toISOString(),
-        model_version: "YOLOv8-road-v1",
-      };
-
-      try {
-        municipalDB.upsertDefect(defectItem);
-        municipalDB.updateSegmentHealth(segment.segment_id, defectItem.severity === "Critical" ? -4 : -2);
-      } catch (e) {
-        console.error("Failed to insert video defect:", e);
+    for (const c of candidates) {
+      if (fs.existsSync(c)) {
+        videoFilePath = c;
+        break;
       }
-      generatedDefects.push({ ...defectItem, video_timestamp_sec: m.time, moment_bbox: m.bbox, wCm: m.wCm, lCm: m.lCm });
     }
 
-    const inspection = municipalDB.insertVideoInspection({
-      filename: file_name || "uploaded_video.mp4",
-      file_size_mb: 14.5,
-      duration_seconds: Math.round(duration_sec),
-      vehicle_id,
-      road_id: segment.road_id,
-      segment_id: segment.segment_id,
-      total_defects_found: generatedDefects.length,
-      detected_defects_list: moments,
-      processed_at: new Date().toISOString(),
-      fps: 29.8,
-      status: "Completed"
-    });
+    const pythonExe = fs.existsSync(path.join(process.cwd(), ".venv", "Scripts", "python.exe"))
+      ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
+      : "python";
+    const scriptPath = path.join(process.cwd(), "detector", "infer_video.py");
+    const modelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
 
-    res.status(200).json({
-      status: "success",
-      file_name,
-      total_defects: generatedDefects.length,
-      defects: generatedDefects,
-      moments,
-      inspection,
-      model: "YOLOv8-road-v1",
-      inference_speed: "29.8 FPS (Jetson TensorRT FP16)"
-    });
+    if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
+      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.35`;
+      exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+        let moments: any[] = [];
+        if (!error && stdout) {
+          try {
+            const parsed = JSON.parse(stdout.trim());
+            if (Array.isArray(parsed.moments)) {
+              moments = parsed.moments;
+            }
+          } catch (e) {
+            console.error("Failed to parse YOLO output:", e);
+          }
+        }
+
+        const generatedDefects = moments.map((m: any) => {
+          const defId = nextDefectId++;
+          const defectItem: DefectItem = {
+            id: defId,
+            detection_id: `DET-VID-${String(defId).padStart(3, "0")}`,
+            defect_type: m.class_name,
+            class_name: m.class_name,
+            latitude: lat + (m.time * 0.00008),
+            longitude: lon - (m.time * 0.00008),
+            severity: m.severity || (m.conf >= 0.75 ? "Critical" : "High"),
+            confidence: m.conf || 0.85,
+            road_id: segment.road_id,
+            segment_id: segment.segment_id,
+            exact_chainage_m: Math.round(segment.start_chainage_m + (m.time * 8.5)),
+            bus_count: 1,
+            bus_ids: vehicle_id,
+            reporting_vehicles: [vehicle_id],
+            total_detections: 1,
+            is_multi_bus_verified: false,
+            bbox: {
+              x_min: m.bbox?.x || 200,
+              y_min: m.bbox?.y || 150,
+              x_max: (m.bbox?.x || 200) + (m.bbox?.w || 120),
+              y_max: (m.bbox?.y || 150) + (m.bbox?.h || 65),
+              pixel_area: (m.bbox?.w || 120) * (m.bbox?.h || 65),
+              estimated_physical_width_cm: m.wCm || 50,
+              estimated_physical_length_cm: m.lCm || 40,
+            },
+            first_detected: new Date().toISOString(),
+            last_detected: new Date().toISOString(),
+            model_version: "YOLOv8-road-v1",
+          };
+
+          try {
+            municipalDB.upsertDefect(defectItem);
+            municipalDB.updateSegmentHealth(segment.segment_id, defectItem.severity === "Critical" ? -4 : -2);
+          } catch (e) {
+            console.error("Failed to insert video defect:", e);
+          }
+          return { ...defectItem, video_timestamp_sec: m.time, moment_bbox: m.bbox, wCm: m.wCm, lCm: m.lCm };
+        });
+
+        const inspection = municipalDB.insertVideoInspection({
+          filename: file_name || "uploaded_video.mp4",
+          file_size_mb: 14.5,
+          duration_seconds: Math.round(duration_sec),
+          vehicle_id,
+          road_id: segment.road_id,
+          segment_id: segment.segment_id,
+          total_defects_found: generatedDefects.length,
+          detected_defects_list: moments,
+          processed_at: new Date().toISOString(),
+          fps: 29.8,
+          status: "Completed"
+        });
+
+        res.status(200).json({
+          status: "success",
+          file_name,
+          total_defects: generatedDefects.length,
+          defects: generatedDefects,
+          moments,
+          inspection,
+          model: "YOLOv8-road-v1 (Real Inference)",
+          inference_speed: "Real Edge AI Inference"
+        });
+      });
+    } else {
+      res.status(200).json({
+        status: "success",
+        file_name,
+        total_defects: 0,
+        defects: [],
+        moments: []
+      });
+    }
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -194,12 +194,31 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
       </div>
 
       {/* Defect Cards Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-        gap: '14px'
-      }}>
-        {filtered.map((defect) => {
+      {filtered.length === 0 ? (
+        <div style={{
+          backgroundColor: '#0f172a',
+          border: '1px dashed #334155',
+          borderRadius: '10px',
+          padding: '48px 24px',
+          textAlign: 'center',
+          color: '#94a3b8'
+        }}>
+          <CheckCircle2 size={36} color="#22c55e" style={{ margin: '0 auto 12px auto' }} />
+          <h3 style={{ margin: '0 0 6px 0', color: '#f8fafc', fontSize: '15px' }}>
+            No Defects Currently in Registry
+          </h3>
+          <p style={{ margin: '0 auto', fontSize: '12px', maxWidth: '440px', lineHeight: 1.5 }}>
+            All predefined mock data has been removed. Scan real road footage, stream live dashcam, or upload pavement media in the Live Monitoring tab to log genuine YOLOv8 detections.
+          </p>
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
+          gap: '14px'
+        }}>
+          {filtered.map((defect) => {
+
           const isMulti = defect.is_multi_bus_verified;
           const sevColor =
             defect.severity === 'Critical'
@@ -357,6 +376,7 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
           );
         })}
       </div>
+      )}
     </div>
   );
 }

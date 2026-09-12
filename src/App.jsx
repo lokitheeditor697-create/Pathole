@@ -89,7 +89,7 @@ export default function App() {
         setLastHeartbeat(new Date());
 
         if (dashData) setMetrics(dashData);
-        if (defData?.defects && Array.isArray(defData.defects) && defData.defects.length > 0) {
+        if (defData?.defects && Array.isArray(defData.defects)) {
           setDefects(defData.defects);
         }
         if (roadsData && Array.isArray(roadsData) && roadsData.length > 0) {
