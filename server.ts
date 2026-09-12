@@ -1984,14 +1984,18 @@ app.post("/stop_live_detect", (req: Request, res: Response) => {
 // Vite Middleware (Dev) & Static Serving (Prod)
 // ─────────────────────────────────────────────────────────────────────────────
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+  const distPath = path.join(process.cwd(), "dist");
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    (fs.existsSync(distPath) && fs.existsSync(path.join(distPath, "index.html")) && process.env.NODE_ENV !== "development");
+
+  if (!isProduction) {
     const vite = await createViteServer({
-      server: { middlewareMode: true, host: "0.0.0.0", port: PORT },
+      server: { middlewareMode: true, host: "0.0.0.0", port: PORT, allowedHosts: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req: Request, res: Response) => {
       res.sendFile(path.join(distPath, "index.html"));
