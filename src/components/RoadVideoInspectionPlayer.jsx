@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   RotateCcw,
   Sparkles,
-  FileVideo
+  FileVideo,
+  Upload
 } from 'lucide-react';
 import { API_BASE } from '../config';
 
@@ -176,23 +177,65 @@ export default function RoadVideoInspectionPlayer({
     runAiVideoInspection(validDuration);
   };
 
-  // Video playback time update - checks all defects in current moment
+  // Video playback time update - displays exactly ONE trace/box per physical defect at any time
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const cur = videoRef.current.currentTime;
     setCurrentTime(cur);
 
-    // Find defects within ±0.60s of current playback timestamp
-    const matches = detectedMoments.filter((m) => Math.abs(m.time - cur) < 0.60);
-    setActiveDefectsOnScreen(matches);
-    setActiveDefectOnScreen(matches[0] || null);
+    // Filter detections in a responsive ±0.35s window around current playhead
+    const rawMatches = detectedMoments.filter((m) => Math.abs(m.time - cur) <= 0.35);
+
+    // 1. Group by track_id: keep ONLY the frame detection closest in time to current playback head
+    const trackMap = new Map();
+    const untrackedList = [];
+
+    for (const m of rawMatches) {
+      if (m.track_id !== undefined && m.track_id !== null) {
+        const existing = trackMap.get(m.track_id);
+        if (!existing || Math.abs(m.time - cur) < Math.abs(existing.time - cur)) {
+          trackMap.set(m.track_id, m);
+        }
+      } else {
+        untrackedList.push(m);
+      }
+    }
+
+    const candidateDefects = [...Array.from(trackMap.values()), ...untrackedList];
+    // Sort highest confidence first so best bounding box is prioritized
+    candidateDefects.sort((a, b) => (b.conf || 0) - (a.conf || 0));
+
+    // 2. Spatial IoU Non-Maximum Suppression: eliminate any duplicate overlapping boxes on the same physical pothole
+    const singleTraces = [];
+    for (const cand of candidateDefects) {
+      const b1 = cand.bbox;
+      if (!b1) continue;
+      const overlaps = singleTraces.some((kept) => {
+        const b2 = kept.bbox;
+        if (!b2) return false;
+        const x1 = Math.max(b1.x, b2.x);
+        const y1 = Math.max(b1.y, b2.y);
+        const x2 = Math.min(b1.x + b1.w, b2.x + b2.w);
+        const y2 = Math.min(b1.y + b1.h, b2.y + b2.h);
+        if (x2 <= x1 || y2 <= y1) return false;
+        const interArea = (x2 - x1) * (y2 - y1);
+        const unionArea = (b1.w * b1.h) + (b2.w * b2.h) - interArea;
+        return (interArea / unionArea) > 0.25;
+      });
+      if (!overlaps) {
+        singleTraces.push(cand);
+      }
+    }
+
+    setActiveDefectsOnScreen(singleTraces);
+    setActiveDefectOnScreen(singleTraces[0] || null);
 
     // Auto-pause feature if enabled
-    if (autoPauseOnDefects && matches.length > 0 && lastAutoPausedMoment !== matches[0].time) {
+    if (autoPauseOnDefects && singleTraces.length > 0 && lastAutoPausedMoment !== singleTraces[0].time) {
       videoRef.current.pause();
       setIsPlaying(false);
-      setLastAutoPausedMoment(matches[0].time);
-      showToast(`Auto-paused at defect: ${matches[0].class_name.toUpperCase()}`, 'info');
+      setLastAutoPausedMoment(singleTraces[0].time);
+      showToast(`Auto-paused at defect: ${singleTraces[0].class_name.toUpperCase()}`, 'info');
     }
   };
 
@@ -466,6 +509,29 @@ export default function RoadVideoInspectionPlayer({
             <Camera size={12} />
             <span>Upload My Video</span>
           </button>
+          {onSelectAnotherFile && (
+            <button
+              onClick={onSelectAnotherFile}
+              title="Return to Upload Hub to select or upload a different file"
+              style={{
+                backgroundColor: '#3b82f6',
+                color: '#ffffff',
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '5px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 2px 6px rgba(59, 130, 246, 0.4)'
+              }}
+            >
+              <Upload size={12} />
+              <span>Upload / Change Video</span>
+            </button>
+          )}
           <button
             onClick={() => runAiVideoInspection(duration, videoSourceFilename)}
             disabled={isAiScanning}

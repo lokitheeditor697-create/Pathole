@@ -1387,25 +1387,46 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
     const modelPath = fs.existsSync(bestModelPath) ? bestModelPath : defaultModelPath;
 
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
-      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.35`;
+      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.42`;
       exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
         let moments: any[] = [];
+        let uniqueDefectsList: any[] = [];
         if (!error && stdout) {
           try {
             const parsed = JSON.parse(stdout.trim());
             if (Array.isArray(parsed.moments)) {
               moments = parsed.moments;
             }
+            if (Array.isArray(parsed.unique_defects)) {
+              uniqueDefectsList = parsed.unique_defects;
+            } else if (moments.length > 0) {
+              // Fallback: pick best moment per track_id
+              const seen = new Map();
+              for (const m of moments) {
+                const tid = m.track_id !== undefined ? m.track_id : m.time;
+                if (!seen.has(tid) || m.conf > seen.get(tid).conf) {
+                  seen.set(tid, m);
+                }
+              }
+              uniqueDefectsList = Array.from(seen.values());
+            }
           } catch (e) {
             console.error("Failed to parse YOLO output:", e);
           }
         }
 
-        const generatedDefects = moments.map((m: any) => {
-          const defId = nextDefectId++;
+        const cleanFileId = cleanName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
+        const generatedDefects = uniqueDefectsList.map((m: any, idx: number) => {
+          const trackNum = m.track_id !== undefined && m.track_id !== null ? m.track_id : idx + 1;
+          const detectionId = `DET-TRK-${cleanFileId}-${trackNum}`;
+
+          // Check if already exists in DB
+          const existing = municipalDB.getDefects().find((d) => d.detection_id === detectionId);
+          const defId = existing ? existing.id : nextDefectId++;
+
           const defectItem: DefectItem = {
             id: defId,
-            detection_id: `DET-VID-${String(defId).padStart(3, "0")}`,
+            detection_id: detectionId,
             defect_type: m.class_name,
             class_name: m.class_name,
             latitude: lat + (m.time * 0.00008),
@@ -1429,14 +1450,16 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
               estimated_physical_width_cm: m.wCm || 50,
               estimated_physical_length_cm: m.lCm || 40,
             },
-            first_detected: new Date().toISOString(),
+            first_detected: existing ? existing.first_detected : new Date().toISOString(),
             last_detected: new Date().toISOString(),
             model_version: "YOLOv8-road-v1",
           };
 
           try {
             municipalDB.upsertDefect(defectItem);
-            municipalDB.updateSegmentHealth(segment.segment_id, defectItem.severity === "Critical" ? -4 : -2);
+            if (!existing) {
+              municipalDB.updateSegmentHealth(segment.segment_id, defectItem.severity === "Critical" ? -4 : -2);
+            }
           } catch (e) {
             console.error("Failed to insert video defect:", e);
           }

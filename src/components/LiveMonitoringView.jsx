@@ -437,41 +437,63 @@ export default function LiveMonitoringView({
                     style={{
                       border: '2px dashed #38bdf8',
                       borderRadius: '12px',
-                      padding: '36px 24px',
+                      padding: '24px 20px',
                       textAlign: 'center',
-                      backgroundColor: 'rgba(56, 189, 248, 0.05)',
-                      maxWidth: '480px',
+                      backgroundColor: 'rgba(56, 189, 248, 0.04)',
+                      maxWidth: '540px',
                       width: '100%'
                     }}
                   >
-                    <Upload size={38} color="#38bdf8" style={{ margin: '0 auto 12px auto' }} />
-                    <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#f8fafc', fontWeight: '700' }}>
+                    <Upload size={36} color="#38bdf8" style={{ margin: '0 auto 10px auto' }} />
+                    <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#f8fafc', fontWeight: '700' }}>
                       Upload Real Road Video or Photo
                     </h3>
-                    <p style={{ margin: '0 0 18px 0', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
-                      Select any video or photo of real asphalt, potholes, or cracks from your phone, dashcam, or drone.
-                      YOLOv8-road-v1 will run inference and display detections with bounding boxes.
+                    <p style={{ margin: '0 0 16px 0', fontSize: '11px', color: '#94a3b8', lineHeight: 1.5 }}>
+                      Select any video or photo of real road surfaces (potholes, cracks, patches) from your phone, dashcam, or drone. Real YOLOv8 AI will detect and display single tracked bounding boxes.
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+
+                    {/* Primary Browse Action */}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         style={{
                           backgroundColor: '#0284c7',
                           color: '#ffffff',
                           border: 'none',
-                          padding: '10px 20px',
+                          padding: '10px 22px',
                           borderRadius: '6px',
                           fontSize: '12px',
                           fontWeight: '700',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '6px'
+                          gap: '6px',
+                          boxShadow: '0 2px 10px rgba(2, 132, 199, 0.4)'
                         }}
                       >
                         <Upload size={14} />
-                        <span>Browse Device Files</span>
+                        <span>Browse Video / Photo from Device</span>
                       </button>
+                    </div>
+
+                    {/* Quick-Test Presets Divider */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      margin: '12px 0',
+                      color: '#64748b',
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      textTransform: 'uppercase'
+                    }}>
+                      <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
+                      <span>Or Test Instant Real Road Footage</span>
+                      <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
+                    </div>
+
+                    {/* Quick-Test Buttons */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                       <button
                         onClick={() => {
                           setUploadedFile({ name: 'real_dashcam.mp4', type: 'video/mp4', size: 10257801 });
@@ -479,20 +501,72 @@ export default function LiveMonitoringView({
                         }}
                         style={{
                           backgroundColor: '#1e293b',
-                          color: '#38bdf8',
-                          border: '1px solid #38bdf8',
-                          padding: '10px 18px',
+                          color: '#ef4444',
+                          border: '1px solid #ef4444',
+                          padding: '8px 6px',
                           borderRadius: '6px',
-                          fontSize: '12px',
+                          fontSize: '11px',
                           fontWeight: '700',
                           cursor: 'pointer',
                           display: 'flex',
+                          flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '6px'
+                          gap: '4px'
                         }}
                       >
-                        <Play size={14} />
-                        <span>Load Sample Road Video</span>
+                        <span style={{ fontSize: '14px' }}>🎯</span>
+                        <span>Real Potholes</span>
+                        <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '400' }}>Active Potholes</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setUploadedFile({ name: 'shadows_and_cracks.mp4', type: 'video/mp4', size: 8400000 });
+                          setUploadedPreview('/videos/shadows_and_cracks.mp4');
+                        }}
+                        style={{
+                          backgroundColor: '#1e293b',
+                          color: '#f59e0b',
+                          border: '1px solid #f59e0b',
+                          padding: '8px 6px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span style={{ fontSize: '14px' }}>⚡</span>
+                        <span>Cracks &amp; Fatigue</span>
+                        <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '400' }}>Surface Cracks</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setUploadedFile({ name: 'clean_highway.mp4', type: 'video/mp4', size: 6800000 });
+                          setUploadedPreview('/videos/clean_highway.mp4');
+                        }}
+                        style={{
+                          backgroundColor: '#1e293b',
+                          color: '#22c55e',
+                          border: '1px solid #22c55e',
+                          padding: '8px 6px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span style={{ fontSize: '14px' }}>🛣️</span>
+                        <span>Clean Road</span>
+                        <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '400' }}>0 False Alarms</span>
                       </button>
                     </div>
                   </div>
@@ -628,6 +702,25 @@ export default function LiveMonitoringView({
                       gap: '8px'
                     }}>
                       <button
+                        onClick={() => {
+                          setUploadedFile(null);
+                          setUploadedPreview(null);
+                          setUploadResult(null);
+                        }}
+                        style={{
+                          backgroundColor: '#0284c7',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '6px 14px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ⬅️ Return to Upload Hub
+                      </button>
+                      <button
                         onClick={() => fileInputRef.current?.click()}
                         style={{
                           backgroundColor: 'rgba(15, 23, 42, 0.9)',
@@ -640,7 +733,7 @@ export default function LiveMonitoringView({
                           cursor: 'pointer'
                         }}
                       >
-                        Upload Another File
+                        Browse Another File
                       </button>
                       <button
                         onClick={() => {
