@@ -1,0 +1,8992 @@
+{
+  "real_dashcam.mp4": {
+    "total_defects": 26,
+    "unique_defects": [
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": 1,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 87.9,
+        "lCm": 22.3,
+        "bbox": {
+          "x": 0,
+          "y": 375,
+          "w": 625,
+          "h": 134,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": 2,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.8,
+        "severity": "Critical",
+        "wCm": 53.7,
+        "lCm": 25.5,
+        "bbox": {
+          "x": 134,
+          "y": 482,
+          "w": 382,
+          "h": 153,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#03",
+        "track_id": 3,
+        "time": 1.6,
+        "class_name": "pothole",
+        "conf": 0.55,
+        "severity": "High",
+        "wCm": 102.9,
+        "lCm": 35.0,
+        "bbox": {
+          "x": 0,
+          "y": 346,
+          "w": 732,
+          "h": 210,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#17",
+        "track_id": 17,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.95,
+        "severity": "Critical",
+        "wCm": 21.9,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 833,
+          "y": 340,
+          "w": 156,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#26",
+        "track_id": 26,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 27.6,
+        "lCm": 10.8,
+        "bbox": {
+          "x": 925,
+          "y": 382,
+          "w": 196,
+          "h": 65,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": 27,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.93,
+        "severity": "Critical",
+        "wCm": 24.6,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 718,
+          "y": 414,
+          "w": 175,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#30",
+        "track_id": 30,
+        "time": 2.0,
+        "class_name": "pothole",
+        "conf": 0.33,
+        "severity": "Medium",
+        "wCm": 93.4,
+        "lCm": 45.5,
+        "bbox": {
+          "x": 0,
+          "y": 430,
+          "w": 664,
+          "h": 273,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 5.8,
+        "class_name": "pothole",
+        "conf": 0.3,
+        "severity": "Medium",
+        "wCm": 50.8,
+        "lCm": 14.5,
+        "bbox": {
+          "x": 0,
+          "y": 472,
+          "w": 361,
+          "h": 87,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#39",
+        "track_id": 39,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 71.0,
+        "lCm": 27.0,
+        "bbox": {
+          "x": 774,
+          "y": 329,
+          "w": 505,
+          "h": 162,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#54",
+        "track_id": 54,
+        "time": 4.6,
+        "class_name": "pothole",
+        "conf": 0.74,
+        "severity": "High",
+        "wCm": 68.5,
+        "lCm": 28.5,
+        "bbox": {
+          "x": 0,
+          "y": 447,
+          "w": 487,
+          "h": 171,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 9.6,
+        "class_name": "pothole",
+        "conf": 0.59,
+        "severity": "High",
+        "wCm": 96.8,
+        "lCm": 32.5,
+        "bbox": {
+          "x": 198,
+          "y": 511,
+          "w": 688,
+          "h": 195,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#96",
+        "track_id": 96,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 35.3,
+        "lCm": 8.3,
+        "bbox": {
+          "x": 0,
+          "y": 279,
+          "w": 251,
+          "h": 50,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 13.4,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 82.3,
+        "lCm": 25.3,
+        "bbox": {
+          "x": 62,
+          "y": 523,
+          "w": 585,
+          "h": 152,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#107",
+        "track_id": 107,
+        "time": 12.6,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 25.7,
+        "lCm": 9.7,
+        "bbox": {
+          "x": 330,
+          "y": 317,
+          "w": 183,
+          "h": 58,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#118",
+        "track_id": 118,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.63,
+        "severity": "High",
+        "wCm": 53.3,
+        "lCm": 18.8,
+        "bbox": {
+          "x": 900,
+          "y": 249,
+          "w": 379,
+          "h": 113,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#175",
+        "track_id": 175,
+        "time": 10.2,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 103.6,
+        "lCm": 27.8,
+        "bbox": {
+          "x": 57,
+          "y": 491,
+          "w": 737,
+          "h": 167,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#187",
+        "track_id": 187,
+        "time": 10.8,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 72.3,
+        "lCm": 31.8,
+        "bbox": {
+          "x": 0,
+          "y": 444,
+          "w": 514,
+          "h": 191,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#206",
+        "track_id": 206,
+        "time": 13.2,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 26.3,
+        "lCm": 10.3,
+        "bbox": {
+          "x": 855,
+          "y": 453,
+          "w": 187,
+          "h": 62,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#226",
+        "track_id": 226,
+        "time": 14.2,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 104.5,
+        "lCm": 31.2,
+        "bbox": {
+          "x": 259,
+          "y": 528,
+          "w": 743,
+          "h": 187,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#242",
+        "track_id": 242,
+        "time": 19.2,
+        "class_name": "pothole",
+        "conf": 0.89,
+        "severity": "Critical",
+        "wCm": 80.6,
+        "lCm": 22.5,
+        "bbox": {
+          "x": 0,
+          "y": 478,
+          "w": 573,
+          "h": 135,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#249",
+        "track_id": 249,
+        "time": 19.0,
+        "class_name": "pothole",
+        "conf": 0.88,
+        "severity": "Critical",
+        "wCm": 76.9,
+        "lCm": 30.3,
+        "bbox": {
+          "x": 732,
+          "y": 341,
+          "w": 547,
+          "h": 182,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#267",
+        "track_id": 267,
+        "time": 22.0,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 67.8,
+        "lCm": 30.2,
+        "bbox": {
+          "x": 569,
+          "y": 475,
+          "w": 482,
+          "h": 181,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#281",
+        "track_id": 281,
+        "time": 23.2,
+        "class_name": "pothole",
+        "conf": 0.76,
+        "severity": "Critical",
+        "wCm": 21.8,
+        "lCm": 7.8,
+        "bbox": {
+          "x": 296,
+          "y": 241,
+          "w": 155,
+          "h": 47,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#287",
+        "track_id": 287,
+        "time": 24.6,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 71.9,
+        "lCm": 22.2,
+        "bbox": {
+          "x": 0,
+          "y": 420,
+          "w": 511,
+          "h": 133,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#289",
+        "track_id": 289,
+        "time": 23.8,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 19.3,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 709,
+          "y": 283,
+          "w": 137,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 26.4,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 39.4,
+        "lCm": 19.5,
+        "bbox": {
+          "x": 568,
+          "y": 336,
+          "w": 280,
+          "h": 117,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      }
+    ],
+    "moments": [
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": 1,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.77,
+        "severity": "Critical",
+        "wCm": 63.6,
+        "lCm": 11.3,
+        "bbox": {
+          "x": 165,
+          "y": 257,
+          "w": 452,
+          "h": 68,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": 2,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 25.0,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 325,
+          "y": 365,
+          "w": 178,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": 1,
+        "time": 0.2,
+        "class_name": "pothole",
+        "conf": 0.96,
+        "severity": "Critical",
+        "wCm": 72.3,
+        "lCm": 12.8,
+        "bbox": {
+          "x": 118,
+          "y": 273,
+          "w": 514,
+          "h": 77,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": 2,
+        "time": 0.2,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 29.5,
+        "lCm": 13.7,
+        "bbox": {
+          "x": 303,
+          "y": 384,
+          "w": 210,
+          "h": 82,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": 1,
+        "time": 0.4,
+        "class_name": "pothole",
+        "conf": 0.88,
+        "severity": "Critical",
+        "wCm": 71.3,
+        "lCm": 12.8,
+        "bbox": {
+          "x": 93,
+          "y": 284,
+          "w": 507,
+          "h": 77,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": 2,
+        "time": 0.4,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 35.0,
+        "lCm": 16.2,
+        "bbox": {
+          "x": 264,
+          "y": 407,
+          "w": 249,
+          "h": 97,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#03",
+        "track_id": 3,
+        "time": 0.4,
+        "class_name": "pothole",
+        "conf": 0.72,
+        "severity": "High",
+        "wCm": 45.1,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 237,
+          "y": 275,
+          "w": 321,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": 1,
+        "time": 0.6,
+        "class_name": "pothole",
+        "conf": 0.71,
+        "severity": "High",
+        "wCm": 69.8,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 69,
+          "y": 299,
+          "w": 496,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": 2,
+        "time": 0.6,
+        "class_name": "pothole",
+        "conf": 0.91,
+        "severity": "Critical",
+        "wCm": 41.8,
+        "lCm": 19.5,
+        "bbox": {
+          "x": 218,
+          "y": 439,
+          "w": 297,
+          "h": 117,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#03",
+        "track_id": 3,
+        "time": 0.6,
+        "class_name": "pothole",
+        "conf": 0.72,
+        "severity": "High",
+        "wCm": 53.2,
+        "lCm": 14.8,
+        "bbox": {
+          "x": 200,
+          "y": 279,
+          "w": 378,
+          "h": 89,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": 1,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.76,
+        "severity": "Critical",
+        "wCm": 80.0,
+        "lCm": 15.2,
+        "bbox": {
+          "x": 0,
+          "y": 318,
+          "w": 569,
+          "h": 91,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": 2,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.8,
+        "severity": "Critical",
+        "wCm": 53.7,
+        "lCm": 25.5,
+        "bbox": {
+          "x": 134,
+          "y": 482,
+          "w": 382,
+          "h": 153,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#03",
+        "track_id": 3,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.45,
+        "severity": "Medium",
+        "wCm": 76.5,
+        "lCm": 21.3,
+        "bbox": {
+          "x": 60,
+          "y": 275,
+          "w": 544,
+          "h": 128,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": 1,
+        "time": 1.0,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 79.5,
+        "lCm": 16.5,
+        "bbox": {
+          "x": 0,
+          "y": 337,
+          "w": 565,
+          "h": 99,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#03",
+        "track_id": 3,
+        "time": 1.0,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 78.5,
+        "lCm": 21.7,
+        "bbox": {
+          "x": 27,
+          "y": 301,
+          "w": 558,
+          "h": 130,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#03",
+        "track_id": 3,
+        "time": 1.2,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 87.9,
+        "lCm": 25.0,
+        "bbox": {
+          "x": 0,
+          "y": 318,
+          "w": 625,
+          "h": 150,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#03",
+        "track_id": 3,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.53,
+        "severity": "Medium",
+        "wCm": 92.5,
+        "lCm": 27.7,
+        "bbox": {
+          "x": 0,
+          "y": 344,
+          "w": 658,
+          "h": 166,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#17",
+        "track_id": 17,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.95,
+        "severity": "Critical",
+        "wCm": 21.9,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 833,
+          "y": 340,
+          "w": 156,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": 1,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 87.9,
+        "lCm": 22.3,
+        "bbox": {
+          "x": 0,
+          "y": 375,
+          "w": 625,
+          "h": 134,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#03",
+        "track_id": 3,
+        "time": 1.6,
+        "class_name": "pothole",
+        "conf": 0.55,
+        "severity": "High",
+        "wCm": 102.9,
+        "lCm": 35.0,
+        "bbox": {
+          "x": 0,
+          "y": 346,
+          "w": 732,
+          "h": 210,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#26",
+        "track_id": 26,
+        "time": 1.8,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 26.7,
+        "lCm": 10.7,
+        "bbox": {
+          "x": 865,
+          "y": 384,
+          "w": 190,
+          "h": 64,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": 27,
+        "time": 1.8,
+        "class_name": "pothole",
+        "conf": 0.7,
+        "severity": "High",
+        "wCm": 12.7,
+        "lCm": 6.3,
+        "bbox": {
+          "x": 658,
+          "y": 277,
+          "w": 90,
+          "h": 38,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#30",
+        "track_id": 30,
+        "time": 1.8,
+        "class_name": "pothole",
+        "conf": 0.53,
+        "severity": "Medium",
+        "wCm": 86.6,
+        "lCm": 39.8,
+        "bbox": {
+          "x": 0,
+          "y": 433,
+          "w": 616,
+          "h": 239,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": 27,
+        "time": 2.0,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 13.4,
+        "lCm": 6.7,
+        "bbox": {
+          "x": 666,
+          "y": 289,
+          "w": 95,
+          "h": 40,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#30",
+        "track_id": 30,
+        "time": 2.0,
+        "class_name": "pothole",
+        "conf": 0.33,
+        "severity": "Medium",
+        "wCm": 93.4,
+        "lCm": 45.5,
+        "bbox": {
+          "x": 0,
+          "y": 430,
+          "w": 664,
+          "h": 273,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 2.0,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 43.5,
+        "lCm": 10.2,
+        "bbox": {
+          "x": 184,
+          "y": 223,
+          "w": 309,
+          "h": 61,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": 27,
+        "time": 2.2,
+        "class_name": "pothole",
+        "conf": 0.69,
+        "severity": "High",
+        "wCm": 16.0,
+        "lCm": 8.0,
+        "bbox": {
+          "x": 666,
+          "y": 302,
+          "w": 114,
+          "h": 48,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 2.2,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 48.9,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 156,
+          "y": 227,
+          "w": 348,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": 27,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.89,
+        "severity": "Critical",
+        "wCm": 16.5,
+        "lCm": 8.2,
+        "bbox": {
+          "x": 683,
+          "y": 328,
+          "w": 117,
+          "h": 49,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 51.3,
+        "lCm": 12.2,
+        "bbox": {
+          "x": 134,
+          "y": 243,
+          "w": 365,
+          "h": 73,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#26",
+        "track_id": 26,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 27.6,
+        "lCm": 10.8,
+        "bbox": {
+          "x": 925,
+          "y": 382,
+          "w": 196,
+          "h": 65,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": 27,
+        "time": 2.6,
+        "class_name": "pothole",
+        "conf": 0.94,
+        "severity": "Critical",
+        "wCm": 18.3,
+        "lCm": 9.2,
+        "bbox": {
+          "x": 695,
+          "y": 354,
+          "w": 130,
+          "h": 55,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 2.6,
+        "class_name": "pothole",
+        "conf": 0.59,
+        "severity": "High",
+        "wCm": 59.6,
+        "lCm": 14.3,
+        "bbox": {
+          "x": 80,
+          "y": 253,
+          "w": 424,
+          "h": 86,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#39",
+        "track_id": 39,
+        "time": 2.6,
+        "class_name": "pothole",
+        "conf": 0.7,
+        "severity": "High",
+        "wCm": 75.0,
+        "lCm": 23.0,
+        "bbox": {
+          "x": 746,
+          "y": 244,
+          "w": 533,
+          "h": 138,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": 27,
+        "time": 2.8,
+        "class_name": "pothole",
+        "conf": 0.9,
+        "severity": "Critical",
+        "wCm": 22.2,
+        "lCm": 11.2,
+        "bbox": {
+          "x": 705,
+          "y": 381,
+          "w": 158,
+          "h": 67,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#39",
+        "track_id": 39,
+        "time": 2.8,
+        "class_name": "pothole",
+        "conf": 0.42,
+        "severity": "Medium",
+        "wCm": 76.8,
+        "lCm": 25.0,
+        "bbox": {
+          "x": 733,
+          "y": 256,
+          "w": 546,
+          "h": 150,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": 27,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.93,
+        "severity": "Critical",
+        "wCm": 24.6,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 718,
+          "y": 414,
+          "w": 175,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#39",
+        "track_id": 39,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.37,
+        "severity": "Medium",
+        "wCm": 76.6,
+        "lCm": 25.8,
+        "bbox": {
+          "x": 734,
+          "y": 268,
+          "w": 545,
+          "h": 155,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 25.3,
+        "lCm": 15.5,
+        "bbox": {
+          "x": 760,
+          "y": 478,
+          "w": 180,
+          "h": 93,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.62,
+        "severity": "High",
+        "wCm": 36.7,
+        "lCm": 14.0,
+        "bbox": {
+          "x": 82,
+          "y": 353,
+          "w": 261,
+          "h": 84,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.57,
+        "severity": "High",
+        "wCm": 31.6,
+        "lCm": 8.3,
+        "bbox": {
+          "x": 219,
+          "y": 283,
+          "w": 225,
+          "h": 50,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 48.5,
+        "lCm": 15.2,
+        "bbox": {
+          "x": 1,
+          "y": 347,
+          "w": 345,
+          "h": 91,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.51,
+        "severity": "Medium",
+        "wCm": 21.8,
+        "lCm": 2.7,
+        "bbox": {
+          "x": 185,
+          "y": 199,
+          "w": 155,
+          "h": 16,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#54",
+        "track_id": 54,
+        "time": 3.4,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 51.5,
+        "lCm": 17.5,
+        "bbox": {
+          "x": 0,
+          "y": 355,
+          "w": 366,
+          "h": 105,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 3.4,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 41.5,
+        "lCm": 10.0,
+        "bbox": {
+          "x": 162,
+          "y": 294,
+          "w": 295,
+          "h": 60,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 3.6,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 42.5,
+        "lCm": 10.2,
+        "bbox": {
+          "x": 148,
+          "y": 314,
+          "w": 302,
+          "h": 61,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#39",
+        "track_id": 39,
+        "time": 3.6,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 71.3,
+        "lCm": 25.8,
+        "bbox": {
+          "x": 772,
+          "y": 317,
+          "w": 507,
+          "h": 155,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 46.1,
+        "lCm": 11.3,
+        "bbox": {
+          "x": 114,
+          "y": 329,
+          "w": 328,
+          "h": 68,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#39",
+        "track_id": 39,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 71.0,
+        "lCm": 27.0,
+        "bbox": {
+          "x": 774,
+          "y": 329,
+          "w": 505,
+          "h": 162,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 4.0,
+        "class_name": "pothole",
+        "conf": 0.81,
+        "severity": "Critical",
+        "wCm": 51.5,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 71,
+          "y": 350,
+          "w": 366,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#54",
+        "track_id": 54,
+        "time": 4.2,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 51.6,
+        "lCm": 16.2,
+        "bbox": {
+          "x": 18,
+          "y": 381,
+          "w": 367,
+          "h": 97,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#54",
+        "track_id": 54,
+        "time": 4.4,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 58.5,
+        "lCm": 20.2,
+        "bbox": {
+          "x": 0,
+          "y": 411,
+          "w": 416,
+          "h": 121,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#54",
+        "track_id": 54,
+        "time": 4.6,
+        "class_name": "pothole",
+        "conf": 0.74,
+        "severity": "High",
+        "wCm": 68.5,
+        "lCm": 28.5,
+        "bbox": {
+          "x": 0,
+          "y": 447,
+          "w": 487,
+          "h": 171,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.65,
+        "severity": "High",
+        "wCm": 36.7,
+        "lCm": 10.7,
+        "bbox": {
+          "x": 187,
+          "y": 308,
+          "w": 261,
+          "h": 64,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#96",
+        "track_id": 96,
+        "time": 5.0,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 34.2,
+        "lCm": 7.0,
+        "bbox": {
+          "x": 0,
+          "y": 269,
+          "w": 243,
+          "h": 42,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#96",
+        "track_id": 96,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 35.3,
+        "lCm": 8.3,
+        "bbox": {
+          "x": 0,
+          "y": 279,
+          "w": 251,
+          "h": 50,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.79,
+        "severity": "Critical",
+        "wCm": 27.8,
+        "lCm": 6.0,
+        "bbox": {
+          "x": 313,
+          "y": 252,
+          "w": 198,
+          "h": 36,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 30.9,
+        "lCm": 6.8,
+        "bbox": {
+          "x": 295,
+          "y": 259,
+          "w": 220,
+          "h": 41,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#107",
+        "track_id": 107,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 50.3,
+        "lCm": 17.8,
+        "bbox": {
+          "x": 390,
+          "y": 437,
+          "w": 358,
+          "h": 107,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#118",
+        "track_id": 118,
+        "time": 5.6,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 40.4,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 880,
+          "y": 222,
+          "w": 287,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#118",
+        "track_id": 118,
+        "time": 5.8,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 47.4,
+        "lCm": 13.7,
+        "bbox": {
+          "x": 881,
+          "y": 224,
+          "w": 337,
+          "h": 82,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#33",
+        "track_id": 33,
+        "time": 5.8,
+        "class_name": "pothole",
+        "conf": 0.3,
+        "severity": "Medium",
+        "wCm": 50.8,
+        "lCm": 14.5,
+        "bbox": {
+          "x": 0,
+          "y": 472,
+          "w": 361,
+          "h": 87,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#118",
+        "track_id": 118,
+        "time": 6.0,
+        "class_name": "pothole",
+        "conf": 0.72,
+        "severity": "High",
+        "wCm": 55.0,
+        "lCm": 16.0,
+        "bbox": {
+          "x": 886,
+          "y": 228,
+          "w": 391,
+          "h": 96,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 6.0,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 37.0,
+        "lCm": 10.7,
+        "bbox": {
+          "x": 234,
+          "y": 304,
+          "w": 263,
+          "h": 64,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#118",
+        "track_id": 118,
+        "time": 6.2,
+        "class_name": "pothole",
+        "conf": 0.59,
+        "severity": "High",
+        "wCm": 53.4,
+        "lCm": 17.0,
+        "bbox": {
+          "x": 899,
+          "y": 241,
+          "w": 380,
+          "h": 102,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 6.2,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 40.5,
+        "lCm": 11.8,
+        "bbox": {
+          "x": 192,
+          "y": 316,
+          "w": 288,
+          "h": 71,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#118",
+        "track_id": 118,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.63,
+        "severity": "High",
+        "wCm": 53.3,
+        "lCm": 18.8,
+        "bbox": {
+          "x": 900,
+          "y": 249,
+          "w": 379,
+          "h": 113,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "Critical",
+        "wCm": 46.8,
+        "lCm": 13.8,
+        "bbox": {
+          "x": 145,
+          "y": 337,
+          "w": 333,
+          "h": 83,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 6.6,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 57.1,
+        "lCm": 17.3,
+        "bbox": {
+          "x": 74,
+          "y": 358,
+          "w": 406,
+          "h": 104,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#16",
+        "track_id": null,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.65,
+        "severity": "High",
+        "wCm": 30.8,
+        "lCm": 14.2,
+        "bbox": {
+          "x": 757,
+          "y": 478,
+          "w": 219,
+          "h": 85,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#16",
+        "track_id": null,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.43,
+        "severity": "Medium",
+        "wCm": 17.4,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 613,
+          "y": 344,
+          "w": 124,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#16",
+        "track_id": null,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 51.2,
+        "lCm": 22.5,
+        "bbox": {
+          "x": 51,
+          "y": 410,
+          "w": 364,
+          "h": 135,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#16",
+        "track_id": null,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 35.7,
+        "lCm": 30.2,
+        "bbox": {
+          "x": 1025,
+          "y": 264,
+          "w": 254,
+          "h": 181,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#16",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.59,
+        "severity": "High",
+        "wCm": 53.7,
+        "lCm": 28.3,
+        "bbox": {
+          "x": 13,
+          "y": 445,
+          "w": 382,
+          "h": 170,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#16",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.44,
+        "severity": "Medium",
+        "wCm": 37.1,
+        "lCm": 16.5,
+        "bbox": {
+          "x": 772,
+          "y": 543,
+          "w": 264,
+          "h": 99,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#16",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 10.4,
+        "lCm": 3.7,
+        "bbox": {
+          "x": 0,
+          "y": 220,
+          "w": 74,
+          "h": 22,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#16",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 52.5,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 318,
+          "y": 274,
+          "w": 373,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.42,
+        "severity": "Medium",
+        "wCm": 42.8,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 267,
+          "y": 285,
+          "w": 304,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 7.4,
+        "class_name": "pothole",
+        "conf": 0.49,
+        "severity": "Medium",
+        "wCm": 46.5,
+        "lCm": 10.7,
+        "bbox": {
+          "x": 248,
+          "y": 295,
+          "w": 331,
+          "h": 64,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.6,
+        "severity": "High",
+        "wCm": 54.0,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 219,
+          "y": 311,
+          "w": 384,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 7.8,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 57.0,
+        "lCm": 13.7,
+        "bbox": {
+          "x": 194,
+          "y": 335,
+          "w": 405,
+          "h": 82,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#107",
+        "track_id": 107,
+        "time": 7.8,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 86.8,
+        "lCm": 31.2,
+        "bbox": {
+          "x": 174,
+          "y": 347,
+          "w": 617,
+          "h": 187,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#107",
+        "track_id": 107,
+        "time": 8.0,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 67.1,
+        "lCm": 24.0,
+        "bbox": {
+          "x": 176,
+          "y": 362,
+          "w": 477,
+          "h": 144,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#175",
+        "track_id": 175,
+        "time": 8.2,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 35.4,
+        "lCm": 8.5,
+        "bbox": {
+          "x": 431,
+          "y": 288,
+          "w": 252,
+          "h": 51,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 8.2,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 72.0,
+        "lCm": 22.3,
+        "bbox": {
+          "x": 76,
+          "y": 418,
+          "w": 512,
+          "h": 134,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#175",
+        "track_id": 175,
+        "time": 8.4,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 41.2,
+        "lCm": 10.0,
+        "bbox": {
+          "x": 413,
+          "y": 304,
+          "w": 293,
+          "h": 60,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 8.4,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 86.6,
+        "lCm": 27.8,
+        "bbox": {
+          "x": 1,
+          "y": 445,
+          "w": 616,
+          "h": 167,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#175",
+        "track_id": 175,
+        "time": 8.6,
+        "class_name": "pothole",
+        "conf": 0.65,
+        "severity": "High",
+        "wCm": 51.9,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 375,
+          "y": 320,
+          "w": 369,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#175",
+        "track_id": 175,
+        "time": 8.8,
+        "class_name": "pothole",
+        "conf": 0.96,
+        "severity": "Critical",
+        "wCm": 60.0,
+        "lCm": 14.8,
+        "bbox": {
+          "x": 348,
+          "y": 343,
+          "w": 427,
+          "h": 89,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#175",
+        "track_id": 175,
+        "time": 9.0,
+        "class_name": "pothole",
+        "conf": 0.96,
+        "severity": "Critical",
+        "wCm": 67.8,
+        "lCm": 17.0,
+        "bbox": {
+          "x": 320,
+          "y": 370,
+          "w": 482,
+          "h": 102,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#175",
+        "track_id": 175,
+        "time": 9.2,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 80.0,
+        "lCm": 20.5,
+        "bbox": {
+          "x": 277,
+          "y": 405,
+          "w": 569,
+          "h": 123,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#17",
+        "track_id": null,
+        "time": 9.4,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 24.3,
+        "lCm": 6.8,
+        "bbox": {
+          "x": 237,
+          "y": 279,
+          "w": 173,
+          "h": 41,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#17",
+        "track_id": null,
+        "time": 9.4,
+        "class_name": "pothole",
+        "conf": 0.48,
+        "severity": "Medium",
+        "wCm": 32.6,
+        "lCm": 9.7,
+        "bbox": {
+          "x": 348,
+          "y": 337,
+          "w": 232,
+          "h": 58,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#17",
+        "track_id": null,
+        "time": 9.4,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 116.4,
+        "lCm": 27.7,
+        "bbox": {
+          "x": 347,
+          "y": 449,
+          "w": 828,
+          "h": 166,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#17",
+        "track_id": null,
+        "time": 9.4,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 66.7,
+        "lCm": 27.0,
+        "bbox": {
+          "x": 342,
+          "y": 448,
+          "w": 474,
+          "h": 162,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#107",
+        "track_id": 107,
+        "time": 9.6,
+        "class_name": "pothole",
+        "conf": 0.79,
+        "severity": "Critical",
+        "wCm": 37.7,
+        "lCm": 13.3,
+        "bbox": {
+          "x": 313,
+          "y": 360,
+          "w": 268,
+          "h": 80,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#91",
+        "track_id": 91,
+        "time": 9.6,
+        "class_name": "pothole",
+        "conf": 0.59,
+        "severity": "High",
+        "wCm": 96.8,
+        "lCm": 32.5,
+        "bbox": {
+          "x": 198,
+          "y": 511,
+          "w": 688,
+          "h": 195,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#187",
+        "track_id": 187,
+        "time": 9.8,
+        "class_name": "pothole",
+        "conf": 0.81,
+        "severity": "Critical",
+        "wCm": 30.2,
+        "lCm": 8.5,
+        "bbox": {
+          "x": 178,
+          "y": 309,
+          "w": 215,
+          "h": 51,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 9.8,
+        "class_name": "pothole",
+        "conf": 0.82,
+        "severity": "Critical",
+        "wCm": 58.5,
+        "lCm": 14.8,
+        "bbox": {
+          "x": 233,
+          "y": 393,
+          "w": 416,
+          "h": 89,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#187",
+        "track_id": 187,
+        "time": 10.0,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 33.6,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 145,
+          "y": 328,
+          "w": 239,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 10.0,
+        "class_name": "pothole",
+        "conf": 0.92,
+        "severity": "Critical",
+        "wCm": 67.5,
+        "lCm": 18.2,
+        "bbox": {
+          "x": 193,
+          "y": 428,
+          "w": 480,
+          "h": 109,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#187",
+        "track_id": 187,
+        "time": 10.2,
+        "class_name": "pothole",
+        "conf": 0.91,
+        "severity": "Critical",
+        "wCm": 42.9,
+        "lCm": 12.2,
+        "bbox": {
+          "x": 87,
+          "y": 350,
+          "w": 305,
+          "h": 73,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#175",
+        "track_id": 175,
+        "time": 10.2,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 103.6,
+        "lCm": 27.8,
+        "bbox": {
+          "x": 57,
+          "y": 491,
+          "w": 737,
+          "h": 167,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#187",
+        "track_id": 187,
+        "time": 10.4,
+        "class_name": "pothole",
+        "conf": 0.92,
+        "severity": "Critical",
+        "wCm": 52.5,
+        "lCm": 15.2,
+        "bbox": {
+          "x": 14,
+          "y": 375,
+          "w": 373,
+          "h": 91,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#187",
+        "track_id": 187,
+        "time": 10.6,
+        "class_name": "pothole",
+        "conf": 0.91,
+        "severity": "Critical",
+        "wCm": 55.1,
+        "lCm": 18.5,
+        "bbox": {
+          "x": 0,
+          "y": 405,
+          "w": 392,
+          "h": 111,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#187",
+        "track_id": 187,
+        "time": 10.8,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 72.3,
+        "lCm": 31.8,
+        "bbox": {
+          "x": 0,
+          "y": 444,
+          "w": 514,
+          "h": 191,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 11.0,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 34.7,
+        "lCm": 31.8,
+        "bbox": {
+          "x": 0,
+          "y": 516,
+          "w": 247,
+          "h": 191,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 11.2,
+        "class_name": "pothole",
+        "conf": 0.34,
+        "severity": "Medium",
+        "wCm": 67.1,
+        "lCm": 13.8,
+        "bbox": {
+          "x": 143,
+          "y": 190,
+          "w": 477,
+          "h": 83,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 11.2,
+        "class_name": "pothole",
+        "conf": 0.33,
+        "severity": "Medium",
+        "wCm": 23.6,
+        "lCm": 18.0,
+        "bbox": {
+          "x": 0,
+          "y": 611,
+          "w": 168,
+          "h": 108,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#107",
+        "track_id": 107,
+        "time": 11.4,
+        "class_name": "pothole",
+        "conf": 0.41,
+        "severity": "Medium",
+        "wCm": 29.4,
+        "lCm": 10.7,
+        "bbox": {
+          "x": 356,
+          "y": 319,
+          "w": 209,
+          "h": 64,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 11.6,
+        "class_name": "pothole",
+        "conf": 0.42,
+        "severity": "Medium",
+        "wCm": 34.0,
+        "lCm": 12.2,
+        "bbox": {
+          "x": 369,
+          "y": 207,
+          "w": 242,
+          "h": 73,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 11.6,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 30.8,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 349,
+          "y": 349,
+          "w": 219,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 11.8,
+        "class_name": "pothole",
+        "conf": 0.43,
+        "severity": "Medium",
+        "wCm": 34.7,
+        "lCm": 11.7,
+        "bbox": {
+          "x": 324,
+          "y": 381,
+          "w": 247,
+          "h": 70,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 11.8,
+        "class_name": "pothole",
+        "conf": 0.33,
+        "severity": "Medium",
+        "wCm": 30.9,
+        "lCm": 15.3,
+        "bbox": {
+          "x": 732,
+          "y": 325,
+          "w": 220,
+          "h": 92,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.0,
+        "class_name": "pothole",
+        "conf": 0.77,
+        "severity": "Critical",
+        "wCm": 39.0,
+        "lCm": 14.2,
+        "bbox": {
+          "x": 305,
+          "y": 419,
+          "w": 277,
+          "h": 85,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.0,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 21.2,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 758,
+          "y": 342,
+          "w": 151,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.0,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 21.1,
+        "lCm": 6.5,
+        "bbox": {
+          "x": 372,
+          "y": 272,
+          "w": 150,
+          "h": 39,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.0,
+        "class_name": "pothole",
+        "conf": 0.38,
+        "severity": "Medium",
+        "wCm": 24.3,
+        "lCm": 9.8,
+        "bbox": {
+          "x": 846,
+          "y": 401,
+          "w": 173,
+          "h": 59,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.2,
+        "class_name": "pothole",
+        "conf": 0.76,
+        "severity": "Critical",
+        "wCm": 46.3,
+        "lCm": 17.7,
+        "bbox": {
+          "x": 265,
+          "y": 476,
+          "w": 329,
+          "h": 106,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.2,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 33.6,
+        "lCm": 13.0,
+        "bbox": {
+          "x": 859,
+          "y": 444,
+          "w": 239,
+          "h": 78,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.2,
+        "class_name": "pothole",
+        "conf": 0.45,
+        "severity": "Medium",
+        "wCm": 22.6,
+        "lCm": 8.3,
+        "bbox": {
+          "x": 364,
+          "y": 283,
+          "w": 161,
+          "h": 50,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.2,
+        "class_name": "pothole",
+        "conf": 0.42,
+        "severity": "Medium",
+        "wCm": 29.8,
+        "lCm": 21.0,
+        "bbox": {
+          "x": 699,
+          "y": 566,
+          "w": 212,
+          "h": 126,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.2,
+        "class_name": "pothole",
+        "conf": 0.4,
+        "severity": "Medium",
+        "wCm": 25.7,
+        "lCm": 10.3,
+        "bbox": {
+          "x": 787,
+          "y": 377,
+          "w": 183,
+          "h": 62,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#18",
+        "track_id": null,
+        "time": 12.2,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 27.0,
+        "lCm": 11.2,
+        "bbox": {
+          "x": 900,
+          "y": 449,
+          "w": 192,
+          "h": 67,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#206",
+        "track_id": 206,
+        "time": 12.4,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 38.8,
+        "lCm": 15.0,
+        "bbox": {
+          "x": 810,
+          "y": 424,
+          "w": 276,
+          "h": 90,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#107",
+        "track_id": 107,
+        "time": 12.4,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 23.5,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 343,
+          "y": 304,
+          "w": 167,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#107",
+        "track_id": 107,
+        "time": 12.6,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 25.7,
+        "lCm": 9.7,
+        "bbox": {
+          "x": 330,
+          "y": 317,
+          "w": 183,
+          "h": 58,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#19",
+        "track_id": null,
+        "time": 12.8,
+        "class_name": "pothole",
+        "conf": 0.72,
+        "severity": "High",
+        "wCm": 45.0,
+        "lCm": 25.7,
+        "bbox": {
+          "x": 957,
+          "y": 556,
+          "w": 320,
+          "h": 154,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#19",
+        "track_id": null,
+        "time": 12.8,
+        "class_name": "pothole",
+        "conf": 0.69,
+        "severity": "High",
+        "wCm": 29.2,
+        "lCm": 10.2,
+        "bbox": {
+          "x": 308,
+          "y": 364,
+          "w": 208,
+          "h": 61,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#19",
+        "track_id": null,
+        "time": 12.8,
+        "class_name": "pothole",
+        "conf": 0.45,
+        "severity": "Medium",
+        "wCm": 17.2,
+        "lCm": 7.3,
+        "bbox": {
+          "x": 785,
+          "y": 358,
+          "w": 122,
+          "h": 44,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#19",
+        "track_id": null,
+        "time": 13.0,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 16.2,
+        "lCm": 7.7,
+        "bbox": {
+          "x": 831,
+          "y": 400,
+          "w": 115,
+          "h": 46,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#19",
+        "track_id": null,
+        "time": 13.0,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 33.6,
+        "lCm": 14.2,
+        "bbox": {
+          "x": 277,
+          "y": 395,
+          "w": 239,
+          "h": 85,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#19",
+        "track_id": null,
+        "time": 13.0,
+        "class_name": "pothole",
+        "conf": 0.44,
+        "severity": "Medium",
+        "wCm": 34.5,
+        "lCm": 9.3,
+        "bbox": {
+          "x": 445,
+          "y": 289,
+          "w": 245,
+          "h": 56,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#206",
+        "track_id": 206,
+        "time": 13.2,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 26.3,
+        "lCm": 10.3,
+        "bbox": {
+          "x": 855,
+          "y": 453,
+          "w": 187,
+          "h": 62,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#105",
+        "track_id": 105,
+        "time": 13.4,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 82.3,
+        "lCm": 25.3,
+        "bbox": {
+          "x": 62,
+          "y": 523,
+          "w": 585,
+          "h": 152,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#19",
+        "track_id": null,
+        "time": 13.6,
+        "class_name": "pothole",
+        "conf": 0.93,
+        "severity": "Critical",
+        "wCm": 74.2,
+        "lCm": 22.0,
+        "bbox": {
+          "x": 397,
+          "y": 376,
+          "w": 528,
+          "h": 132,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#226",
+        "track_id": 226,
+        "time": 13.8,
+        "class_name": "pothole",
+        "conf": 0.96,
+        "severity": "Critical",
+        "wCm": 88.0,
+        "lCm": 26.0,
+        "bbox": {
+          "x": 358,
+          "y": 409,
+          "w": 626,
+          "h": 156,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#226",
+        "track_id": 226,
+        "time": 14.0,
+        "class_name": "pothole",
+        "conf": 0.96,
+        "severity": "Critical",
+        "wCm": 113.1,
+        "lCm": 33.5,
+        "bbox": {
+          "x": 302,
+          "y": 464,
+          "w": 804,
+          "h": 201,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#226",
+        "track_id": 226,
+        "time": 14.2,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 104.5,
+        "lCm": 31.2,
+        "bbox": {
+          "x": 259,
+          "y": 528,
+          "w": 743,
+          "h": 187,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 14.4,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 35.0,
+        "lCm": 29.3,
+        "bbox": {
+          "x": 1030,
+          "y": 316,
+          "w": 249,
+          "h": 176,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 14.4,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 46.8,
+        "lCm": 18.8,
+        "bbox": {
+          "x": 845,
+          "y": 491,
+          "w": 333,
+          "h": 113,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 14.6,
+        "class_name": "pothole",
+        "conf": 0.4,
+        "severity": "Medium",
+        "wCm": 28.4,
+        "lCm": 32.7,
+        "bbox": {
+          "x": 1077,
+          "y": 338,
+          "w": 202,
+          "h": 196,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 14.6,
+        "class_name": "pothole",
+        "conf": 0.36,
+        "severity": "Medium",
+        "wCm": 54.0,
+        "lCm": 23.7,
+        "bbox": {
+          "x": 895,
+          "y": 567,
+          "w": 384,
+          "h": 142,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 14.6,
+        "class_name": "pothole",
+        "conf": 0.33,
+        "severity": "Medium",
+        "wCm": 66.9,
+        "lCm": 36.0,
+        "bbox": {
+          "x": 803,
+          "y": 335,
+          "w": 476,
+          "h": 216,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 15.2,
+        "class_name": "pothole",
+        "conf": 0.4,
+        "severity": "Medium",
+        "wCm": 18.1,
+        "lCm": 8.2,
+        "bbox": {
+          "x": 718,
+          "y": 267,
+          "w": 129,
+          "h": 49,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 15.6,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 21.5,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 749,
+          "y": 306,
+          "w": 153,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 15.8,
+        "class_name": "pothole",
+        "conf": 0.44,
+        "severity": "Medium",
+        "wCm": 23.1,
+        "lCm": 12.3,
+        "bbox": {
+          "x": 782,
+          "y": 339,
+          "w": 164,
+          "h": 74,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 16.0,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 39.0,
+        "lCm": 16.8,
+        "bbox": {
+          "x": 724,
+          "y": 368,
+          "w": 277,
+          "h": 101,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 16.8,
+        "class_name": "pothole",
+        "conf": 0.7,
+        "severity": "High",
+        "wCm": 23.1,
+        "lCm": 7.7,
+        "bbox": {
+          "x": 14,
+          "y": 334,
+          "w": 164,
+          "h": 46,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 16.8,
+        "class_name": "pothole",
+        "conf": 0.34,
+        "severity": "Medium",
+        "wCm": 36.3,
+        "lCm": 21.0,
+        "bbox": {
+          "x": 795,
+          "y": 557,
+          "w": 258,
+          "h": 126,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 17.0,
+        "class_name": "pothole",
+        "conf": 0.34,
+        "severity": "Medium",
+        "wCm": 39.7,
+        "lCm": 14.8,
+        "bbox": {
+          "x": 685,
+          "y": 296,
+          "w": 282,
+          "h": 89,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 17.2,
+        "class_name": "pothole",
+        "conf": 0.49,
+        "severity": "Medium",
+        "wCm": 23.5,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 368,
+          "y": 338,
+          "w": 167,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 17.2,
+        "class_name": "pothole",
+        "conf": 0.43,
+        "severity": "Medium",
+        "wCm": 42.5,
+        "lCm": 9.0,
+        "bbox": {
+          "x": 70,
+          "y": 274,
+          "w": 302,
+          "h": 54,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#20",
+        "track_id": null,
+        "time": 17.2,
+        "class_name": "pothole",
+        "conf": 0.33,
+        "severity": "Medium",
+        "wCm": 23.9,
+        "lCm": 7.8,
+        "bbox": {
+          "x": 702,
+          "y": 347,
+          "w": 170,
+          "h": 47,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#242",
+        "track_id": 242,
+        "time": 17.4,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 48.9,
+        "lCm": 10.5,
+        "bbox": {
+          "x": 18,
+          "y": 283,
+          "w": 348,
+          "h": 63,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#242",
+        "track_id": 242,
+        "time": 17.6,
+        "class_name": "pothole",
+        "conf": 0.69,
+        "severity": "High",
+        "wCm": 52.3,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 0,
+          "y": 298,
+          "w": 372,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#242",
+        "track_id": 242,
+        "time": 17.8,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 52.0,
+        "lCm": 13.5,
+        "bbox": {
+          "x": 0,
+          "y": 321,
+          "w": 370,
+          "h": 81,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#21",
+        "track_id": null,
+        "time": 18.0,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 27.4,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 292,
+          "y": 287,
+          "w": 195,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#21",
+        "track_id": null,
+        "time": 18.0,
+        "class_name": "pothole",
+        "conf": 0.51,
+        "severity": "Medium",
+        "wCm": 66.7,
+        "lCm": 20.2,
+        "bbox": {
+          "x": 804,
+          "y": 259,
+          "w": 474,
+          "h": 121,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#21",
+        "track_id": null,
+        "time": 18.0,
+        "class_name": "pothole",
+        "conf": 0.47,
+        "severity": "Medium",
+        "wCm": 39.4,
+        "lCm": 19.0,
+        "bbox": {
+          "x": 0,
+          "y": 367,
+          "w": 280,
+          "h": 114,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#249",
+        "track_id": 249,
+        "time": 18.2,
+        "class_name": "pothole",
+        "conf": 0.62,
+        "severity": "High",
+        "wCm": 58.5,
+        "lCm": 17.7,
+        "bbox": {
+          "x": 829,
+          "y": 274,
+          "w": 416,
+          "h": 106,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#249",
+        "track_id": 249,
+        "time": 18.4,
+        "class_name": "pothole",
+        "conf": 0.59,
+        "severity": "High",
+        "wCm": 65.5,
+        "lCm": 20.3,
+        "bbox": {
+          "x": 813,
+          "y": 294,
+          "w": 466,
+          "h": 122,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#249",
+        "track_id": 249,
+        "time": 18.6,
+        "class_name": "pothole",
+        "conf": 0.6,
+        "severity": "High",
+        "wCm": 67.6,
+        "lCm": 22.0,
+        "bbox": {
+          "x": 798,
+          "y": 306,
+          "w": 481,
+          "h": 132,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#249",
+        "track_id": 249,
+        "time": 18.8,
+        "class_name": "pothole",
+        "conf": 0.9,
+        "severity": "Critical",
+        "wCm": 69.3,
+        "lCm": 26.0,
+        "bbox": {
+          "x": 786,
+          "y": 323,
+          "w": 493,
+          "h": 156,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#242",
+        "track_id": 242,
+        "time": 18.8,
+        "class_name": "pothole",
+        "conf": 0.92,
+        "severity": "Critical",
+        "wCm": 62.7,
+        "lCm": 13.8,
+        "bbox": {
+          "x": 56,
+          "y": 400,
+          "w": 446,
+          "h": 83,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#249",
+        "track_id": 249,
+        "time": 19.0,
+        "class_name": "pothole",
+        "conf": 0.88,
+        "severity": "Critical",
+        "wCm": 76.9,
+        "lCm": 30.3,
+        "bbox": {
+          "x": 732,
+          "y": 341,
+          "w": 547,
+          "h": 182,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#242",
+        "track_id": 242,
+        "time": 19.0,
+        "class_name": "pothole",
+        "conf": 0.95,
+        "severity": "Critical",
+        "wCm": 73.1,
+        "lCm": 16.7,
+        "bbox": {
+          "x": 5,
+          "y": 432,
+          "w": 520,
+          "h": 100,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#242",
+        "track_id": 242,
+        "time": 19.2,
+        "class_name": "pothole",
+        "conf": 0.89,
+        "severity": "Critical",
+        "wCm": 80.6,
+        "lCm": 22.5,
+        "bbox": {
+          "x": 0,
+          "y": 478,
+          "w": 573,
+          "h": 135,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 19.4,
+        "class_name": "pothole",
+        "conf": 0.6,
+        "severity": "High",
+        "wCm": 58.2,
+        "lCm": 23.5,
+        "bbox": {
+          "x": 1,
+          "y": 569,
+          "w": 414,
+          "h": 141,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 19.6,
+        "class_name": "pothole",
+        "conf": 0.38,
+        "severity": "Medium",
+        "wCm": 37.4,
+        "lCm": 23.5,
+        "bbox": {
+          "x": 72,
+          "y": 487,
+          "w": 266,
+          "h": 141,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 19.8,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 81.6,
+        "lCm": 17.0,
+        "bbox": {
+          "x": 50,
+          "y": 348,
+          "w": 580,
+          "h": 102,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 20.0,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 91.8,
+        "lCm": 21.5,
+        "bbox": {
+          "x": 21,
+          "y": 384,
+          "w": 653,
+          "h": 129,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 20.2,
+        "class_name": "pothole",
+        "conf": 0.56,
+        "severity": "High",
+        "wCm": 76.5,
+        "lCm": 22.5,
+        "bbox": {
+          "x": 137,
+          "y": 424,
+          "w": 544,
+          "h": 135,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 20.4,
+        "class_name": "pothole",
+        "conf": 0.37,
+        "severity": "Medium",
+        "wCm": 19.1,
+        "lCm": 7.8,
+        "bbox": {
+          "x": 217,
+          "y": 381,
+          "w": 136,
+          "h": 47,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 20.6,
+        "class_name": "pothole",
+        "conf": 0.57,
+        "severity": "High",
+        "wCm": 23.2,
+        "lCm": 11.7,
+        "bbox": {
+          "x": 173,
+          "y": 407,
+          "w": 165,
+          "h": 70,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 20.6,
+        "class_name": "pothole",
+        "conf": 0.49,
+        "severity": "Medium",
+        "wCm": 19.8,
+        "lCm": 7.3,
+        "bbox": {
+          "x": 216,
+          "y": 331,
+          "w": 141,
+          "h": 44,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#22",
+        "track_id": null,
+        "time": 20.6,
+        "class_name": "pothole",
+        "conf": 0.37,
+        "severity": "Medium",
+        "wCm": 25.6,
+        "lCm": 11.3,
+        "bbox": {
+          "x": 561,
+          "y": 261,
+          "w": 182,
+          "h": 68,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#267",
+        "track_id": 267,
+        "time": 20.8,
+        "class_name": "pothole",
+        "conf": 0.66,
+        "severity": "High",
+        "wCm": 23.6,
+        "lCm": 10.5,
+        "bbox": {
+          "x": 581,
+          "y": 275,
+          "w": 168,
+          "h": 63,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#267",
+        "track_id": 267,
+        "time": 21.0,
+        "class_name": "pothole",
+        "conf": 0.7,
+        "severity": "High",
+        "wCm": 25.7,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 589,
+          "y": 287,
+          "w": 183,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#267",
+        "track_id": 267,
+        "time": 21.2,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 30.1,
+        "lCm": 13.3,
+        "bbox": {
+          "x": 590,
+          "y": 309,
+          "w": 214,
+          "h": 80,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#267",
+        "track_id": 267,
+        "time": 21.4,
+        "class_name": "pothole",
+        "conf": 0.7,
+        "severity": "High",
+        "wCm": 34.0,
+        "lCm": 15.0,
+        "bbox": {
+          "x": 594,
+          "y": 338,
+          "w": 242,
+          "h": 90,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#267",
+        "track_id": 267,
+        "time": 21.6,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 42.6,
+        "lCm": 18.8,
+        "bbox": {
+          "x": 583,
+          "y": 377,
+          "w": 303,
+          "h": 113,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#267",
+        "track_id": 267,
+        "time": 21.8,
+        "class_name": "pothole",
+        "conf": 0.9,
+        "severity": "Critical",
+        "wCm": 51.6,
+        "lCm": 22.7,
+        "bbox": {
+          "x": 579,
+          "y": 421,
+          "w": 367,
+          "h": 136,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#267",
+        "track_id": 267,
+        "time": 22.0,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 67.8,
+        "lCm": 30.2,
+        "bbox": {
+          "x": 569,
+          "y": 475,
+          "w": 482,
+          "h": 181,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#23",
+        "track_id": null,
+        "time": 22.2,
+        "class_name": "pothole",
+        "conf": 0.37,
+        "severity": "Medium",
+        "wCm": 13.5,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 670,
+          "y": 296,
+          "w": 96,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#23",
+        "track_id": null,
+        "time": 22.4,
+        "class_name": "pothole",
+        "conf": 0.56,
+        "severity": "High",
+        "wCm": 15.9,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 682,
+          "y": 326,
+          "w": 113,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#23",
+        "track_id": null,
+        "time": 22.6,
+        "class_name": "pothole",
+        "conf": 0.48,
+        "severity": "Medium",
+        "wCm": 18.1,
+        "lCm": 10.7,
+        "bbox": {
+          "x": 698,
+          "y": 352,
+          "w": 129,
+          "h": 64,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#23",
+        "track_id": null,
+        "time": 22.6,
+        "class_name": "pothole",
+        "conf": 0.36,
+        "severity": "Medium",
+        "wCm": 17.4,
+        "lCm": 9.0,
+        "bbox": {
+          "x": 354,
+          "y": 330,
+          "w": 124,
+          "h": 54,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#23",
+        "track_id": null,
+        "time": 22.8,
+        "class_name": "pothole",
+        "conf": 0.72,
+        "severity": "High",
+        "wCm": 21.7,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 720,
+          "y": 404,
+          "w": 154,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#23",
+        "track_id": null,
+        "time": 22.8,
+        "class_name": "pothole",
+        "conf": 0.62,
+        "severity": "High",
+        "wCm": 22.8,
+        "lCm": 10.2,
+        "bbox": {
+          "x": 312,
+          "y": 370,
+          "w": 162,
+          "h": 61,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#23",
+        "track_id": null,
+        "time": 23.0,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 24.2,
+        "lCm": 13.7,
+        "bbox": {
+          "x": 293,
+          "y": 404,
+          "w": 172,
+          "h": 82,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#23",
+        "track_id": null,
+        "time": 23.0,
+        "class_name": "pothole",
+        "conf": 0.66,
+        "severity": "High",
+        "wCm": 25.3,
+        "lCm": 9.2,
+        "bbox": {
+          "x": 292,
+          "y": 227,
+          "w": 180,
+          "h": 55,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#281",
+        "track_id": 281,
+        "time": 23.2,
+        "class_name": "pothole",
+        "conf": 0.76,
+        "severity": "Critical",
+        "wCm": 21.8,
+        "lCm": 7.8,
+        "bbox": {
+          "x": 296,
+          "y": 241,
+          "w": 155,
+          "h": 47,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#24",
+        "track_id": null,
+        "time": 23.4,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 33.6,
+        "lCm": 23.2,
+        "bbox": {
+          "x": 211,
+          "y": 559,
+          "w": 239,
+          "h": 139,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#24",
+        "track_id": null,
+        "time": 23.4,
+        "class_name": "pothole",
+        "conf": 0.65,
+        "severity": "High",
+        "wCm": 17.6,
+        "lCm": 7.8,
+        "bbox": {
+          "x": 680,
+          "y": 251,
+          "w": 125,
+          "h": 47,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#24",
+        "track_id": null,
+        "time": 23.4,
+        "class_name": "pothole",
+        "conf": 0.57,
+        "severity": "High",
+        "wCm": 29.5,
+        "lCm": 7.5,
+        "bbox": {
+          "x": 264,
+          "y": 262,
+          "w": 210,
+          "h": 45,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#24",
+        "track_id": null,
+        "time": 23.4,
+        "class_name": "pothole",
+        "conf": 0.48,
+        "severity": "Medium",
+        "wCm": 45.3,
+        "lCm": 13.8,
+        "bbox": {
+          "x": 557,
+          "y": 333,
+          "w": 322,
+          "h": 83,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#287",
+        "track_id": 287,
+        "time": 23.6,
+        "class_name": "pothole",
+        "conf": 0.77,
+        "severity": "Critical",
+        "wCm": 44.2,
+        "lCm": 11.2,
+        "bbox": {
+          "x": 201,
+          "y": 268,
+          "w": 314,
+          "h": 67,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#287",
+        "track_id": 287,
+        "time": 23.8,
+        "class_name": "pothole",
+        "conf": 0.79,
+        "severity": "Critical",
+        "wCm": 44.6,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 190,
+          "y": 285,
+          "w": 317,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#289",
+        "track_id": 289,
+        "time": 23.8,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 19.3,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 709,
+          "y": 283,
+          "w": 137,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#287",
+        "track_id": 287,
+        "time": 24.0,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 51.7,
+        "lCm": 13.3,
+        "bbox": {
+          "x": 141,
+          "y": 310,
+          "w": 368,
+          "h": 80,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#287",
+        "track_id": 287,
+        "time": 24.2,
+        "class_name": "pothole",
+        "conf": 0.82,
+        "severity": "Critical",
+        "wCm": 54.0,
+        "lCm": 14.0,
+        "bbox": {
+          "x": 106,
+          "y": 339,
+          "w": 384,
+          "h": 84,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#287",
+        "track_id": 287,
+        "time": 24.4,
+        "class_name": "pothole",
+        "conf": 0.76,
+        "severity": "Critical",
+        "wCm": 67.2,
+        "lCm": 17.8,
+        "bbox": {
+          "x": 18,
+          "y": 377,
+          "w": 478,
+          "h": 107,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#287",
+        "track_id": 287,
+        "time": 24.6,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 71.9,
+        "lCm": 22.2,
+        "bbox": {
+          "x": 0,
+          "y": 420,
+          "w": 511,
+          "h": 133,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#26",
+        "track_id": null,
+        "time": 24.8,
+        "class_name": "pothole",
+        "conf": 0.47,
+        "severity": "Medium",
+        "wCm": 27.8,
+        "lCm": 12.3,
+        "bbox": {
+          "x": 693,
+          "y": 337,
+          "w": 198,
+          "h": 74,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#26",
+        "track_id": null,
+        "time": 24.8,
+        "class_name": "pothole",
+        "conf": 0.41,
+        "severity": "Medium",
+        "wCm": 51.6,
+        "lCm": 35.0,
+        "bbox": {
+          "x": 0,
+          "y": 495,
+          "w": 367,
+          "h": 210,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#26",
+        "track_id": null,
+        "time": 24.8,
+        "class_name": "pothole",
+        "conf": 0.41,
+        "severity": "Medium",
+        "wCm": 14.8,
+        "lCm": 6.8,
+        "bbox": {
+          "x": 572,
+          "y": 199,
+          "w": 105,
+          "h": 41,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#26",
+        "track_id": null,
+        "time": 24.8,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 26.2,
+        "lCm": 7.5,
+        "bbox": {
+          "x": 818,
+          "y": 233,
+          "w": 186,
+          "h": 45,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 25.0,
+        "class_name": "pothole",
+        "conf": 0.56,
+        "severity": "High",
+        "wCm": 15.7,
+        "lCm": 7.3,
+        "bbox": {
+          "x": 570,
+          "y": 204,
+          "w": 112,
+          "h": 44,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 25.2,
+        "class_name": "pothole",
+        "conf": 0.69,
+        "severity": "High",
+        "wCm": 18.7,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 569,
+          "y": 211,
+          "w": 133,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 25.4,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 22.6,
+        "lCm": 10.5,
+        "bbox": {
+          "x": 569,
+          "y": 223,
+          "w": 161,
+          "h": 63,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 25.6,
+        "class_name": "pothole",
+        "conf": 0.71,
+        "severity": "High",
+        "wCm": 25.3,
+        "lCm": 11.8,
+        "bbox": {
+          "x": 574,
+          "y": 239,
+          "w": 180,
+          "h": 71,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 25.8,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 27.3,
+        "lCm": 12.8,
+        "bbox": {
+          "x": 589,
+          "y": 252,
+          "w": 194,
+          "h": 77,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 26.0,
+        "class_name": "pothole",
+        "conf": 0.59,
+        "severity": "High",
+        "wCm": 28.8,
+        "lCm": 13.7,
+        "bbox": {
+          "x": 581,
+          "y": 277,
+          "w": 205,
+          "h": 82,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 26.2,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 29.0,
+        "lCm": 14.0,
+        "bbox": {
+          "x": 586,
+          "y": 312,
+          "w": 206,
+          "h": 84,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#303",
+        "track_id": 303,
+        "time": 26.4,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 39.4,
+        "lCm": 19.5,
+        "bbox": {
+          "x": 568,
+          "y": 336,
+          "w": 280,
+          "h": 117,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": null,
+        "time": 26.6,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 31.1,
+        "lCm": 15.8,
+        "bbox": {
+          "x": 625,
+          "y": 445,
+          "w": 221,
+          "h": 95,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": null,
+        "time": 26.8,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 39.0,
+        "lCm": 27.0,
+        "bbox": {
+          "x": 631,
+          "y": 522,
+          "w": 277,
+          "h": 162,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": null,
+        "time": 27.0,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 29.1,
+        "lCm": 17.0,
+        "bbox": {
+          "x": 658,
+          "y": 469,
+          "w": 207,
+          "h": 102,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": null,
+        "time": 27.0,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 25.0,
+        "lCm": 9.8,
+        "bbox": {
+          "x": 1001,
+          "y": 315,
+          "w": 178,
+          "h": 59,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": null,
+        "time": 27.2,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 44.9,
+        "lCm": 22.7,
+        "bbox": {
+          "x": 689,
+          "y": 573,
+          "w": 319,
+          "h": 136,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": null,
+        "time": 27.2,
+        "class_name": "pothole",
+        "conf": 0.36,
+        "severity": "Medium",
+        "wCm": 21.8,
+        "lCm": 11.8,
+        "bbox": {
+          "x": 1113,
+          "y": 353,
+          "w": 155,
+          "h": 71,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#27",
+        "track_id": null,
+        "time": 27.2,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 56.8,
+        "lCm": 27.5,
+        "bbox": {
+          "x": 4,
+          "y": 312,
+          "w": 404,
+          "h": 165,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      }
+    ]
+  },
+  "sample_road.mp4": {
+    "total_defects": 0,
+    "unique_defects": [],
+    "moments": []
+  },
+  "shadows_and_cracks.mp4": {
+    "total_defects": 0,
+    "unique_defects": [],
+    "moments": []
+  },
+  "clean_highway.mp4": {
+    "total_defects": 0,
+    "unique_defects": [],
+    "moments": [
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 36.9,
+        "lCm": 32.2,
+        "bbox": {
+          "x": 761,
+          "y": 93,
+          "w": 197,
+          "h": 145,
+          "video_w": 960,
+          "video_h": 540
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.44,
+        "severity": "Medium",
+        "wCm": 30.4,
+        "lCm": 34.7,
+        "bbox": {
+          "x": 797,
+          "y": 86,
+          "w": 162,
+          "h": 156,
+          "video_w": 960,
+          "video_h": 540
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 27.2,
+        "lCm": 32.9,
+        "bbox": {
+          "x": 814,
+          "y": 75,
+          "w": 145,
+          "h": 148,
+          "video_w": 960,
+          "video_h": 540
+        }
+      }
+    ]
+  },
+  "video_15g.mp4": {
+    "total_defects": 1,
+    "unique_defects": [
+      {
+        "pothole_id": "PTH-#344",
+        "track_id": 344,
+        "time": 5.0,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 82.5,
+        "lCm": 31.7,
+        "bbox": {
+          "x": 692,
+          "y": 338,
+          "w": 587,
+          "h": 190,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      }
+    ],
+    "moments": [
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.88,
+        "severity": "Critical",
+        "wCm": 113.5,
+        "lCm": 37.8,
+        "bbox": {
+          "x": 330,
+          "y": 477,
+          "w": 807,
+          "h": 227,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.2,
+        "class_name": "pothole",
+        "conf": 0.39,
+        "severity": "Medium",
+        "wCm": 81.7,
+        "lCm": 28.3,
+        "bbox": {
+          "x": 292,
+          "y": 549,
+          "w": 581,
+          "h": 170,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.2,
+        "class_name": "pothole",
+        "conf": 0.37,
+        "severity": "Medium",
+        "wCm": 35.4,
+        "lCm": 13.7,
+        "bbox": {
+          "x": 808,
+          "y": 420,
+          "w": 252,
+          "h": 82,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.4,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 36.1,
+        "lCm": 29.2,
+        "bbox": {
+          "x": 1022,
+          "y": 314,
+          "w": 257,
+          "h": 175,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.4,
+        "class_name": "pothole",
+        "conf": 0.34,
+        "severity": "Medium",
+        "wCm": 48.2,
+        "lCm": 19.5,
+        "bbox": {
+          "x": 837,
+          "y": 488,
+          "w": 343,
+          "h": 117,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.37,
+        "severity": "Medium",
+        "wCm": 22.4,
+        "lCm": 9.7,
+        "bbox": {
+          "x": 375,
+          "y": 335,
+          "w": 159,
+          "h": 58,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 3.4,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 24.5,
+        "lCm": 10.3,
+        "bbox": {
+          "x": 361,
+          "y": 365,
+          "w": 174,
+          "h": 62,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 40.5,
+        "lCm": 14.2,
+        "bbox": {
+          "x": 0,
+          "y": 328,
+          "w": 288,
+          "h": 85,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 4.0,
+        "class_name": "pothole",
+        "conf": 0.37,
+        "severity": "Medium",
+        "wCm": 65.7,
+        "lCm": 18.2,
+        "bbox": {
+          "x": 806,
+          "y": 261,
+          "w": 467,
+          "h": 109,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 4.0,
+        "class_name": "pothole",
+        "conf": 0.36,
+        "severity": "Medium",
+        "wCm": 39.0,
+        "lCm": 20.0,
+        "bbox": {
+          "x": 0,
+          "y": 365,
+          "w": 277,
+          "h": 120,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#344",
+        "track_id": 344,
+        "time": 4.2,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 62.0,
+        "lCm": 17.2,
+        "bbox": {
+          "x": 806,
+          "y": 272,
+          "w": 441,
+          "h": 103,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#344",
+        "track_id": 344,
+        "time": 4.4,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 67.4,
+        "lCm": 20.2,
+        "bbox": {
+          "x": 800,
+          "y": 291,
+          "w": 479,
+          "h": 121,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#344",
+        "track_id": 344,
+        "time": 4.6,
+        "class_name": "pothole",
+        "conf": 0.38,
+        "severity": "Medium",
+        "wCm": 71.0,
+        "lCm": 23.3,
+        "bbox": {
+          "x": 774,
+          "y": 300,
+          "w": 505,
+          "h": 140,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#344",
+        "track_id": 344,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 73.7,
+        "lCm": 26.8,
+        "bbox": {
+          "x": 755,
+          "y": 317,
+          "w": 524,
+          "h": 161,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#344",
+        "track_id": 344,
+        "time": 5.0,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 82.5,
+        "lCm": 31.7,
+        "bbox": {
+          "x": 692,
+          "y": 338,
+          "w": 587,
+          "h": 190,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.89,
+        "severity": "Critical",
+        "wCm": 56.7,
+        "lCm": 27.3,
+        "bbox": {
+          "x": 14,
+          "y": 492,
+          "w": 403,
+          "h": 164,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.44,
+        "severity": "Medium",
+        "wCm": 57.5,
+        "lCm": 23.2,
+        "bbox": {
+          "x": 1,
+          "y": 570,
+          "w": 409,
+          "h": 139,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 6.0,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 93.9,
+        "lCm": 19.5,
+        "bbox": {
+          "x": 5,
+          "y": 383,
+          "w": 668,
+          "h": 117,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 6.2,
+        "class_name": "pothole",
+        "conf": 0.44,
+        "severity": "Medium",
+        "wCm": 92.1,
+        "lCm": 22.5,
+        "bbox": {
+          "x": 5,
+          "y": 420,
+          "w": 655,
+          "h": 135,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 47.0,
+        "lCm": 20.0,
+        "bbox": {
+          "x": 572,
+          "y": 383,
+          "w": 334,
+          "h": 120,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.43,
+        "severity": "Medium",
+        "wCm": 30.0,
+        "lCm": 14.5,
+        "bbox": {
+          "x": 693,
+          "y": 395,
+          "w": 213,
+          "h": 87,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 7.8,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 55.1,
+        "lCm": 26.2,
+        "bbox": {
+          "x": 578,
+          "y": 432,
+          "w": 392,
+          "h": 157,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 8.8,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 21.9,
+        "lCm": 9.3,
+        "bbox": {
+          "x": 316,
+          "y": 373,
+          "w": 156,
+          "h": 56,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 9.0,
+        "class_name": "pothole",
+        "conf": 0.69,
+        "severity": "High",
+        "wCm": 23.5,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 298,
+          "y": 405,
+          "w": 167,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#02",
+        "track_id": null,
+        "time": 9.0,
+        "class_name": "pothole",
+        "conf": 0.44,
+        "severity": "Medium",
+        "wCm": 26.0,
+        "lCm": 8.8,
+        "bbox": {
+          "x": 293,
+          "y": 227,
+          "w": 185,
+          "h": 53,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      }
+    ]
+  },
+  "video_46g.mp4": {
+    "total_defects": 17,
+    "unique_defects": [
+      {
+        "pothole_id": "PTH-#363",
+        "track_id": 363,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.66,
+        "severity": "High",
+        "wCm": 83.8,
+        "lCm": 22.0,
+        "bbox": {
+          "x": 0,
+          "y": 376,
+          "w": 596,
+          "h": 132,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 24.6,
+        "lCm": 12.2,
+        "bbox": {
+          "x": 296,
+          "y": 467,
+          "w": 175,
+          "h": 73,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#367",
+        "track_id": 367,
+        "time": 1.6,
+        "class_name": "pothole",
+        "conf": 0.53,
+        "severity": "Medium",
+        "wCm": 123.6,
+        "lCm": 33.2,
+        "bbox": {
+          "x": 0,
+          "y": 346,
+          "w": 879,
+          "h": 199,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#381",
+        "track_id": 381,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.93,
+        "severity": "Critical",
+        "wCm": 22.5,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 829,
+          "y": 340,
+          "w": 160,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#391",
+        "track_id": 391,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 29.1,
+        "lCm": 11.2,
+        "bbox": {
+          "x": 921,
+          "y": 383,
+          "w": 207,
+          "h": 67,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#392",
+        "track_id": 392,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.94,
+        "severity": "Critical",
+        "wCm": 24.6,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 720,
+          "y": 414,
+          "w": 175,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 5.6,
+        "class_name": "pothole",
+        "conf": 0.49,
+        "severity": "Medium",
+        "wCm": 48.4,
+        "lCm": 14.7,
+        "bbox": {
+          "x": 0,
+          "y": 426,
+          "w": 344,
+          "h": 88,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#403",
+        "track_id": 403,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.71,
+        "severity": "High",
+        "wCm": 68.8,
+        "lCm": 26.3,
+        "bbox": {
+          "x": 790,
+          "y": 333,
+          "w": 489,
+          "h": 158,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#417",
+        "track_id": 417,
+        "time": 4.6,
+        "class_name": "pothole",
+        "conf": 0.77,
+        "severity": "Critical",
+        "wCm": 63.3,
+        "lCm": 29.0,
+        "bbox": {
+          "x": 0,
+          "y": 447,
+          "w": 450,
+          "h": 174,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#458",
+        "track_id": 458,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.74,
+        "severity": "High",
+        "wCm": 35.0,
+        "lCm": 8.2,
+        "bbox": {
+          "x": 0,
+          "y": 280,
+          "w": 249,
+          "h": 49,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 7.8,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 44.7,
+        "lCm": 15.3,
+        "bbox": {
+          "x": 415,
+          "y": 436,
+          "w": 318,
+          "h": 92,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 26.0,
+        "lCm": 6.8,
+        "bbox": {
+          "x": 312,
+          "y": 260,
+          "w": 185,
+          "h": 41,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#482",
+        "track_id": 482,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.66,
+        "severity": "High",
+        "wCm": 53.4,
+        "lCm": 19.3,
+        "bbox": {
+          "x": 899,
+          "y": 247,
+          "w": 380,
+          "h": 116,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#538",
+        "track_id": 538,
+        "time": 8.4,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 89.2,
+        "lCm": 28.0,
+        "bbox": {
+          "x": 0,
+          "y": 446,
+          "w": 634,
+          "h": 168,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#545",
+        "track_id": 545,
+        "time": 8.0,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 13.6,
+        "lCm": 3.0,
+        "bbox": {
+          "x": 354,
+          "y": 210,
+          "w": 97,
+          "h": 18,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#547",
+        "track_id": 547,
+        "time": 8.2,
+        "class_name": "pothole",
+        "conf": 0.82,
+        "severity": "Critical",
+        "wCm": 35.9,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 429,
+          "y": 287,
+          "w": 255,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#549",
+        "track_id": 549,
+        "time": 8.6,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 47.7,
+        "lCm": 13.0,
+        "bbox": {
+          "x": 391,
+          "y": 321,
+          "w": 339,
+          "h": 78,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      }
+    ],
+    "moments": [
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 63.4,
+        "lCm": 12.0,
+        "bbox": {
+          "x": 163,
+          "y": 257,
+          "w": 451,
+          "h": 72,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 24.6,
+        "lCm": 11.3,
+        "bbox": {
+          "x": 326,
+          "y": 366,
+          "w": 175,
+          "h": 68,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#363",
+        "track_id": 363,
+        "time": 0.2,
+        "class_name": "pothole",
+        "conf": 0.96,
+        "severity": "Critical",
+        "wCm": 69.9,
+        "lCm": 13.3,
+        "bbox": {
+          "x": 128,
+          "y": 271,
+          "w": 497,
+          "h": 80,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#363",
+        "track_id": 363,
+        "time": 0.4,
+        "class_name": "pothole",
+        "conf": 0.9,
+        "severity": "Critical",
+        "wCm": 66.9,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 109,
+          "y": 281,
+          "w": 476,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#363",
+        "track_id": 363,
+        "time": 0.6,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 67.4,
+        "lCm": 12.8,
+        "bbox": {
+          "x": 77,
+          "y": 296,
+          "w": 479,
+          "h": 77,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 0.6,
+        "class_name": "pothole",
+        "conf": 0.9,
+        "severity": "Critical",
+        "wCm": 34.9,
+        "lCm": 19.7,
+        "bbox": {
+          "x": 238,
+          "y": 443,
+          "w": 248,
+          "h": 118,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#367",
+        "track_id": 367,
+        "time": 0.6,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 88.5,
+        "lCm": 17.0,
+        "bbox": {
+          "x": 47,
+          "y": 276,
+          "w": 629,
+          "h": 102,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#363",
+        "track_id": 363,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.81,
+        "severity": "Critical",
+        "wCm": 77.5,
+        "lCm": 15.0,
+        "bbox": {
+          "x": 0,
+          "y": 317,
+          "w": 551,
+          "h": 90,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#367",
+        "track_id": 367,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.47,
+        "severity": "Medium",
+        "wCm": 101.1,
+        "lCm": 21.0,
+        "bbox": {
+          "x": 0,
+          "y": 274,
+          "w": 719,
+          "h": 126,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#363",
+        "track_id": 363,
+        "time": 1.0,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 76.2,
+        "lCm": 16.0,
+        "bbox": {
+          "x": 0,
+          "y": 337,
+          "w": 542,
+          "h": 96,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#367",
+        "track_id": 367,
+        "time": 1.0,
+        "class_name": "pothole",
+        "conf": 0.69,
+        "severity": "High",
+        "wCm": 96.6,
+        "lCm": 20.5,
+        "bbox": {
+          "x": 0,
+          "y": 300,
+          "w": 687,
+          "h": 123,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#367",
+        "track_id": 367,
+        "time": 1.2,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 104.3,
+        "lCm": 23.7,
+        "bbox": {
+          "x": 0,
+          "y": 323,
+          "w": 742,
+          "h": 142,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#367",
+        "track_id": 367,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 109.7,
+        "lCm": 26.0,
+        "bbox": {
+          "x": 0,
+          "y": 348,
+          "w": 780,
+          "h": 156,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#381",
+        "track_id": 381,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.93,
+        "severity": "Critical",
+        "wCm": 22.5,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 829,
+          "y": 340,
+          "w": 160,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#363",
+        "track_id": 363,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.66,
+        "severity": "High",
+        "wCm": 83.8,
+        "lCm": 22.0,
+        "bbox": {
+          "x": 0,
+          "y": 376,
+          "w": 596,
+          "h": 132,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#367",
+        "track_id": 367,
+        "time": 1.6,
+        "class_name": "pothole",
+        "conf": 0.53,
+        "severity": "Medium",
+        "wCm": 123.6,
+        "lCm": 33.2,
+        "bbox": {
+          "x": 0,
+          "y": 346,
+          "w": 879,
+          "h": 199,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#391",
+        "track_id": 391,
+        "time": 1.8,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 26.6,
+        "lCm": 10.3,
+        "bbox": {
+          "x": 866,
+          "y": 385,
+          "w": 189,
+          "h": 62,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#392",
+        "track_id": 392,
+        "time": 1.8,
+        "class_name": "pothole",
+        "conf": 0.74,
+        "severity": "High",
+        "wCm": 12.2,
+        "lCm": 6.2,
+        "bbox": {
+          "x": 659,
+          "y": 277,
+          "w": 87,
+          "h": 37,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 1.8,
+        "class_name": "pothole",
+        "conf": 0.49,
+        "severity": "Medium",
+        "wCm": 30.2,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 237,
+          "y": 223,
+          "w": 215,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#392",
+        "track_id": 392,
+        "time": 2.0,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 12.8,
+        "lCm": 6.5,
+        "bbox": {
+          "x": 668,
+          "y": 289,
+          "w": 91,
+          "h": 39,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 2.0,
+        "class_name": "pothole",
+        "conf": 0.65,
+        "severity": "High",
+        "wCm": 35.2,
+        "lCm": 10.0,
+        "bbox": {
+          "x": 213,
+          "y": 224,
+          "w": 250,
+          "h": 60,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#392",
+        "track_id": 392,
+        "time": 2.2,
+        "class_name": "pothole",
+        "conf": 0.74,
+        "severity": "High",
+        "wCm": 15.7,
+        "lCm": 7.8,
+        "bbox": {
+          "x": 668,
+          "y": 302,
+          "w": 112,
+          "h": 47,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 2.2,
+        "class_name": "pothole",
+        "conf": 0.39,
+        "severity": "Medium",
+        "wCm": 40.4,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 186,
+          "y": 228,
+          "w": 287,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#392",
+        "track_id": 392,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.91,
+        "severity": "Critical",
+        "wCm": 16.3,
+        "lCm": 8.2,
+        "bbox": {
+          "x": 684,
+          "y": 328,
+          "w": 116,
+          "h": 49,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 44.3,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 163,
+          "y": 239,
+          "w": 315,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#391",
+        "track_id": 391,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 29.1,
+        "lCm": 11.2,
+        "bbox": {
+          "x": 921,
+          "y": 383,
+          "w": 207,
+          "h": 67,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#392",
+        "track_id": 392,
+        "time": 2.6,
+        "class_name": "pothole",
+        "conf": 0.94,
+        "severity": "Critical",
+        "wCm": 18.4,
+        "lCm": 9.3,
+        "bbox": {
+          "x": 695,
+          "y": 353,
+          "w": 131,
+          "h": 56,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 2.6,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 49.4,
+        "lCm": 14.2,
+        "bbox": {
+          "x": 116,
+          "y": 250,
+          "w": 351,
+          "h": 85,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#403",
+        "track_id": 403,
+        "time": 2.6,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 73.0,
+        "lCm": 22.7,
+        "bbox": {
+          "x": 760,
+          "y": 245,
+          "w": 519,
+          "h": 136,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#392",
+        "track_id": 392,
+        "time": 2.8,
+        "class_name": "pothole",
+        "conf": 0.89,
+        "severity": "Critical",
+        "wCm": 21.5,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 708,
+          "y": 383,
+          "w": 153,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 2.8,
+        "class_name": "pothole",
+        "conf": 0.41,
+        "severity": "Medium",
+        "wCm": 53.9,
+        "lCm": 15.7,
+        "bbox": {
+          "x": 96,
+          "y": 267,
+          "w": 383,
+          "h": 94,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#403",
+        "track_id": 403,
+        "time": 2.8,
+        "class_name": "pothole",
+        "conf": 0.41,
+        "severity": "Medium",
+        "wCm": 73.7,
+        "lCm": 24.2,
+        "bbox": {
+          "x": 755,
+          "y": 262,
+          "w": 524,
+          "h": 145,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#392",
+        "track_id": 392,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.94,
+        "severity": "Critical",
+        "wCm": 24.6,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 720,
+          "y": 414,
+          "w": 175,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.3,
+        "severity": "Medium",
+        "wCm": 57.9,
+        "lCm": 17.2,
+        "bbox": {
+          "x": 75,
+          "y": 277,
+          "w": 412,
+          "h": 103,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#403",
+        "track_id": 403,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.38,
+        "severity": "Medium",
+        "wCm": 74.1,
+        "lCm": 25.5,
+        "bbox": {
+          "x": 752,
+          "y": 272,
+          "w": 527,
+          "h": 153,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#09",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 25.0,
+        "lCm": 15.2,
+        "bbox": {
+          "x": 761,
+          "y": 478,
+          "w": 178,
+          "h": 91,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#09",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 39.9,
+        "lCm": 14.3,
+        "bbox": {
+          "x": 60,
+          "y": 350,
+          "w": 284,
+          "h": 86,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#09",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.51,
+        "severity": "Medium",
+        "wCm": 31.9,
+        "lCm": 8.2,
+        "bbox": {
+          "x": 218,
+          "y": 283,
+          "w": 227,
+          "h": 49,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#09",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.47,
+        "severity": "Medium",
+        "wCm": 22.1,
+        "lCm": 2.7,
+        "bbox": {
+          "x": 185,
+          "y": 199,
+          "w": 157,
+          "h": 16,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#09",
+        "track_id": null,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.39,
+        "severity": "Medium",
+        "wCm": 46.7,
+        "lCm": 17.3,
+        "bbox": {
+          "x": 0,
+          "y": 343,
+          "w": 332,
+          "h": 104,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#417",
+        "track_id": 417,
+        "time": 3.4,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 47.2,
+        "lCm": 17.8,
+        "bbox": {
+          "x": 0,
+          "y": 355,
+          "w": 336,
+          "h": 107,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 3.4,
+        "class_name": "pothole",
+        "conf": 0.9,
+        "severity": "Critical",
+        "wCm": 39.4,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 166,
+          "y": 294,
+          "w": 280,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 3.6,
+        "class_name": "pothole",
+        "conf": 0.77,
+        "severity": "Critical",
+        "wCm": 36.4,
+        "lCm": 10.5,
+        "bbox": {
+          "x": 170,
+          "y": 313,
+          "w": 259,
+          "h": 63,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#403",
+        "track_id": 403,
+        "time": 3.6,
+        "class_name": "pothole",
+        "conf": 0.65,
+        "severity": "High",
+        "wCm": 67.8,
+        "lCm": 24.7,
+        "bbox": {
+          "x": 797,
+          "y": 319,
+          "w": 482,
+          "h": 148,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 40.2,
+        "lCm": 11.7,
+        "bbox": {
+          "x": 135,
+          "y": 329,
+          "w": 286,
+          "h": 70,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#403",
+        "track_id": 403,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.71,
+        "severity": "High",
+        "wCm": 68.8,
+        "lCm": 26.3,
+        "bbox": {
+          "x": 790,
+          "y": 333,
+          "w": 489,
+          "h": 158,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 4.0,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 42.6,
+        "lCm": 12.3,
+        "bbox": {
+          "x": 102,
+          "y": 349,
+          "w": 303,
+          "h": 74,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#417",
+        "track_id": 417,
+        "time": 4.2,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 43.6,
+        "lCm": 16.0,
+        "bbox": {
+          "x": 47,
+          "y": 381,
+          "w": 310,
+          "h": 96,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#417",
+        "track_id": 417,
+        "time": 4.4,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 54.1,
+        "lCm": 20.3,
+        "bbox": {
+          "x": 0,
+          "y": 410,
+          "w": 385,
+          "h": 122,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#417",
+        "track_id": 417,
+        "time": 4.6,
+        "class_name": "pothole",
+        "conf": 0.77,
+        "severity": "Critical",
+        "wCm": 63.3,
+        "lCm": 29.0,
+        "bbox": {
+          "x": 0,
+          "y": 447,
+          "w": 450,
+          "h": 174,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.9,
+        "severity": "Critical",
+        "wCm": 23.3,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 814,
+          "y": 421,
+          "w": 166,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.76,
+        "severity": "Critical",
+        "wCm": 32.2,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 461,
+          "y": 345,
+          "w": 229,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.55,
+        "severity": "Medium",
+        "wCm": 31.1,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 202,
+          "y": 310,
+          "w": 221,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 43.0,
+        "lCm": 31.0,
+        "bbox": {
+          "x": 1,
+          "y": 524,
+          "w": 306,
+          "h": 186,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 29.1,
+        "lCm": 5.3,
+        "bbox": {
+          "x": 21,
+          "y": 265,
+          "w": 207,
+          "h": 32,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 39.9,
+        "lCm": 13.8,
+        "bbox": {
+          "x": 8,
+          "y": 328,
+          "w": 284,
+          "h": 83,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.39,
+        "severity": "Medium",
+        "wCm": 29.1,
+        "lCm": 20.2,
+        "bbox": {
+          "x": 912,
+          "y": 513,
+          "w": 207,
+          "h": 121,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.36,
+        "severity": "Medium",
+        "wCm": 59.5,
+        "lCm": 15.2,
+        "bbox": {
+          "x": 4,
+          "y": 317,
+          "w": 423,
+          "h": 91,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.36,
+        "severity": "Medium",
+        "wCm": 31.6,
+        "lCm": 8.2,
+        "bbox": {
+          "x": 847,
+          "y": 202,
+          "w": 225,
+          "h": 49,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#458",
+        "track_id": 458,
+        "time": 5.0,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 34.0,
+        "lCm": 7.0,
+        "bbox": {
+          "x": 0,
+          "y": 269,
+          "w": 242,
+          "h": 42,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#458",
+        "track_id": 458,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.74,
+        "severity": "High",
+        "wCm": 35.0,
+        "lCm": 8.2,
+        "bbox": {
+          "x": 0,
+          "y": 280,
+          "w": 249,
+          "h": 49,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 50.3,
+        "lCm": 17.3,
+        "bbox": {
+          "x": 390,
+          "y": 437,
+          "w": 358,
+          "h": 104,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 26.0,
+        "lCm": 6.8,
+        "bbox": {
+          "x": 312,
+          "y": 260,
+          "w": 185,
+          "h": 41,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#482",
+        "track_id": 482,
+        "time": 5.6,
+        "class_name": "pothole",
+        "conf": 0.63,
+        "severity": "High",
+        "wCm": 39.8,
+        "lCm": 11.5,
+        "bbox": {
+          "x": 883,
+          "y": 222,
+          "w": 283,
+          "h": 69,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#393",
+        "track_id": 393,
+        "time": 5.6,
+        "class_name": "pothole",
+        "conf": 0.49,
+        "severity": "Medium",
+        "wCm": 48.4,
+        "lCm": 14.7,
+        "bbox": {
+          "x": 0,
+          "y": 426,
+          "w": 344,
+          "h": 88,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#482",
+        "track_id": 482,
+        "time": 5.8,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 47.0,
+        "lCm": 13.7,
+        "bbox": {
+          "x": 883,
+          "y": 224,
+          "w": 334,
+          "h": 82,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#482",
+        "track_id": 482,
+        "time": 6.0,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 54.7,
+        "lCm": 16.0,
+        "bbox": {
+          "x": 887,
+          "y": 228,
+          "w": 389,
+          "h": 96,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#482",
+        "track_id": 482,
+        "time": 6.2,
+        "class_name": "pothole",
+        "conf": 0.63,
+        "severity": "High",
+        "wCm": 53.2,
+        "lCm": 17.0,
+        "bbox": {
+          "x": 901,
+          "y": 241,
+          "w": 378,
+          "h": 102,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#482",
+        "track_id": 482,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.66,
+        "severity": "High",
+        "wCm": 53.4,
+        "lCm": 19.3,
+        "bbox": {
+          "x": 899,
+          "y": 247,
+          "w": 380,
+          "h": 116,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 24.6,
+        "lCm": 12.2,
+        "bbox": {
+          "x": 296,
+          "y": 467,
+          "w": 175,
+          "h": 73,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 6.6,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 46.1,
+        "lCm": 16.5,
+        "bbox": {
+          "x": 166,
+          "y": 513,
+          "w": 328,
+          "h": 99,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 6.6,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 47.0,
+        "lCm": 19.3,
+        "bbox": {
+          "x": 90,
+          "y": 369,
+          "w": 334,
+          "h": 116,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 6.6,
+        "class_name": "pothole",
+        "conf": 0.63,
+        "severity": "High",
+        "wCm": 27.1,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 724,
+          "y": 424,
+          "w": 193,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 6.6,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 14.2,
+        "lCm": 7.0,
+        "bbox": {
+          "x": 617,
+          "y": 323,
+          "w": 101,
+          "h": 42,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 6.6,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 39.1,
+        "lCm": 22.5,
+        "bbox": {
+          "x": 1001,
+          "y": 257,
+          "w": 278,
+          "h": 135,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.72,
+        "severity": "High",
+        "wCm": 30.8,
+        "lCm": 14.2,
+        "bbox": {
+          "x": 756,
+          "y": 478,
+          "w": 219,
+          "h": 85,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 18.1,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 609,
+          "y": 344,
+          "w": 129,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.45,
+        "severity": "Medium",
+        "wCm": 49.6,
+        "lCm": 22.7,
+        "bbox": {
+          "x": 56,
+          "y": 410,
+          "w": 353,
+          "h": 136,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.57,
+        "severity": "High",
+        "wCm": 52.9,
+        "lCm": 28.3,
+        "bbox": {
+          "x": 16,
+          "y": 445,
+          "w": 376,
+          "h": 170,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 36.8,
+        "lCm": 16.2,
+        "bbox": {
+          "x": 772,
+          "y": 543,
+          "w": 262,
+          "h": 97,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.41,
+        "severity": "Medium",
+        "wCm": 49.5,
+        "lCm": 12.8,
+        "bbox": {
+          "x": 320,
+          "y": 274,
+          "w": 352,
+          "h": 77,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.36,
+        "severity": "Medium",
+        "wCm": 10.4,
+        "lCm": 3.5,
+        "bbox": {
+          "x": 0,
+          "y": 220,
+          "w": 74,
+          "h": 21,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.33,
+        "severity": "Medium",
+        "wCm": 17.3,
+        "lCm": 8.5,
+        "bbox": {
+          "x": 625,
+          "y": 370,
+          "w": 123,
+          "h": 51,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 21.8,
+        "lCm": 9.8,
+        "bbox": {
+          "x": 619,
+          "y": 403,
+          "w": 155,
+          "h": 59,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 22.9,
+        "lCm": 4.2,
+        "bbox": {
+          "x": 473,
+          "y": 233,
+          "w": 163,
+          "h": 25,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.46,
+        "severity": "Medium",
+        "wCm": 35.2,
+        "lCm": 9.7,
+        "bbox": {
+          "x": 291,
+          "y": 285,
+          "w": 250,
+          "h": 58,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.4,
+        "severity": "Medium",
+        "wCm": 54.1,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 289,
+          "y": 284,
+          "w": 385,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 8.2,
+        "lCm": 4.0,
+        "bbox": {
+          "x": 0,
+          "y": 223,
+          "w": 58,
+          "h": 24,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 10.5,
+        "lCm": 3.5,
+        "bbox": {
+          "x": 869,
+          "y": 210,
+          "w": 75,
+          "h": 21,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.3,
+        "severity": "Medium",
+        "wCm": 65.0,
+        "lCm": 10.2,
+        "bbox": {
+          "x": 179,
+          "y": 184,
+          "w": 462,
+          "h": 61,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.4,
+        "class_name": "pothole",
+        "conf": 0.84,
+        "severity": "Critical",
+        "wCm": 23.5,
+        "lCm": 12.2,
+        "bbox": {
+          "x": 633,
+          "y": 440,
+          "w": 167,
+          "h": 73,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.4,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 37.1,
+        "lCm": 8.8,
+        "bbox": {
+          "x": 280,
+          "y": 303,
+          "w": 264,
+          "h": 53,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.4,
+        "class_name": "pothole",
+        "conf": 0.43,
+        "severity": "Medium",
+        "wCm": 63.3,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 275,
+          "y": 300,
+          "w": 450,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.4,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 36.7,
+        "lCm": 13.8,
+        "bbox": {
+          "x": 443,
+          "y": 336,
+          "w": 261,
+          "h": 83,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.68,
+        "severity": "High",
+        "wCm": 40.8,
+        "lCm": 12.0,
+        "bbox": {
+          "x": 434,
+          "y": 398,
+          "w": 290,
+          "h": 72,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 25.3,
+        "lCm": 15.8,
+        "bbox": {
+          "x": 654,
+          "y": 500,
+          "w": 180,
+          "h": 95,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.52,
+        "severity": "Medium",
+        "wCm": 45.1,
+        "lCm": 13.5,
+        "bbox": {
+          "x": 249,
+          "y": 320,
+          "w": 321,
+          "h": 81,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 67.1,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 129,
+          "y": 194,
+          "w": 477,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#14",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.3,
+        "severity": "Medium",
+        "wCm": 26.0,
+        "lCm": 6.3,
+        "bbox": {
+          "x": 464,
+          "y": 252,
+          "w": 185,
+          "h": 38,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#538",
+        "track_id": 538,
+        "time": 7.8,
+        "class_name": "pothole",
+        "conf": 0.8,
+        "severity": "Critical",
+        "wCm": 47.1,
+        "lCm": 14.0,
+        "bbox": {
+          "x": 226,
+          "y": 343,
+          "w": 335,
+          "h": 84,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 7.8,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 44.7,
+        "lCm": 15.3,
+        "bbox": {
+          "x": 415,
+          "y": 436,
+          "w": 318,
+          "h": 92,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#538",
+        "track_id": 538,
+        "time": 8.0,
+        "class_name": "pothole",
+        "conf": 0.91,
+        "severity": "Critical",
+        "wCm": 56.1,
+        "lCm": 16.8,
+        "bbox": {
+          "x": 174,
+          "y": 370,
+          "w": 399,
+          "h": 101,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#545",
+        "track_id": 545,
+        "time": 8.0,
+        "class_name": "pothole",
+        "conf": 0.61,
+        "severity": "High",
+        "wCm": 13.6,
+        "lCm": 3.0,
+        "bbox": {
+          "x": 354,
+          "y": 210,
+          "w": 97,
+          "h": 18,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#538",
+        "track_id": 538,
+        "time": 8.2,
+        "class_name": "pothole",
+        "conf": 0.87,
+        "severity": "Critical",
+        "wCm": 71.0,
+        "lCm": 21.3,
+        "bbox": {
+          "x": 94,
+          "y": 407,
+          "w": 505,
+          "h": 128,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#547",
+        "track_id": 547,
+        "time": 8.2,
+        "class_name": "pothole",
+        "conf": 0.82,
+        "severity": "Critical",
+        "wCm": 35.9,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 429,
+          "y": 287,
+          "w": 255,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#538",
+        "track_id": 538,
+        "time": 8.4,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 89.2,
+        "lCm": 28.0,
+        "bbox": {
+          "x": 0,
+          "y": 446,
+          "w": 634,
+          "h": 168,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#549",
+        "track_id": 549,
+        "time": 8.6,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 47.7,
+        "lCm": 13.0,
+        "bbox": {
+          "x": 391,
+          "y": 321,
+          "w": 339,
+          "h": 78,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      }
+    ]
+  },
+  "video_29c.mp4": {
+    "total_defects": 11,
+    "unique_defects": [
+      {
+        "pothole_id": "PTH-#556",
+        "track_id": 556,
+        "time": 4.6,
+        "class_name": "pothole",
+        "conf": 0.45,
+        "severity": "Medium",
+        "wCm": 23.9,
+        "lCm": 15.2,
+        "bbox": {
+          "x": 634,
+          "y": 431,
+          "w": 170,
+          "h": 91,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 5.0,
+        "class_name": "pothole",
+        "conf": 0.79,
+        "severity": "Critical",
+        "wCm": 22.2,
+        "lCm": 7.7,
+        "bbox": {
+          "x": 362,
+          "y": 289,
+          "w": 158,
+          "h": 46,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#549",
+        "track_id": 549,
+        "time": 1.2,
+        "class_name": "pothole",
+        "conf": 0.6,
+        "severity": "High",
+        "wCm": 88.2,
+        "lCm": 25.2,
+        "bbox": {
+          "x": 9,
+          "y": 446,
+          "w": 627,
+          "h": 151,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#545",
+        "track_id": 545,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 14.8,
+        "lCm": 3.3,
+        "bbox": {
+          "x": 350,
+          "y": 209,
+          "w": 105,
+          "h": 20,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#547",
+        "track_id": 547,
+        "time": 5.8,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 39.8,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 452,
+          "y": 290,
+          "w": 283,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#579",
+        "track_id": 579,
+        "time": 1.6,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 18.3,
+        "lCm": 4.5,
+        "bbox": {
+          "x": 303,
+          "y": 245,
+          "w": 130,
+          "h": 27,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 3.4,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 52.6,
+        "lCm": 17.3,
+        "bbox": {
+          "x": 0,
+          "y": 402,
+          "w": 374,
+          "h": 104,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 7.8,
+        "class_name": "pothole",
+        "conf": 0.43,
+        "severity": "Medium",
+        "wCm": 32.3,
+        "lCm": 14.5,
+        "bbox": {
+          "x": 259,
+          "y": 478,
+          "w": 230,
+          "h": 87,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#593",
+        "track_id": 593,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.62,
+        "severity": "High",
+        "wCm": 35.2,
+        "lCm": 34.8,
+        "bbox": {
+          "x": 0,
+          "y": 498,
+          "w": 250,
+          "h": 209,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#634",
+        "track_id": 634,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.94,
+        "severity": "Critical",
+        "wCm": 118.0,
+        "lCm": 33.5,
+        "bbox": {
+          "x": 282,
+          "y": 465,
+          "w": 839,
+          "h": 201,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#641",
+        "track_id": 641,
+        "time": 7.4,
+        "class_name": "pothole",
+        "conf": 0.7,
+        "severity": "High",
+        "wCm": 33.3,
+        "lCm": 33.0,
+        "bbox": {
+          "x": 1042,
+          "y": 337,
+          "w": 237,
+          "h": 198,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      }
+    ],
+    "moments": [
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.42,
+        "severity": "Medium",
+        "wCm": 49.6,
+        "lCm": 34.8,
+        "bbox": {
+          "x": 2,
+          "y": 498,
+          "w": 353,
+          "h": 209,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 26.4,
+        "lCm": 4.5,
+        "bbox": {
+          "x": 461,
+          "y": 234,
+          "w": 188,
+          "h": 27,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.34,
+        "severity": "Medium",
+        "wCm": 32.6,
+        "lCm": 10.5,
+        "bbox": {
+          "x": 453,
+          "y": 332,
+          "w": 232,
+          "h": 63,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#01",
+        "track_id": null,
+        "time": 0.0,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 24.0,
+        "lCm": 15.8,
+        "bbox": {
+          "x": 621,
+          "y": 408,
+          "w": 171,
+          "h": 95,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#556",
+        "track_id": 556,
+        "time": 0.2,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 19.5,
+        "lCm": 12.8,
+        "bbox": {
+          "x": 650,
+          "y": 434,
+          "w": 139,
+          "h": 77,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 0.4,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 33.5,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 464,
+          "y": 407,
+          "w": 238,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#549",
+        "track_id": 549,
+        "time": 0.4,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 49.6,
+        "lCm": 13.5,
+        "bbox": {
+          "x": 270,
+          "y": 322,
+          "w": 353,
+          "h": 81,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#549",
+        "track_id": 549,
+        "time": 0.6,
+        "class_name": "pothole",
+        "conf": 0.79,
+        "severity": "Critical",
+        "wCm": 52.2,
+        "lCm": 14.3,
+        "bbox": {
+          "x": 221,
+          "y": 342,
+          "w": 371,
+          "h": 86,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#545",
+        "track_id": 545,
+        "time": 0.6,
+        "class_name": "pothole",
+        "conf": 0.48,
+        "severity": "Medium",
+        "wCm": 13.5,
+        "lCm": 3.0,
+        "bbox": {
+          "x": 359,
+          "y": 207,
+          "w": 96,
+          "h": 18,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#549",
+        "track_id": 549,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.81,
+        "severity": "Critical",
+        "wCm": 57.8,
+        "lCm": 16.0,
+        "bbox": {
+          "x": 171,
+          "y": 371,
+          "w": 411,
+          "h": 96,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#545",
+        "track_id": 545,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 14.8,
+        "lCm": 3.3,
+        "bbox": {
+          "x": 350,
+          "y": 209,
+          "w": 105,
+          "h": 20,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#547",
+        "track_id": 547,
+        "time": 0.8,
+        "class_name": "pothole",
+        "conf": 0.34,
+        "severity": "Medium",
+        "wCm": 32.2,
+        "lCm": 7.7,
+        "bbox": {
+          "x": 453,
+          "y": 279,
+          "w": 229,
+          "h": 46,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#549",
+        "track_id": 549,
+        "time": 1.0,
+        "class_name": "pothole",
+        "conf": 0.77,
+        "severity": "Critical",
+        "wCm": 71.2,
+        "lCm": 19.8,
+        "bbox": {
+          "x": 91,
+          "y": 407,
+          "w": 506,
+          "h": 119,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#547",
+        "track_id": 547,
+        "time": 1.0,
+        "class_name": "pothole",
+        "conf": 0.81,
+        "severity": "Critical",
+        "wCm": 33.5,
+        "lCm": 8.0,
+        "bbox": {
+          "x": 440,
+          "y": 290,
+          "w": 238,
+          "h": 48,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#549",
+        "track_id": 549,
+        "time": 1.2,
+        "class_name": "pothole",
+        "conf": 0.6,
+        "severity": "High",
+        "wCm": 88.2,
+        "lCm": 25.2,
+        "bbox": {
+          "x": 9,
+          "y": 446,
+          "w": 627,
+          "h": 151,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#06",
+        "track_id": null,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 16.5,
+        "lCm": 4.0,
+        "bbox": {
+          "x": 317,
+          "y": 238,
+          "w": 117,
+          "h": 24,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#06",
+        "track_id": null,
+        "time": 1.4,
+        "class_name": "pothole",
+        "conf": 0.66,
+        "severity": "High",
+        "wCm": 39.8,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 417,
+          "y": 334,
+          "w": 283,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#579",
+        "track_id": 579,
+        "time": 1.6,
+        "class_name": "pothole",
+        "conf": 0.83,
+        "severity": "Critical",
+        "wCm": 18.3,
+        "lCm": 4.5,
+        "bbox": {
+          "x": 303,
+          "y": 245,
+          "w": 130,
+          "h": 27,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 1.6,
+        "class_name": "pothole",
+        "conf": 0.88,
+        "severity": "Critical",
+        "wCm": 47.4,
+        "lCm": 15.8,
+        "bbox": {
+          "x": 395,
+          "y": 353,
+          "w": 337,
+          "h": 95,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 1.8,
+        "class_name": "pothole",
+        "conf": 0.91,
+        "severity": "Critical",
+        "wCm": 51.7,
+        "lCm": 17.5,
+        "bbox": {
+          "x": 381,
+          "y": 366,
+          "w": 368,
+          "h": 105,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 1.8,
+        "class_name": "pothole",
+        "conf": 0.62,
+        "severity": "High",
+        "wCm": 21.1,
+        "lCm": 5.7,
+        "bbox": {
+          "x": 276,
+          "y": 255,
+          "w": 150,
+          "h": 34,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 2.0,
+        "class_name": "pothole",
+        "conf": 0.69,
+        "severity": "High",
+        "wCm": 21.2,
+        "lCm": 5.7,
+        "bbox": {
+          "x": 268,
+          "y": 266,
+          "w": 151,
+          "h": 34,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 2.2,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 23.9,
+        "lCm": 6.5,
+        "bbox": {
+          "x": 243,
+          "y": 276,
+          "w": 170,
+          "h": 39,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.8,
+        "severity": "Critical",
+        "wCm": 27.0,
+        "lCm": 7.5,
+        "bbox": {
+          "x": 214,
+          "y": 289,
+          "w": 192,
+          "h": 45,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 2.4,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 38.8,
+        "lCm": 13.0,
+        "bbox": {
+          "x": 334,
+          "y": 365,
+          "w": 276,
+          "h": 78,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 2.6,
+        "class_name": "pothole",
+        "conf": 0.77,
+        "severity": "Critical",
+        "wCm": 30.9,
+        "lCm": 8.8,
+        "bbox": {
+          "x": 181,
+          "y": 304,
+          "w": 220,
+          "h": 53,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 2.8,
+        "class_name": "pothole",
+        "conf": 0.79,
+        "severity": "Critical",
+        "wCm": 33.3,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 149,
+          "y": 326,
+          "w": 237,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 2.8,
+        "class_name": "pothole",
+        "conf": 0.81,
+        "severity": "Critical",
+        "wCm": 41.8,
+        "lCm": 19.5,
+        "bbox": {
+          "x": 276,
+          "y": 442,
+          "w": 297,
+          "h": 117,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 40.1,
+        "lCm": 11.8,
+        "bbox": {
+          "x": 102,
+          "y": 347,
+          "w": 285,
+          "h": 71,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 3.0,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 52.5,
+        "lCm": 25.2,
+        "bbox": {
+          "x": 231,
+          "y": 469,
+          "w": 373,
+          "h": 151,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 3.2,
+        "class_name": "pothole",
+        "conf": 0.9,
+        "severity": "Critical",
+        "wCm": 47.0,
+        "lCm": 14.3,
+        "bbox": {
+          "x": 43,
+          "y": 372,
+          "w": 334,
+          "h": 86,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#472",
+        "track_id": 472,
+        "time": 3.4,
+        "class_name": "pothole",
+        "conf": 0.85,
+        "severity": "Critical",
+        "wCm": 52.6,
+        "lCm": 17.3,
+        "bbox": {
+          "x": 0,
+          "y": 402,
+          "w": 374,
+          "h": 104,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#09",
+        "track_id": null,
+        "time": 3.6,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 39.7,
+        "lCm": 25.2,
+        "bbox": {
+          "x": 0,
+          "y": 467,
+          "w": 282,
+          "h": 151,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#09",
+        "track_id": null,
+        "time": 3.6,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 38.7,
+        "lCm": 38.3,
+        "bbox": {
+          "x": 0,
+          "y": 464,
+          "w": 275,
+          "h": 230,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#593",
+        "track_id": 593,
+        "time": 3.8,
+        "class_name": "pothole",
+        "conf": 0.62,
+        "severity": "High",
+        "wCm": 35.2,
+        "lCm": 34.8,
+        "bbox": {
+          "x": 0,
+          "y": 498,
+          "w": 250,
+          "h": 209,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.0,
+        "class_name": "pothole",
+        "conf": 0.4,
+        "severity": "Medium",
+        "wCm": 21.1,
+        "lCm": 7.7,
+        "bbox": {
+          "x": 390,
+          "y": 307,
+          "w": 150,
+          "h": 46,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.0,
+        "class_name": "pothole",
+        "conf": 0.38,
+        "severity": "Medium",
+        "wCm": 23.8,
+        "lCm": 18.7,
+        "bbox": {
+          "x": 0,
+          "y": 607,
+          "w": 169,
+          "h": 112,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 4.2,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 30.7,
+        "lCm": 10.5,
+        "bbox": {
+          "x": 347,
+          "y": 321,
+          "w": 218,
+          "h": 63,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.4,
+        "class_name": "pothole",
+        "conf": 0.73,
+        "severity": "High",
+        "wCm": 29.2,
+        "lCm": 11.0,
+        "bbox": {
+          "x": 356,
+          "y": 352,
+          "w": 208,
+          "h": 66,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.4,
+        "class_name": "pothole",
+        "conf": 0.43,
+        "severity": "Medium",
+        "wCm": 21.2,
+        "lCm": 12.7,
+        "bbox": {
+          "x": 623,
+          "y": 385,
+          "w": 151,
+          "h": 76,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#556",
+        "track_id": 556,
+        "time": 4.6,
+        "class_name": "pothole",
+        "conf": 0.45,
+        "severity": "Medium",
+        "wCm": 23.9,
+        "lCm": 15.2,
+        "bbox": {
+          "x": 634,
+          "y": 431,
+          "w": 170,
+          "h": 91,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.72,
+        "severity": "High",
+        "wCm": 41.9,
+        "lCm": 15.0,
+        "bbox": {
+          "x": 283,
+          "y": 421,
+          "w": 298,
+          "h": 90,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.67,
+        "severity": "High",
+        "wCm": 23.3,
+        "lCm": 6.2,
+        "bbox": {
+          "x": 356,
+          "y": 274,
+          "w": 166,
+          "h": 37,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.5,
+        "severity": "Medium",
+        "wCm": 22.8,
+        "lCm": 14.2,
+        "bbox": {
+          "x": 680,
+          "y": 492,
+          "w": 162,
+          "h": 85,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.47,
+        "severity": "Medium",
+        "wCm": 21.4,
+        "lCm": 9.2,
+        "bbox": {
+          "x": 760,
+          "y": 345,
+          "w": 152,
+          "h": 55,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 4.8,
+        "class_name": "pothole",
+        "conf": 0.38,
+        "severity": "Medium",
+        "wCm": 22.8,
+        "lCm": 8.7,
+        "bbox": {
+          "x": 846,
+          "y": 408,
+          "w": 162,
+          "h": 52,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 5.0,
+        "class_name": "pothole",
+        "conf": 0.76,
+        "severity": "Critical",
+        "wCm": 38.5,
+        "lCm": 17.0,
+        "bbox": {
+          "x": 292,
+          "y": 478,
+          "w": 274,
+          "h": 102,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#471",
+        "track_id": 471,
+        "time": 5.0,
+        "class_name": "pothole",
+        "conf": 0.79,
+        "severity": "Critical",
+        "wCm": 22.2,
+        "lCm": 7.7,
+        "bbox": {
+          "x": 362,
+          "y": 289,
+          "w": 158,
+          "h": 46,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.7,
+        "severity": "High",
+        "wCm": 29.2,
+        "lCm": 15.3,
+        "bbox": {
+          "x": 831,
+          "y": 421,
+          "w": 208,
+          "h": 92,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.59,
+        "severity": "High",
+        "wCm": 21.1,
+        "lCm": 8.5,
+        "bbox": {
+          "x": 353,
+          "y": 307,
+          "w": 150,
+          "h": 51,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.58,
+        "severity": "High",
+        "wCm": 15.6,
+        "lCm": 5.5,
+        "bbox": {
+          "x": 734,
+          "y": 307,
+          "w": 111,
+          "h": 33,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.41,
+        "severity": "Medium",
+        "wCm": 68.8,
+        "lCm": 24.5,
+        "bbox": {
+          "x": 139,
+          "y": 557,
+          "w": 489,
+          "h": 147,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.38,
+        "severity": "Medium",
+        "wCm": 24.6,
+        "lCm": 10.8,
+        "bbox": {
+          "x": 1019,
+          "y": 534,
+          "w": 175,
+          "h": 65,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.2,
+        "class_name": "pothole",
+        "conf": 0.31,
+        "severity": "Medium",
+        "wCm": 35.2,
+        "lCm": 13.5,
+        "bbox": {
+          "x": 32,
+          "y": 420,
+          "w": 250,
+          "h": 81,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.78,
+        "severity": "Critical",
+        "wCm": 23.2,
+        "lCm": 9.3,
+        "bbox": {
+          "x": 341,
+          "y": 330,
+          "w": 165,
+          "h": 56,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.75,
+        "severity": "High",
+        "wCm": 36.4,
+        "lCm": 18.5,
+        "bbox": {
+          "x": 877,
+          "y": 473,
+          "w": 259,
+          "h": 111,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.6,
+        "severity": "High",
+        "wCm": 14.9,
+        "lCm": 6.2,
+        "bbox": {
+          "x": 757,
+          "y": 328,
+          "w": 106,
+          "h": 37,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.4,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 32.1,
+        "lCm": 13.8,
+        "bbox": {
+          "x": 17,
+          "y": 470,
+          "w": 228,
+          "h": 83,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.6,
+        "class_name": "pothole",
+        "conf": 0.55,
+        "severity": "Medium",
+        "wCm": 44.7,
+        "lCm": 24.7,
+        "bbox": {
+          "x": 959,
+          "y": 561,
+          "w": 318,
+          "h": 148,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.6,
+        "class_name": "pothole",
+        "conf": 0.54,
+        "severity": "Medium",
+        "wCm": 15.7,
+        "lCm": 7.2,
+        "bbox": {
+          "x": 795,
+          "y": 362,
+          "w": 112,
+          "h": 43,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.6,
+        "class_name": "pothole",
+        "conf": 0.51,
+        "severity": "Medium",
+        "wCm": 38.4,
+        "lCm": 11.3,
+        "bbox": {
+          "x": 247,
+          "y": 363,
+          "w": 273,
+          "h": 68,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 5.6,
+        "class_name": "pothole",
+        "conf": 0.47,
+        "severity": "Medium",
+        "wCm": 30.1,
+        "lCm": 10.0,
+        "bbox": {
+          "x": 301,
+          "y": 368,
+          "w": 214,
+          "h": 60,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#547",
+        "track_id": 547,
+        "time": 5.8,
+        "class_name": "pothole",
+        "conf": 0.35,
+        "severity": "Medium",
+        "wCm": 39.8,
+        "lCm": 9.5,
+        "bbox": {
+          "x": 452,
+          "y": 290,
+          "w": 283,
+          "h": 57,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 6.0,
+        "class_name": "pothole",
+        "conf": 0.91,
+        "severity": "Critical",
+        "wCm": 41.8,
+        "lCm": 18.3,
+        "bbox": {
+          "x": 218,
+          "y": 465,
+          "w": 297,
+          "h": 110,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 6.2,
+        "class_name": "pothole",
+        "conf": 0.86,
+        "severity": "Critical",
+        "wCm": 24.3,
+        "lCm": 12.5,
+        "bbox": {
+          "x": 935,
+          "y": 518,
+          "w": 173,
+          "h": 75,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 6.2,
+        "class_name": "pothole",
+        "conf": 0.74,
+        "severity": "High",
+        "wCm": 46.8,
+        "lCm": 25.3,
+        "bbox": {
+          "x": 187,
+          "y": 526,
+          "w": 333,
+          "h": 152,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 6.2,
+        "class_name": "pothole",
+        "conf": 0.71,
+        "severity": "High",
+        "wCm": 63.1,
+        "lCm": 15.8,
+        "bbox": {
+          "x": 412,
+          "y": 337,
+          "w": 449,
+          "h": 95,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.88,
+        "severity": "Critical",
+        "wCm": 72.4,
+        "lCm": 20.3,
+        "bbox": {
+          "x": 394,
+          "y": 383,
+          "w": 515,
+          "h": 122,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.6,
+        "severity": "High",
+        "wCm": 27.0,
+        "lCm": 14.3,
+        "bbox": {
+          "x": 1051,
+          "y": 625,
+          "w": 192,
+          "h": 86,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#10",
+        "track_id": null,
+        "time": 6.4,
+        "class_name": "pothole",
+        "conf": 0.49,
+        "severity": "Medium",
+        "wCm": 24.8,
+        "lCm": 5.5,
+        "bbox": {
+          "x": 730,
+          "y": 325,
+          "w": 176,
+          "h": 33,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#634",
+        "track_id": 634,
+        "time": 6.6,
+        "class_name": "pothole",
+        "conf": 0.91,
+        "severity": "Critical",
+        "wCm": 90.0,
+        "lCm": 25.3,
+        "bbox": {
+          "x": 349,
+          "y": 414,
+          "w": 640,
+          "h": 152,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#634",
+        "track_id": 634,
+        "time": 6.8,
+        "class_name": "pothole",
+        "conf": 0.94,
+        "severity": "Critical",
+        "wCm": 118.0,
+        "lCm": 33.5,
+        "bbox": {
+          "x": 282,
+          "y": 465,
+          "w": 839,
+          "h": 201,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#11",
+        "track_id": null,
+        "time": 7.0,
+        "class_name": "pothole",
+        "conf": 0.6,
+        "severity": "High",
+        "wCm": 34.6,
+        "lCm": 11.3,
+        "bbox": {
+          "x": 807,
+          "y": 436,
+          "w": 246,
+          "h": 68,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#11",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.88,
+        "severity": "Critical",
+        "wCm": 45.4,
+        "lCm": 17.2,
+        "bbox": {
+          "x": 850,
+          "y": 499,
+          "w": 323,
+          "h": 103,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#11",
+        "track_id": null,
+        "time": 7.2,
+        "class_name": "pothole",
+        "conf": 0.45,
+        "severity": "Medium",
+        "wCm": 34.9,
+        "lCm": 29.8,
+        "bbox": {
+          "x": 1031,
+          "y": 317,
+          "w": 248,
+          "h": 179,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#641",
+        "track_id": 641,
+        "time": 7.4,
+        "class_name": "pothole",
+        "conf": 0.7,
+        "severity": "High",
+        "wCm": 33.3,
+        "lCm": 33.0,
+        "bbox": {
+          "x": 1042,
+          "y": 337,
+          "w": 237,
+          "h": 198,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#12",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.36,
+        "severity": "Medium",
+        "wCm": 23.9,
+        "lCm": 10.5,
+        "bbox": {
+          "x": 304,
+          "y": 423,
+          "w": 170,
+          "h": 63,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#12",
+        "track_id": null,
+        "time": 7.6,
+        "class_name": "pothole",
+        "conf": 0.32,
+        "severity": "Medium",
+        "wCm": 29.8,
+        "lCm": 12.3,
+        "bbox": {
+          "x": 304,
+          "y": 423,
+          "w": 212,
+          "h": 74,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#366",
+        "track_id": 366,
+        "time": 7.8,
+        "class_name": "pothole",
+        "conf": 0.43,
+        "severity": "Medium",
+        "wCm": 32.3,
+        "lCm": 14.5,
+        "bbox": {
+          "x": 259,
+          "y": 478,
+          "w": 230,
+          "h": 87,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#12",
+        "track_id": null,
+        "time": 8.0,
+        "class_name": "pothole",
+        "conf": 0.64,
+        "severity": "High",
+        "wCm": 33.3,
+        "lCm": 19.7,
+        "bbox": {
+          "x": 184,
+          "y": 577,
+          "w": 237,
+          "h": 118,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#12",
+        "track_id": null,
+        "time": 8.0,
+        "class_name": "pothole",
+        "conf": 0.51,
+        "severity": "Medium",
+        "wCm": 18.1,
+        "lCm": 7.5,
+        "bbox": {
+          "x": 714,
+          "y": 271,
+          "w": 129,
+          "h": 45,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#12",
+        "track_id": null,
+        "time": 8.2,
+        "class_name": "pothole",
+        "conf": 0.37,
+        "severity": "Medium",
+        "wCm": 19.0,
+        "lCm": 7.7,
+        "bbox": {
+          "x": 727,
+          "y": 290,
+          "w": 135,
+          "h": 46,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#12",
+        "track_id": null,
+        "time": 8.6,
+        "class_name": "pothole",
+        "conf": 0.34,
+        "severity": "Medium",
+        "wCm": 26.0,
+        "lCm": 15.2,
+        "bbox": {
+          "x": 707,
+          "y": 435,
+          "w": 185,
+          "h": 91,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      },
+      {
+        "pothole_id": "PTH-#12",
+        "track_id": null,
+        "time": 9.4,
+        "class_name": "pothole",
+        "conf": 0.57,
+        "severity": "High",
+        "wCm": 28.5,
+        "lCm": 16.0,
+        "bbox": {
+          "x": 757,
+          "y": 463,
+          "w": 203,
+          "h": 96,
+          "video_w": 1280,
+          "video_h": 720
+        }
+      }
+    ]
+  }
+}
