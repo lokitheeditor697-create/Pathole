@@ -26,6 +26,9 @@ export default function App() {
   const [vehicles, setVehicles] = useState(DEFAULT_VEHICLES);
   const [systemStatus, setSystemStatus] = useState(null);
 
+  // AI Model Mode: 'pothole' (Single-Class Dedicated) | 'rdd2022' (7-Class Multi-Defect)
+  const [aiModelMode, setAiModelMode] = useState('pothole');
+
   // Connection & GPS Operational Reliability States
   const [serverStatus, setServerStatus] = useState('connected'); // 'connected' | 'reconnecting' | 'disconnected'
   const [latencyMs, setLatencyMs] = useState(14);
@@ -273,6 +276,8 @@ export default function App() {
         gpsDetails={gpsDetails}
         simulatedServerOffline={simulatedServerOffline}
         simulatedGpsLost={simulatedGpsLost}
+        aiModelMode={aiModelMode}
+        setAiModelMode={setAiModelMode}
       />
 
       {/* Operational Reliability Notification Banner (Appears if connection or GPS is lost) */}
@@ -295,6 +300,8 @@ export default function App() {
             defects={defects}
             vehicles={vehicles}
             patrolActive={patrolActive}
+            aiModelMode={aiModelMode}
+            setAiModelMode={setAiModelMode}
             onOpenAlertModal={() => setIsAlertModalOpen(true)}
             onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
             onRefreshData={fetchAllData}
@@ -336,7 +343,10 @@ export default function App() {
         )}
 
         {activeTab === 'AI_PERFORMANCE' && (
-          <AIPerformanceView />
+          <AIPerformanceView
+            aiModelMode={aiModelMode}
+            setAiModelMode={setAiModelMode}
+          />
         )}
       </main>
 

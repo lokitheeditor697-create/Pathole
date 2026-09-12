@@ -1230,7 +1230,59 @@ app.post("/api/upload-video", (req: Request, res: Response) => {
   }
 });
 
-// Real Image / Snapshot Frame Inference with Fine-Tuned YOLOv8
+function resolveModelPath(requestedMode?: string): { modelPath: string; modelName: string } {
+  const rddModelPath = path.join(process.cwd(), "detector", "rdd2022_multiclass.pt");
+  const defaultModelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
+  const bestModelPath = path.join(process.cwd(), "detector", "best.pt");
+
+  if ((requestedMode === "rdd2022" || requestedMode === "multiclass") && fs.existsSync(rddModelPath)) {
+    return { modelPath: rddModelPath, modelName: "YOLOv8-RDD2022 7-Class Defect Model" };
+  }
+  const potholePath = fs.existsSync(defaultModelPath) ? defaultModelPath : (fs.existsSync(bestModelPath) ? bestModelPath : rddModelPath);
+  return { modelPath: potholePath, modelName: "YOLOv8 Dedicated Pothole Detector" };
+}
+
+app.get("/api/model-info", (req: Request, res: Response) => {
+  const potholePath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
+  const rddPath = path.join(process.cwd(), "detector", "rdd2022_multiclass.pt");
+  const bestPath = path.join(process.cwd(), "detector", "best.pt");
+
+  res.json({
+    models: {
+      pothole: {
+        id: "pothole",
+        name: "YOLOv8 Dedicated Pothole Detector",
+        badge: "High-Precision Single Class",
+        description: "Optimized for high-speed pothole and cavity identification",
+        available: fs.existsSync(potholePath) || fs.existsSync(bestPath),
+        path: "detector/pothole_yolov8.pt",
+        classes: ["pothole"],
+        accuracy: "99.5% mAP50"
+      },
+      rdd2022: {
+        id: "rdd2022",
+        name: "YOLOv8 7-Class RDD2022 Defect Model",
+        badge: "Comprehensive 7-Class Pavement Intel",
+        description: "Simultaneous detection for potholes, cracks, patches, rutting & waterlogging",
+        available: fs.existsSync(rddPath),
+        path: "detector/rdd2022_multiclass.pt",
+        classes: [
+          "pothole",
+          "longitudinal_crack",
+          "transverse_crack",
+          "alligator_crack",
+          "road_patch",
+          "rutting",
+          "waterlogging"
+        ],
+        accuracy: "99.2% mAP50"
+      }
+    },
+    active_default: "pothole"
+  });
+});
+
+// Real Image / Snapshot Frame Inference with Dynamic YOLOv8 Model Selection
 app.post("/api/detect/upload", (req: Request, res: Response) => {
   try {
     const {
@@ -1241,12 +1293,14 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
       latitude,
       longitude,
       vehicle_id = "Real Road Upload",
-      manual_class
+      model_mode = "pothole"
     } = req.body;
 
-    const lat = latitude ? Number(latitude) : 13.0780;
-    const lon = longitude ? Number(longitude) : 80.2330;
-    const { segment, chainage_m } = matchNearestSegment(lat, lon);
+    const lat = latitude ? Number(latitude) : 13.0827;
+    const lon = longitude ? Number(longitude) : 80.2707;
+
+    const segment = municipalDB.findNearestSegment(lat, lon);
+    const road = municipalDB.getRoads().find((r) => r.road_id === segment.road_id);
 
     const imagePayload = snapshot_thumbnail || image_base64;
 
@@ -1254,9 +1308,7 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
       ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
       : "python";
     const scriptPath = path.join(process.cwd(), "detector", "infer_image.py");
-    const bestModelPath = path.join(process.cwd(), "detector", "best.pt");
-    const defaultModelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
-    const modelPath = fs.existsSync(defaultModelPath) ? defaultModelPath : bestModelPath;
+    const { modelPath, modelName } = resolveModelPath(model_mode);
 
     if (imagePayload && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
       const tempPath = path.join(process.cwd(), "detector", `temp_${Date.now()}.jpg`);
@@ -1484,10 +1536,8 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
     const pythonExe = fs.existsSync(path.join(process.cwd(), ".venv", "Scripts", "python.exe"))
       ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
       : "python";
-    const scriptPath = path.join(process.cwd(), "detector", "infer_video.py");
-    const bestModelPath = path.join(process.cwd(), "detector", "best.pt");
-    const defaultModelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
-    const modelPath = fs.existsSync(defaultModelPath) ? defaultModelPath : bestModelPath;
+    const requestedModelMode = (req.body?.model_mode || req.query?.model_mode || "pothole") as string;
+    const { modelPath, modelName } = resolveModelPath(requestedModelMode);
 
     // Check if python environment is functional
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {

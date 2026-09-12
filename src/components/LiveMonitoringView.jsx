@@ -27,7 +27,9 @@ export default function LiveMonitoringView({
   onOpenAlertModal,
   onSelectDefect,
   gpsStatus = 'locked',
-  serverConnected = true
+  serverConnected = true,
+  aiModelMode = 'pothole',
+  setAiModelMode = () => {}
 }) {
   // Video source modes: 'simulation' | 'sample' | 'webcam' | 'upload'
   const [videoMode, setVideoMode] = useState('simulation');
@@ -110,7 +112,8 @@ export default function LiveMonitoringView({
               file_name: file.name,
               latitude: activeVehicle.latitude,
               longitude: activeVehicle.longitude,
-              vehicle_id: 'User Upload (Real Road)'
+              vehicle_id: 'User Upload (Real Road)',
+              model_mode: aiModelMode
             })
           });
           if (res.ok) {
@@ -396,6 +399,7 @@ export default function LiveMonitoringView({
                 uploadedPreview="/videos/real_dashcam.mp4"
                 activeVehicle={activeVehicle}
                 onDefectLogged={onRefreshData}
+                aiModelMode={aiModelMode}
               />
             )}
 
@@ -404,6 +408,7 @@ export default function LiveMonitoringView({
               <WebcamPotholeDetector
                 activeVehicle={activeVehicle}
                 onRefreshData={onRefreshData}
+                aiModelMode={aiModelMode}
               />
             )}
 

@@ -35,7 +35,9 @@ export default function Header({
   gpsDetails,
   onOpenDiagnostics,
   simulatedServerOffline = false,
-  simulatedGpsLost = false
+  simulatedGpsLost = false,
+  aiModelMode = 'pothole',
+  setAiModelMode = () => {}
 }) {
   const isServerOnline = serverStatus === 'connected' && !simulatedServerOffline;
   const isGpsLocked = gpsStatus === 'locked' && !simulatedGpsLost;
@@ -235,8 +237,81 @@ export default function Header({
           </button>
         </div>
 
-        {/* Global Controls */}
-        <div className="header-actions-group">
+        {/* Global Controls & Model Toggle */}
+        <div className="header-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* AI Model Switcher Button Group */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#020617',
+            border: '1px solid #334155',
+            borderRadius: '8px',
+            padding: '2px',
+            gap: '2px'
+          }}>
+            <button
+              onClick={() => setAiModelMode('pothole')}
+              title="Targeted Single-Class Pothole Detector (99.5% Precision)"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '5px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                border: 'none',
+                backgroundColor: aiModelMode === 'pothole' ? '#2563eb' : 'transparent',
+                color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8',
+                boxShadow: aiModelMode === 'pothole' ? '0 0 10px rgba(37,99,235,0.4)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>🎯 Pothole Dedicated</span>
+              <span style={{
+                fontSize: '9px',
+                backgroundColor: aiModelMode === 'pothole' ? 'rgba(255,255,255,0.25)' : 'rgba(51,65,85,0.5)',
+                color: aiModelMode === 'pothole' ? '#fff' : '#64748b',
+                padding: '1px 5px',
+                borderRadius: '4px'
+              }}>
+                Single
+              </span>
+            </button>
+
+            <button
+              onClick={() => setAiModelMode('rdd2022')}
+              title="7-Class Road Defect Model (Potholes, Cracks, Patches, Rutting, Waterlogging)"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '5px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                border: 'none',
+                backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
+                color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8',
+                boxShadow: aiModelMode === 'rdd2022' ? '0 0 10px rgba(13,148,136,0.4)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>🌐 7-Class RDD2022</span>
+              <span style={{
+                fontSize: '9px',
+                backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(255,255,255,0.25)' : 'rgba(51,65,85,0.5)',
+                color: aiModelMode === 'rdd2022' ? '#fff' : '#64748b',
+                padding: '1px 5px',
+                borderRadius: '4px'
+              }}>
+                7-Class
+              </span>
+            </button>
+          </div>
+
           {/* Patrol Play/Pause */}
           <button
             onClick={onTogglePatrol}

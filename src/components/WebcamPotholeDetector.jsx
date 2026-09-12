@@ -14,7 +14,8 @@ import { API_BASE } from '../config';
 
 export default function WebcamPotholeDetector({
   activeVehicle,
-  onRefreshData
+  onRefreshData,
+  aiModelMode = 'pothole'
 }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
