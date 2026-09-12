@@ -1,4 +1,4 @@
-﻿"""
+"""
 Train YOLOv8 on RDD2022 Road Defect Dataset.
 Produces production weights for deployment in the AI Road Intelligence platform.
 """
@@ -52,9 +52,10 @@ def train_rdd2022():
 
     best_weights = os.path.join("ml", "models", "yolov8_rdd2022_v1", "weights", "best.pt")
     if os.path.exists(best_weights):
-        target_pt = os.path.join("detector", "pothole_yolov8.pt")
+        target_pt = os.path.join("detector", "rdd2022_multiclass.pt")
         shutil.copy2(best_weights, target_pt)
-        print(f"\n✅ Training Complete! Updated platform model weights -> {target_pt}")
+        print(f"\n✅ Training Complete! Exported to separate model: {target_pt}")
+        print("🔒 Existing fine-tuned pothole model (detector/pothole_yolov8.pt) remains completely intact and preserved.")
 
     return results
 
