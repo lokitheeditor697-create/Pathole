@@ -9,7 +9,7 @@ import { exec } from "child_process";
 import { municipalDB } from "./server/db";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 app.use(cors());
 app.use(express.json({ limit: "150mb" }));
@@ -1370,10 +1370,14 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
     let videoFilePath = "";
     const candidates = [
       path.join(process.cwd(), "public", file_name.startsWith("/") ? file_name.slice(1) : file_name),
+      path.join(process.cwd(), "dist", file_name.startsWith("/") ? file_name.slice(1) : file_name),
+      path.join(process.cwd(), "dist", "videos", cleanName),
+      path.join(process.cwd(), "dist", "videos", "uploads", cleanName),
       path.join(process.cwd(), "public", "videos", "uploads", cleanName),
       path.join(process.cwd(), "public", "videos", cleanName),
       path.join(process.cwd(), "detector", cleanName),
       path.join(process.cwd(), "public", "videos", "real_dashcam.mp4"),
+      path.join(process.cwd(), "dist", "videos", "real_dashcam.mp4"),
       path.join(process.cwd(), "detector", "real_dashcam.mp4")
     ];
 
@@ -1994,9 +1998,22 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`[Phase 1] AI Road Intelligence Platform running on http://0.0.0.0:${PORT}`);
   });
+
+  const handleShutdown = (signal: string) => {
+    console.log(`[Server] Received ${signal}, flushing data and shutting down gracefully...`);
+    municipalDB.save();
+    server.close(() => {
+      console.log("[Server] Closed HTTP server.");
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", () => handleShutdown("SIGTERM"));
+  process.on("SIGINT", () => handleShutdown("SIGINT"));
 }
 
 startServer();
+

@@ -9,6 +9,9 @@
     "lint": "oxlint",
     "start": "node dist/server.cjs"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@vis.gl/react-google-maps": "^1.10.0",
     "cors": "^2.8.5",
