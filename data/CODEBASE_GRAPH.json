@@ -1,0 +1,488 @@
+{
+  "version": "1.0.0",
+  "project": "AI Road Intelligence & Pavement Maintenance Platform",
+  "generated_at": "2026-09-12T16:30:24.266Z",
+  "stats": {
+    "total_nodes": 31,
+    "total_links": 41,
+    "modules": [
+      "Root Config & Server",
+      "Frontend / UI",
+      "React Components",
+      "Backend / DB",
+      "AI & Computer Vision",
+      "Edge Dashcam"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "server.ts",
+      "name": "server.ts",
+      "group": "Root Config & Server",
+      "size": 77458,
+      "path": "server.ts",
+      "category": "server"
+    },
+    {
+      "id": "vite.config.js",
+      "name": "vite.config.js",
+      "group": "Root Config & Server",
+      "size": 293,
+      "path": "vite.config.js",
+      "category": "config"
+    },
+    {
+      "id": "package.json",
+      "name": "package.json",
+      "group": "Root Config & Server",
+      "size": 1127,
+      "path": "package.json",
+      "category": "config"
+    },
+    {
+      "id": "render.yaml",
+      "name": "render.yaml",
+      "group": "Root Config & Server",
+      "size": 352,
+      "path": "render.yaml",
+      "category": "config"
+    },
+    {
+      "id": "src/App.jsx",
+      "name": "App.jsx",
+      "group": "Frontend / UI",
+      "size": 13887,
+      "path": "src/App.jsx",
+      "category": "module"
+    },
+    {
+      "id": "src/config.js",
+      "name": "config.js",
+      "group": "Frontend / UI",
+      "size": 263,
+      "path": "src/config.js",
+      "category": "module"
+    },
+    {
+      "id": "src/gisData.js",
+      "name": "gisData.js",
+      "group": "Frontend / UI",
+      "size": 7358,
+      "path": "src/gisData.js",
+      "category": "module"
+    },
+    {
+      "id": "src/main.jsx",
+      "name": "main.jsx",
+      "group": "Frontend / UI",
+      "size": 239,
+      "path": "src/main.jsx",
+      "category": "module"
+    },
+    {
+      "id": "src/types.ts",
+      "name": "types.ts",
+      "group": "Frontend / UI",
+      "size": 3228,
+      "path": "src/types.ts",
+      "category": "module"
+    },
+    {
+      "id": "src/components/AIPerformanceView.jsx",
+      "name": "AIPerformanceView.jsx",
+      "group": "React Components",
+      "size": 11232,
+      "path": "src/components/AIPerformanceView.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/AlertTestModal.jsx",
+      "name": "AlertTestModal.jsx",
+      "group": "React Components",
+      "size": 22337,
+      "path": "src/components/AlertTestModal.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/DefectInventoryView.jsx",
+      "name": "DefectInventoryView.jsx",
+      "group": "React Components",
+      "size": 14400,
+      "path": "src/components/DefectInventoryView.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/GoogleRoadHealthMapView.jsx",
+      "name": "GoogleRoadHealthMapView.jsx",
+      "group": "React Components",
+      "size": 50788,
+      "path": "src/components/GoogleRoadHealthMapView.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/Header.jsx",
+      "name": "Header.jsx",
+      "group": "React Components",
+      "size": 14251,
+      "path": "src/components/Header.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/LeafletRoadHealthMap.jsx",
+      "name": "LeafletRoadHealthMap.jsx",
+      "group": "React Components",
+      "size": 11356,
+      "path": "src/components/LeafletRoadHealthMap.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/LiveMonitoringView.jsx",
+      "name": "LiveMonitoringView.jsx",
+      "group": "React Components",
+      "size": 41142,
+      "path": "src/components/LiveMonitoringView.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/OperationalAlertBanner.jsx",
+      "name": "OperationalAlertBanner.jsx",
+      "group": "React Components",
+      "size": 9233,
+      "path": "src/components/OperationalAlertBanner.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/PatrolFleetView.jsx",
+      "name": "PatrolFleetView.jsx",
+      "group": "React Components",
+      "size": 10007,
+      "path": "src/components/PatrolFleetView.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/PatrolHUD.jsx",
+      "name": "PatrolHUD.jsx",
+      "group": "React Components",
+      "size": 37805,
+      "path": "src/components/PatrolHUD.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/ReliabilityDiagnosticsModal.jsx",
+      "name": "ReliabilityDiagnosticsModal.jsx",
+      "group": "React Components",
+      "size": 18648,
+      "path": "src/components/ReliabilityDiagnosticsModal.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/RoadHealthMapView.jsx",
+      "name": "RoadHealthMapView.jsx",
+      "group": "React Components",
+      "size": 201,
+      "path": "src/components/RoadHealthMapView.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/RoadVideoInspectionPlayer.jsx",
+      "name": "RoadVideoInspectionPlayer.jsx",
+      "group": "React Components",
+      "size": 49855,
+      "path": "src/components/RoadVideoInspectionPlayer.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/WebcamPotholeDetector.jsx",
+      "name": "WebcamPotholeDetector.jsx",
+      "group": "React Components",
+      "size": 37720,
+      "path": "src/components/WebcamPotholeDetector.jsx",
+      "category": "component"
+    },
+    {
+      "id": "server/db.ts",
+      "name": "db.ts",
+      "group": "Backend / DB",
+      "size": 23725,
+      "path": "server/db.ts",
+      "category": "module"
+    },
+    {
+      "id": "detector/detect.py",
+      "name": "detect.py",
+      "group": "AI & Computer Vision",
+      "size": 24544,
+      "path": "detector/detect.py",
+      "category": "ai"
+    },
+    {
+      "id": "detector/fast_cache.py",
+      "name": "fast_cache.py",
+      "group": "AI & Computer Vision",
+      "size": 4118,
+      "path": "detector/fast_cache.py",
+      "category": "ai"
+    },
+    {
+      "id": "detector/generate_cache.py",
+      "name": "generate_cache.py",
+      "group": "AI & Computer Vision",
+      "size": 1204,
+      "path": "detector/generate_cache.py",
+      "category": "ai"
+    },
+    {
+      "id": "detector/generate_sample_video.py",
+      "name": "generate_sample_video.py",
+      "group": "AI & Computer Vision",
+      "size": 3160,
+      "path": "detector/generate_sample_video.py",
+      "category": "ai"
+    },
+    {
+      "id": "detector/infer_image.py",
+      "name": "infer_image.py",
+      "group": "AI & Computer Vision",
+      "size": 3378,
+      "path": "detector/infer_image.py",
+      "category": "ai"
+    },
+    {
+      "id": "detector/infer_video.py",
+      "name": "infer_video.py",
+      "group": "AI & Computer Vision",
+      "size": 8200,
+      "path": "detector/infer_video.py",
+      "category": "ai"
+    },
+    {
+      "id": "edge/camera/edge_capture.py",
+      "name": "edge_capture.py",
+      "group": "Edge Dashcam",
+      "size": 1669,
+      "path": "edge/camera/edge_capture.py",
+      "category": "module"
+    }
+  ],
+  "links": [
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/Header",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/LiveMonitoringView",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/RoadHealthMapView",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/DefectInventoryView",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/PatrolFleetView",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/AIPerformanceView",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/AlertTestModal",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/OperationalAlertBanner",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/ReliabilityDiagnosticsModal",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/gisData",
+      "type": "import"
+    },
+    {
+      "source": "src/main.jsx",
+      "target": "src/index.css",
+      "type": "import"
+    },
+    {
+      "source": "src/main.jsx",
+      "target": "src/App.jsx",
+      "type": "import"
+    },
+    {
+      "source": "src/components/AIPerformanceView.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/AlertTestModal.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/DefectInventoryView.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/GoogleRoadHealthMapView.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/GoogleRoadHealthMapView.jsx",
+      "target": "src/components/LeafletRoadHealthMap",
+      "type": "import"
+    },
+    {
+      "source": "src/components/GoogleRoadHealthMapView.jsx",
+      "target": "src/gisData",
+      "type": "import"
+    },
+    {
+      "source": "src/components/Header.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/LiveMonitoringView.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/LiveMonitoringView.jsx",
+      "target": "src/components/PatrolHUD",
+      "type": "import"
+    },
+    {
+      "source": "src/components/LiveMonitoringView.jsx",
+      "target": "src/components/WebcamPotholeDetector",
+      "type": "import"
+    },
+    {
+      "source": "src/components/LiveMonitoringView.jsx",
+      "target": "src/components/RoadVideoInspectionPlayer",
+      "type": "import"
+    },
+    {
+      "source": "src/components/RoadHealthMapView.jsx",
+      "target": "src/components/GoogleRoadHealthMapView",
+      "type": "import"
+    },
+    {
+      "source": "src/components/RoadVideoInspectionPlayer.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/WebcamPotholeDetector.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "server.ts",
+      "target": "server/db.ts",
+      "type": "architecture",
+      "label": "ACID DB Operations"
+    },
+    {
+      "source": "server.ts",
+      "target": "detector/infer_video.py",
+      "type": "architecture",
+      "label": "YOLOv8 ByteTrack Inference"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/Header.jsx",
+      "type": "architecture",
+      "label": "Navigation & Alert Dispatch"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/LiveMonitoringView.jsx",
+      "type": "architecture",
+      "label": "Live Video & Patrol Feed"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/LeafletRoadHealthMap.jsx",
+      "type": "architecture",
+      "label": "OpenStreetMap GIS Health"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/DefectInventoryView.jsx",
+      "type": "architecture",
+      "label": "Defect Registry & Work Orders"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/PatrolFleetView.jsx",
+      "type": "architecture",
+      "label": "Fleet Telemetry Grid"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/AIPerformanceView.jsx",
+      "type": "architecture",
+      "label": "Model Governance & mAP"
+    },
+    {
+      "source": "src/components/LiveMonitoringView.jsx",
+      "target": "src/components/RoadVideoInspectionPlayer.jsx",
+      "type": "architecture",
+      "label": "Persistent Pothole ID Tracking"
+    },
+    {
+      "source": "src/components/LiveMonitoringView.jsx",
+      "target": "src/components/WebcamPotholeDetector.jsx",
+      "type": "architecture",
+      "label": "Mobile GPS & Rear Cam Live AI"
+    },
+    {
+      "source": "src/components/RoadVideoInspectionPlayer.jsx",
+      "target": "server.ts",
+      "type": "architecture",
+      "label": "POST /api/detect/video-scan"
+    },
+    {
+      "source": "src/components/WebcamPotholeDetector.jsx",
+      "target": "server.ts",
+      "type": "architecture",
+      "label": "POST /api/detect/frame"
+    },
+    {
+      "source": "server.ts",
+      "target": "data/municipal_pavement_registry.json",
+      "type": "architecture",
+      "label": "JSON DB Persistence"
+    },
+    {
+      "source": "server.ts",
+      "target": "data/precomputed_scans.json",
+      "type": "architecture",
+      "label": "Cloud Keyframe Fallback"
+    }
+  ]
+}
