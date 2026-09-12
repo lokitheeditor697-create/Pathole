@@ -832,20 +832,25 @@ export default function RoadVideoInspectionPlayer({
 
           <div
             style={{
-              backgroundColor: 'rgba(15, 23, 42, 0.88)',
-              color: '#22c55e',
+              backgroundColor: 'rgba(15, 23, 42, 0.90)',
+              color: isAiScanning ? '#38bdf8' : (detectedMoments.length > 0 ? '#ef4444' : '#22c55e'),
               fontSize: '11px',
               fontWeight: '700',
-              padding: '4px 8px',
+              padding: '4px 10px',
               borderRadius: '6px',
-              border: '1px solid #1e293b',
+              border: `1px solid ${isAiScanning ? '#0284c7' : (detectedMoments.length > 0 ? '#ef4444' : '#1e293b')}`,
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '6px',
+              boxShadow: isAiScanning ? '0 0 10px rgba(2, 132, 199, 0.4)' : 'none'
             }}
           >
-            <Scan size={12} />
-            <span>{detectedMoments.length} Defects Found</span>
+            <Scan size={13} className={isAiScanning ? 'animate-spin' : ''} />
+            <span>
+              {isAiScanning
+                ? 'AI Analyzing Road Frames...'
+                : `${detectedMoments.length > 0 ? `${detectedMoments.length} Defects Found` : '0 Defects Found'}`}
+            </span>
           </div>
         </div>
 

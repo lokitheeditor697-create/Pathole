@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
     v_path = sys.argv[1]
     m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/pothole_yolov8.pt"
-    c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.42
+    c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.35
 
     res = analyze_video(v_path, m_path, c_thresh)
     print(json.dumps(res))
