@@ -1,0 +1,11 @@
+{
+  "name": "Smart City Road Defect & Traffic Detection",
+  "description": "Phase 1 Edge AI Road Inspection & Live Detection Platform with GIS 100m road segmentation, YOLOv8 7-class defect inference, multi-bus spatial deduplication, and automated municipal dispatch.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

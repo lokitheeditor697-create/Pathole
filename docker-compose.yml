@@ -1,19 +1,47 @@
 version: '3.8'
 
 services:
-  smart-city-road-defect:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: road_intelligence_postgis
+    environment:
+      POSTGRES_DB: road_intelligence_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: smart-city-road-defect:latest
-    container_name: road_defect_detector
-    ports:
-      - "7860:7860"
+      dockerfile: docker/Dockerfile.backend
+    container_name: road_intelligence_fastapi
     environment:
-      - PORT=7860
+      DATABASE_URL: postgresql://postgres:postgrespassword@db:5432/road_intelligence_db
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      GMAIL_USER: ${GMAIL_USER}
+      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD}
+      ALERT_RECIPIENTS: ${ALERT_RECIPIENTS}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:7860/stats"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: road_intelligence_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgis_data:
