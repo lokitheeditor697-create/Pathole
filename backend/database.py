@@ -8,7 +8,13 @@ import sqlite3
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any, Tuple
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "road_defects.db")
+db_env = os.getenv("DATABASE_URL", "")
+if db_env.startswith("sqlite:///"):
+    DB_PATH = db_env.replace("sqlite:///", "")
+elif db_env:
+    DB_PATH = db_env
+else:
+    DB_PATH = os.path.join(os.path.dirname(__file__), "road_defects.db")
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:

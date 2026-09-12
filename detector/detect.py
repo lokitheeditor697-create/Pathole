@@ -391,7 +391,7 @@ def main():
     default_video = "detector/real_dashcam.mp4" if os.path.exists("detector/real_dashcam.mp4") else "detector/sample_road.mp4"
     parser.add_argument("--video", type=str, default=default_video,
                         help=f"Path to video file or camera index (default: {default_video})")
-    default_model = "detector/pothole_yolov8.pt" if os.path.exists("detector/pothole_yolov8.pt") else "yolov8n.pt"
+    default_model = os.getenv("YOLO_MODEL_PATH") or ("detector/pothole_yolov8.pt" if os.path.exists("detector/pothole_yolov8.pt") else "yolov8n.pt")
     parser.add_argument("--model", type=str, default=default_model,
                         help=f"YOLO model path or name (default: {default_model})")
     parser.add_argument("--bus-id", type=str, default="MTC 46G",
@@ -404,12 +404,16 @@ def main():
                         help="Destination Latitude (default: 13.0743 DG Vaishnav College, Arumbakkam)")
     parser.add_argument("--end-lon", type=float, default=80.2108,
                         help="Destination Longitude (default: 80.2108 DG Vaishnav College, Arumbakkam)")
-    parser.add_argument("--conf", type=float, default=0.50,
-                        help="Confidence threshold for detections (default: 0.50)")
+    default_conf = float(os.getenv("YOLO_CONF_THRESHOLD", "0.50"))
+    parser.add_argument("--conf", type=float, default=default_conf,
+                        help=f"Confidence threshold for detections (default: {default_conf})")
     parser.add_argument("--conf-high", type=float, default=0.70,
                         help="Threshold for High severity classification (default: 0.70)")
     parser.add_argument("--conf-med", type=float, default=0.55,
                         help="Threshold for Medium severity classification (default: 0.55)")
+    default_iou = float(os.getenv("YOLO_IOU_THRESHOLD", "0.45"))
+    parser.add_argument("--iou", type=float, default=default_iou,
+                        help=f"IoU threshold for NMS filtering (default: {default_iou})")
     parser.add_argument("--backend-url", type=str, default="",
                         help="Backend POST endpoint (e.g. http://localhost:8000/events)")
     parser.add_argument("--standalone", action="store_true", default=False,
