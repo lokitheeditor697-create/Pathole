@@ -1,0 +1,117 @@
+@import 'leaflet/dist/leaflet.css';
+
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --border-color: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --severity-high: #ef4444;
+  --severity-high-bg: rgba(239, 68, 68, 0.15);
+  --severity-med: #f97316;
+  --severity-med-bg: rgba(249, 115, 22, 0.15);
+  --severity-low: #22c55e;
+  --severity-low-bg: rgba(34, 197, 94, 0.15);
+  
+  --accent-blue: #38bdf8;
+  --accent-blue-bg: rgba(56, 189, 248, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Custom Leaflet Map Pin Styles */
+.custom-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  font-size: 11px;
+  border: 2px solid rgba(255,255,255,0.85);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.custom-pin:hover {
+  transform: scale(1.2);
+  z-index: 1000 !important;
+}
+
+.pin-high {
+  background: #ef4444;
+}
+
+.pin-medium {
+  background: #f97316;
+}
+
+.pin-low {
+  background: #22c55e;
+}
+
+/* Leaflet Popup overrides for Dark Theme */
+.leaflet-popup-content-wrapper {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid #475569 !important;
+  padding: 4px !important;
+}
+
+.leaflet-popup-tip {
+  background-color: #1e293b !important;
+}
+
+.leaflet-container {
+  font-family: inherit !important;
+  height: 100% !important;
+  width: 100% !important;
+  background-color: #0b1120 !important;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.95); }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
