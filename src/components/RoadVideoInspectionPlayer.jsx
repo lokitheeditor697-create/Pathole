@@ -53,6 +53,7 @@ export default function RoadVideoInspectionPlayer({
   const [activeDefectsOnScreen, setActiveDefectsOnScreen] = useState([]);
   const [autoPauseOnDefects, setAutoPauseOnDefects] = useState(false);
   const [lastAutoPausedMoment, setLastAutoPausedMoment] = useState(null);
+  const lockedTracksRef = useRef(new Map());
 
   // Manual logging states
   const [isCapturingManual, setIsCapturingManual] = useState(false);
@@ -115,10 +116,16 @@ export default function RoadVideoInspectionPlayer({
         setScanStatusMessage(`Inference complete: ${data.total_defects} real road distresses identified.`);
 
         if (Array.isArray(data.moments) && data.moments.length > 0) {
-          setDetectedMoments(data.moments);
+          const mappedMoments = data.moments.map((m, idx) => ({
+            ...m,
+            pothole_id: m.pothole_id || (m.track_id ? `PTH-#${String(m.track_id).padStart(2, '0')}` : `PTH-#${String(idx + 1).padStart(2, '0')}`)
+          }));
+          setDetectedMoments(mappedMoments);
         } else if (Array.isArray(data.defects) && data.defects.length > 0) {
-          const mappedMoments = data.defects.map((d) => ({
+          const mappedMoments = data.defects.map((d, idx) => ({
             time: d.video_timestamp_sec || 1.5,
+            pothole_id: d.pothole_id || `PTH-#${String(idx + 1).padStart(2, '0')}`,
+            track_id: idx + 1,
             class_name: d.class_name,
             conf: d.confidence,
             severity: d.severity,
@@ -227,15 +234,79 @@ export default function RoadVideoInspectionPlayer({
       }
     }
 
-    setActiveDefectsOnScreen(singleTraces);
-    setActiveDefectOnScreen(singleTraces[0] || null);
+    // 3. User Requirement: Lock Pothole ID until out of range
+    // Prevent multiple detections on the same pothole with fluttering % values.
+    // Track continuously and store the last info before out of range as the final confirmed state.
+    const lockedTraces = singleTraces.map((cand) => {
+      const trackKey = cand.track_id !== undefined && cand.track_id !== null
+        ? String(cand.track_id)
+        : cand.pothole_id || `${cand.class_name}-${Math.round((cand.bbox?.x || 0) / 40)}`;
+
+      const potholeId = cand.pothole_id || `PTH-#${String(cand.track_id || 1).padStart(2, '0')}`;
+
+      let trackRecord = lockedTracksRef.current.get(trackKey);
+      if (!trackRecord) {
+        trackRecord = {
+          pothole_id: potholeId,
+          lockedConf: cand.conf,
+          firstSeen: cur,
+          lastSeen: cur,
+          lastInfoBeforeExit: cand,
+          isLocked: true
+        };
+        lockedTracksRef.current.set(trackKey, trackRecord);
+      } else {
+        trackRecord.lastSeen = cur;
+        trackRecord.lastInfoBeforeExit = { ...cand, pothole_id: potholeId };
+      }
+
+      return {
+        ...cand,
+        pothole_id: potholeId,
+        conf: trackRecord.lockedConf, // Keep stable locked % (prevents misleading fluttering values)
+        is_locked: true,
+        lastInfoBeforeExit: trackRecord.lastInfoBeforeExit
+      };
+    });
+
+    // Check for tracks that just went out of range (not seen in recent window)
+    for (const [key, trackRecord] of lockedTracksRef.current.entries()) {
+      if (cur > trackRecord.lastSeen + 0.5 && !trackRecord.finalized) {
+        trackRecord.finalized = true;
+        // The last info before out of range is considered as the confirmed defect measurement
+        const finalInfo = trackRecord.lastInfoBeforeExit;
+        if (onDefectLogged && finalInfo) {
+          onDefectLogged({
+            detection_id: `DET-CONFIRMED-${finalInfo.pothole_id || key}`,
+            pothole_id: finalInfo.pothole_id,
+            defect_type: finalInfo.class_name,
+            class_name: finalInfo.class_name,
+            severity: finalInfo.severity,
+            confidence: trackRecord.lockedConf,
+            exact_chainage_m: Math.round(100 + (trackRecord.lastSeen * 8.5)),
+            bbox: {
+              x_min: finalInfo.bbox?.x || 200,
+              y_min: finalInfo.bbox?.y || 150,
+              x_max: (finalInfo.bbox?.x || 200) + (finalInfo.bbox?.w || 120),
+              y_max: (finalInfo.bbox?.y || 150) + (finalInfo.bbox?.h || 65),
+              pixel_area: (finalInfo.bbox?.w || 120) * (finalInfo.bbox?.h || 65),
+              estimated_physical_width_cm: finalInfo.wCm,
+              estimated_physical_length_cm: finalInfo.lCm
+            }
+          });
+        }
+      }
+    }
+
+    setActiveDefectsOnScreen(lockedTraces);
+    setActiveDefectOnScreen(lockedTraces[0] || null);
 
     // Auto-pause feature if enabled
-    if (autoPauseOnDefects && singleTraces.length > 0 && lastAutoPausedMoment !== singleTraces[0].time) {
+    if (autoPauseOnDefects && lockedTraces.length > 0 && lastAutoPausedMoment !== lockedTraces[0].time) {
       videoRef.current.pause();
       setIsPlaying(false);
-      setLastAutoPausedMoment(singleTraces[0].time);
-      showToast(`Auto-paused at defect: ${singleTraces[0].class_name.toUpperCase()}`, 'info');
+      setLastAutoPausedMoment(lockedTraces[0].time);
+      showToast(`Auto-paused at defect: ${lockedTraces[0].class_name.toUpperCase()} (${lockedTraces[0].pothole_id})`, 'info');
     }
   };
 
@@ -441,15 +512,10 @@ export default function RoadVideoInspectionPlayer({
       }}
     >
       {/* Sample Video Selector Bar */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+      <div className="video-player-toolbar" style={{
         padding: '8px 12px',
         backgroundColor: '#0f172a',
-        borderBottom: '1px solid #1e293b',
-        gap: '8px',
-        flexWrap: 'wrap'
+        borderBottom: '1px solid #1e293b'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -633,30 +699,63 @@ export default function RoadVideoInspectionPlayer({
                 transition: 'all 0.1s ease-out'
               }}
             >
-              {/* Top Badge: Class & Confidence */}
+              {/* Top Badge: Pothole ID, Class, Locked status, & Confidence */}
               <div
                 style={{
-                  backgroundColor: getSeverityColor(defect.severity),
-                  color: '#090d16',
+                  backgroundColor: '#090d16',
+                  color: '#f8fafc',
                   fontSize: '11px',
-                  fontWeight: '900',
-                  padding: '2px 6px',
-                  borderRadius: '3px',
+                  fontWeight: '800',
+                  padding: '3px 7px',
+                  borderRadius: '4px',
                   alignSelf: 'flex-start',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.6)',
+                  border: `1.5px solid ${getSeverityColor(defect.severity)}`,
+                  boxShadow: '0 3px 8px rgba(0,0,0,0.8)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '5px'
+                  gap: '6px'
                 }}
               >
-                <span>{defect.class_name.toUpperCase().replace('_', ' ')}</span>
-                <span>{(defect.conf * 100).toFixed(0)}%</span>
+                {/* Pothole ID */}
+                <span style={{
+                  backgroundColor: '#1e293b',
+                  color: '#38bdf8',
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  fontSize: '10px',
+                  fontFamily: 'monospace',
+                  fontWeight: '900',
+                  letterSpacing: '0.04em'
+                }}>
+                  {defect.pothole_id || `PTH-#${String(defect.track_id || 1).padStart(2, '0')}`}
+                </span>
+
+                <span style={{ color: getSeverityColor(defect.severity) }}>
+                  {defect.class_name.toUpperCase().replace('_', ' ')}
+                </span>
+
+                {/* Locked indicator tag */}
+                <span style={{
+                  fontSize: '9px',
+                  backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                  color: '#4ade80',
+                  border: '1px solid rgba(34, 197, 94, 0.4)',
+                  padding: '0 4px',
+                  borderRadius: '2px',
+                  fontWeight: '800'
+                }}>
+                  LOCKED
+                </span>
+
+                <span style={{ color: '#94a3b8', fontSize: '10px' }}>
+                  {(defect.conf * 100).toFixed(0)}%
+                </span>
               </div>
 
               {/* Bottom Badge: Physical Dimensions & Severity */}
               <div
                 style={{
-                  backgroundColor: 'rgba(15, 23, 42, 0.90)',
+                  backgroundColor: 'rgba(15, 23, 42, 0.94)',
                   color: '#f8fafc',
                   fontSize: '10px',
                   fontWeight: '700',
@@ -665,6 +764,7 @@ export default function RoadVideoInspectionPlayer({
                   alignSelf: 'flex-end',
                   border: '1px solid #334155',
                   display: 'flex',
+                  alignItems: 'center',
                   gap: '6px'
                 }}
               >
@@ -940,16 +1040,13 @@ export default function RoadVideoInspectionPlayer({
 
         {/* Playback Controls & Action Tools */}
         <div
+          className="video-player-controls"
           style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '10px'
+            padding: '4px 0'
           }}
         >
           {/* Left: Play/Pause, Rewind, Time, Audio */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="video-controls-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <button
               onClick={togglePlay}
               title={isPlaying ? 'Pause Video (Space)' : 'Play Video (Space)'}
@@ -1036,7 +1133,7 @@ export default function RoadVideoInspectionPlayer({
           </div>
 
           {/* Right: AI Scan Button, Defect Capture, Auto-Pause */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="video-controls-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             {/* Auto-Pause Toggle */}
             <label
               style={{

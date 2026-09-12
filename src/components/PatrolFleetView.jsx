@@ -121,11 +121,7 @@ export default function PatrolFleetView({
       </div>
 
       {/* Fleet Cards Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-        gap: '16px'
-      }}>
+      <div className="responsive-card-grid">
         {vehicles.map((v) => {
           const isOnline = v.status === 'Online';
 

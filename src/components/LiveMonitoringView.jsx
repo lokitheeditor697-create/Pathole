@@ -292,12 +292,7 @@ export default function LiveMonitoringView({
       )}
 
       {/* Main Grid: Camera Video HUD on Left (60%), Live Incident Feed on Right (40%) */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
-        gap: '16px',
-        minHeight: '480px'
-      }}>
+      <div className="live-monitoring-grid">
         {/* Left Column: Live Camera Video HUD */}
         <div style={{
           backgroundColor: '#0f172a',
@@ -493,7 +488,7 @@ export default function LiveMonitoringView({
                     </div>
 
                     {/* Quick-Test Buttons */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                    <div className="upload-hub-presets">
                       <button
                         onClick={() => {
                           setUploadedFile({ name: 'real_dashcam.mp4', type: 'video/mp4', size: 10257801 });
@@ -760,15 +755,7 @@ export default function LiveMonitoringView({
           </div>
 
           {/* Under-Camera Vehicle Diagnostics Footer */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            backgroundColor: '#090d16',
-            borderTop: '1px solid #1e293b',
-            padding: '10px 14px',
-            gap: '8px',
-            fontSize: '11px'
-          }}>
+          <div className="telemetry-footer-grid">
             <div>
               <span style={{ color: '#64748b', display: 'block' }}>CORRIDOR</span>
               <span style={{ color: '#f8fafc', fontWeight: '600' }}>{activeVehicle.current_road}</span>

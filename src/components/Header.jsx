@@ -63,28 +63,20 @@ export default function Header({
       zIndex: 20
     }}>
       {/* Top Banner: Brand + System Diagnostics + Global Actions */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '12px 20px',
-        gap: '12px',
-        borderBottom: '1px solid #1e293b'
-      }}>
+      <div className="header-top-bar">
         {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            width: '12px',
-            height: '12px',
+            width: '10px',
+            height: '10px',
             borderRadius: '50%',
             backgroundColor: '#38bdf8',
-            boxShadow: '0 0 12px #38bdf8',
+            boxShadow: '0 0 10px #38bdf8',
             flexShrink: 0
           }} />
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ margin: 0, fontSize: '17px', fontWeight: '800', letterSpacing: '-0.02em', color: '#f8fafc' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h1 className="header-brand-title">
                 AI Road Intelligence &amp; Predictive Maintenance
               </h1>
               <span style={{
@@ -100,7 +92,7 @@ export default function Header({
                 Phase 1 Active
               </span>
             </div>
-            <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#64748b' }}>
+            <p className="header-brand-subtitle">
               GIS 100m Corridor Segmentation • YOLOv8-road-v1 7-Class Inference • Multi-Bus Spatial Deduplication
               {lastRefreshed && (
                 <span style={{ marginLeft: '8px', color: '#475569' }}>
@@ -244,19 +236,12 @@ export default function Header({
         </div>
 
         {/* Global Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="header-actions-group">
           {/* Patrol Play/Pause */}
           <button
             onClick={onTogglePatrol}
+            className="header-action-btn"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
               backgroundColor: patrolActive ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
               color: patrolActive ? '#4ade80' : '#f87171',
               border: `1px solid ${patrolActive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
@@ -269,16 +254,9 @@ export default function Header({
           {/* Test Alerts */}
           <button
             onClick={onOpenAlertModal}
+            className="header-action-btn"
             title="Send test Telegram Bot & Gmail dispatch alert"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
               backgroundColor: 'rgba(245, 158, 11, 0.15)',
               color: '#f59e0b',
               border: '1px solid rgba(245, 158, 11, 0.3)'
@@ -292,15 +270,8 @@ export default function Header({
           <a
             href={`${API_BASE}/api/reports/csv`}
             download="phase1_road_defects_report.csv"
+            className="header-action-btn"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
               textDecoration: 'none',
               backgroundColor: '#1e293b',
               color: '#38bdf8',
@@ -315,16 +286,9 @@ export default function Header({
           <a
             href={`${API_BASE}/api/db/export`}
             download="municipal_pavement_db.json"
+            className="header-action-btn"
             title="Export complete persistent municipal database (Corridors, Defects, Work Orders, Surveys)"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
               textDecoration: 'none',
               backgroundColor: '#1e293b',
               color: '#22c55e',
@@ -340,19 +304,14 @@ export default function Header({
             <button
               onClick={onResetDB}
               disabled={loading}
+              className="header-action-btn"
               title="Reset database to clean baseline before presenting your prototype (clears previous detections & resets road health)"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '700',
                 cursor: loading ? 'default' : 'pointer',
                 backgroundColor: 'rgba(239, 68, 68, 0.12)',
                 color: '#f87171',
                 border: '1px solid rgba(239, 68, 68, 0.35)',
+                fontWeight: '700',
                 transition: 'all 0.15s ease'
               }}
             >
@@ -365,18 +324,13 @@ export default function Header({
           <button
             onClick={onRefresh}
             disabled={loading}
+            className="header-action-btn"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '600',
               cursor: loading ? 'default' : 'pointer',
               backgroundColor: '#1e293b',
               color: '#f8fafc',
-              border: '1px solid #334155'
+              border: '1px solid #334155',
+              padding: '6px 10px'
             }}
           >
             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
@@ -385,14 +339,7 @@ export default function Header({
       </div>
 
       {/* Navigation Tabs Bar */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 20px',
-        backgroundColor: '#090d16',
-        gap: '4px',
-        overflowX: 'auto'
-      }}>
+      <div className="header-nav-tabs">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -400,20 +347,15 @@ export default function Header({
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
+              className="header-nav-tab-btn"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                fontSize: '13px',
                 fontWeight: isActive ? '700' : '500',
                 color: isActive ? '#38bdf8' : '#94a3b8',
                 backgroundColor: 'transparent',
                 border: 'none',
                 borderBottom: isActive ? '2px solid #38bdf8' : '2px solid transparent',
                 cursor: 'pointer',
-                transition: 'all 0.15s',
-                whiteSpace: 'nowrap'
+                transition: 'all 0.15s'
               }}
             >
               <Icon size={15} />

@@ -154,11 +154,7 @@ export default function AIPerformanceView() {
       </div>
 
       {/* Confusion Matrix & Dataset Architecture Table */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)',
-        gap: '16px'
-      }}>
+      <div className="ai-metrics-grid">
         {/* Confusion Matrix */}
         <div style={{
           backgroundColor: '#0f172a',

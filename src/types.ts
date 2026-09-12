@@ -20,6 +20,7 @@ export interface BoundingBox {
 export interface DefectItem {
   id: number;
   detection_id: string;
+  pothole_id?: string;
   defect_type: DefectClass;
   class_name: DefectClass;
   latitude: number;

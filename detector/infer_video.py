@@ -134,6 +134,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=4):
                 severity = "Critical" if conf >= 0.75 else "High" if conf >= 0.55 else "Medium"
 
                 moment_obj = {
+                    "pothole_id": f"PTH-#{int(t_id):02d}",
                     "track_id": t_id,
                     "time": current_time,
                     "class_name": cls_name,
@@ -156,6 +157,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=4):
                     tracked_unique_defects[t_id]['last_seen'] = current_time
                     tracked_unique_defects[t_id]['last_coords'] = coords
                     tracked_unique_defects[t_id]['sightings'] += 1
+                    tracked_unique_defects[t_id]['last_moment'] = moment_obj
                     if conf > tracked_unique_defects[t_id]['best_conf']:
                         tracked_unique_defects[t_id]['best_conf'] = conf
                         tracked_unique_defects[t_id]['best_moment'] = moment_obj
@@ -167,14 +169,24 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=4):
                         'last_coords': coords,
                         'best_conf': conf,
                         'sightings': 1,
-                        'best_moment': moment_obj
+                        'best_moment': moment_obj,
+                        'last_moment': moment_obj
                     }
 
         frame_idx += 1
 
     cap.release()
 
-    unique_list = [v['best_moment'] for v in tracked_unique_defects.values()]
+    # User specification: Use the last info before the pothole is out of range
+    unique_list = []
+    for t_id, v in tracked_unique_defects.items():
+        chosen = dict(v.get('last_moment') or v.get('best_moment'))
+        chosen['pothole_id'] = f"PTH-#{int(t_id):02d}"
+        chosen['first_seen_sec'] = v['first_seen']
+        chosen['last_seen_sec'] = v['last_seen']
+        chosen['total_sightings'] = v['sightings']
+        unique_list.append(chosen)
+
     return {
         "video_path": video_path,
         "duration": round(duration, 2),

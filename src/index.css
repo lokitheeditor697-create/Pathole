@@ -115,3 +115,247 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* ==========================================================================
+   RESPONSIVE DESIGN SYSTEM (Mobile, Tablet, Desktop, Ultra-Wide)
+   ========================================================================== */
+
+/* Main App Viewport */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #090d16;
+  color: #f8fafc;
+}
+
+@media (max-width: 1024px) {
+  .app-container {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  main.main-viewport {
+    overflow: visible !important;
+    height: auto !important;
+  }
+}
+
+/* Universal Header Responsiveness */
+.header-top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  gap: 10px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.header-brand-title {
+  margin: 0;
+  font-size: clamp(14px, 2vw, 17px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.header-brand-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.header-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .header-top-bar {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .header-brand-subtitle {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-top-bar {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+  .header-actions-group {
+    gap: 4px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .header-action-btn {
+    padding: 4px 7px !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+  }
+}
+
+/* Navigation Tabs Bar with touch-friendly horizontal scroll */
+.header-nav-tabs {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background-color: #090d16;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.header-nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.header-nav-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .header-nav-tab-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+    gap: 5px;
+  }
+}
+
+/* Main Live Monitoring Layout Grid */
+.live-monitoring-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 480px;
+}
+
+@media (max-width: 1024px) {
+  .live-monitoring-grid {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    gap: 14px;
+  }
+}
+
+/* Video Player Header & Controls */
+.video-player-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.video-player-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .video-player-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .video-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+}
+
+/* Telemetry Diagnostics Grid */
+.telemetry-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background-color: #090d16;
+  border-top: 1px solid #1e293b;
+  padding: 10px 14px;
+  gap: 8px;
+  font-size: 11px;
+}
+
+@media (max-width: 640px) {
+  .telemetry-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 8px 10px;
+    gap: 10px;
+  }
+}
+
+/* Upload Hub Presets Grid */
+.upload-hub-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .upload-hub-presets {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+/* Responsive Card Grids for Defect Inventory, Patrol Fleet, AI Metrics */
+.responsive-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 14px;
+}
+
+/* Responsive Table Container */
+.responsive-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* AI Metrics & Confusion Matrix Grid */
+.ai-metrics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .ai-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}

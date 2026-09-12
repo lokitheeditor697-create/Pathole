@@ -212,11 +212,7 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
           </p>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-          gap: '14px'
-        }}>
+        <div className="responsive-card-grid">
           {filtered.map((defect) => {
 
           const isMulti = defect.is_multi_bus_verified;

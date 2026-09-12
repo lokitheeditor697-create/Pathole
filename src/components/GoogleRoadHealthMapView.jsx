@@ -167,6 +167,7 @@ export default function GoogleRoadHealthMapView({
   const [selectedDefect, setSelectedDefect] = useState(initialSelectedDefect);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [workOrderNotice, setWorkOrderNotice] = useState(null);
+  const [isMapMenuOpen, setIsMapMenuOpen] = useState(false);
 
   useEffect(() => {
     if (initialSelectedDefect) {
@@ -235,7 +236,7 @@ export default function GoogleRoadHealthMapView({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '520px', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: 'calc(100vh - 150px)', overflow: 'hidden' }}>
       {/* Map Engine Switch: Leaflet (Free Zero-Key) vs Google Maps */}
       {mapEngine === 'leaflet' ? (
         <LeafletRoadHealthMap
@@ -595,38 +596,98 @@ export default function GoogleRoadHealthMapView({
       </APIProvider>
       )}
 
-      {/* Floating Header & Corridor Controls (Top-Left) */}
-      <div style={{
-        position: 'absolute',
-        top: '16px',
-        left: '16px',
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        maxWidth: '380px'
-      }}>
-        {/* Main Filter & Google Traffic Card */}
-        <div style={{
-          backgroundColor: 'rgba(15, 23, 42, 0.94)',
+      {/* Floating Menu Toggle Option Button */}
+      <button
+        onClick={() => setIsMapMenuOpen((prev) => !prev)}
+        style={{
+          position: 'absolute',
+          top: '14px',
+          left: '14px',
+          zIndex: 1200,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          backgroundColor: isMapMenuOpen ? '#0284c7' : 'rgba(15, 23, 42, 0.94)',
           backdropFilter: 'blur(10px)',
-          border: '1px solid #334155',
-          borderRadius: '10px',
-          padding: '12px 16px',
-          boxShadow: '0 12px 30px rgba(0,0,0,0.6)'
+          color: '#ffffff',
+          border: isMapMenuOpen ? '1px solid #38bdf8' : '1px solid #334155',
+          padding: '8px 14px',
+          borderRadius: '8px',
+          fontSize: '12px',
+          fontWeight: '700',
+          cursor: 'pointer',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
+          transition: 'all 0.15s ease'
+        }}
+        title="Toggle Road Health & Defect Filter Menu"
+      >
+        <Layers size={14} color={isMapMenuOpen ? '#ffffff' : '#38bdf8'} />
+        <span>{isMapMenuOpen ? 'Hide Menu ✕' : 'Map Menu & Filters ☰'}</span>
+        <span style={{
+          backgroundColor: isMapMenuOpen ? 'rgba(0,0,0,0.3)' : '#1e293b',
+          color: '#38bdf8',
+          padding: '1px 6px',
+          borderRadius: '4px',
+          fontSize: '10px'
         }}>
-          {/* Title Row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Layers size={15} color="#38bdf8" />
-              <span style={{ fontSize: '12px', fontWeight: '800', color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Corridor Road Health
-              </span>
+          {filteredSegments.length}
+        </span>
+      </button>
+
+      {/* Floating Header & Corridor Controls (Top-Left) */}
+      {isMapMenuOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '56px',
+          left: '14px',
+          zIndex: 1200,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          width: 'calc(100vw - 28px)',
+          maxWidth: '380px',
+          maxHeight: 'calc(100vh - 140px)',
+          overflowY: 'auto'
+        }}>
+          {/* Main Filter & Google Traffic Card */}
+          <div style={{
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid #334155',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.6)'
+          }}>
+            {/* Title Row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Layers size={15} color="#38bdf8" />
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Corridor Road Health
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '700' }}>
+                  {filteredSegments.length} Segments
+                </span>
+                <button
+                  onClick={() => setIsMapMenuOpen(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    padding: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Close Menu"
+                >
+                  <X size={15} />
+                </button>
+              </div>
             </div>
-            <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '700' }}>
-              {filteredSegments.length} Segments
-            </span>
-          </div>
 
           {/* Map Engine Selector Pills */}
           <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
@@ -839,6 +900,7 @@ export default function GoogleRoadHealthMapView({
           )}
         </div>
       </div>
+      )}
 
       {/* Segment Details Inspector Card (Right Drawer) */}
       {selectedSegment && (
@@ -846,8 +908,11 @@ export default function GoogleRoadHealthMapView({
           position: 'absolute',
           top: '16px',
           right: '16px',
-          width: '340px',
-          zIndex: 10,
+          width: 'calc(100vw - 32px)',
+          maxWidth: '340px',
+          maxHeight: 'calc(100vh - 120px)',
+          overflowY: 'auto',
+          zIndex: 1200,
           backgroundColor: 'rgba(15, 23, 42, 0.96)',
           backdropFilter: 'blur(10px)',
           border: '1px solid #334155',

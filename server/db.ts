@@ -32,6 +32,7 @@ export interface Road {
 export interface DefectItem {
   id: number;
   detection_id: string;
+  pothole_id?: string;
   defect_type: string;
   class_name: string;
   latitude: number;

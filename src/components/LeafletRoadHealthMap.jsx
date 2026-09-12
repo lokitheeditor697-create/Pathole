@@ -39,9 +39,9 @@ export default function LeafletRoadHealthMap({
       zoomControl: false
     });
 
-    // High performance CartoDB Voyager Tile Layer
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    // Free OpenStreetMap Tile Layer (Clean, No API Key Required)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19
     }).addTo(map);
 
@@ -53,7 +53,23 @@ export default function LeafletRoadHealthMap({
 
     mapInstanceRef.current = map;
 
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 150);
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
     return () => {
+      resizeObserver.disconnect();
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -300,6 +316,7 @@ export default function LeafletRoadHealthMap({
       style={{
         width: '100%',
         height: '100%',
+        minHeight: 'calc(100vh - 150px)',
         backgroundColor: '#090d16'
       }}
     />

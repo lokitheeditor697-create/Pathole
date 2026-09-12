@@ -249,16 +249,7 @@ export default function App() {
   const isGpsDegradedEffective = gpsStatus === 'degraded' && !simulatedGpsLost;
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      width: '100vw',
-      overflow: 'hidden',
-      backgroundColor: '#090d16',
-      color: '#f8fafc',
-      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    }}>
+    <div className="app-container">
       {/* Top Universal Header */}
       <Header
         activeTab={activeTab}
@@ -298,7 +289,7 @@ export default function App() {
       />
 
       {/* Main Viewport Container */}
-      <main style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <main className="main-viewport" style={{ flex: 1, position: 'relative', overflowY: 'auto' }}>
         {activeTab === 'LIVE_MONITORING' && (
           <LiveMonitoringView
             defects={defects}
