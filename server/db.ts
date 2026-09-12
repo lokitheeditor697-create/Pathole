@@ -651,17 +651,28 @@ class MunicipalDatabase {
   }
 
   public resetToDefault(): DatabaseSchema {
+    const cleanRoads = DEFAULT_ROADS.map((road) => ({
+      ...road,
+      segments: road.segments.map((seg) => ({
+        ...seg,
+        active_defect_count: 0,
+        current_health_score: 96.0,
+        health_grade: "Excellent" as const,
+        last_scanned_at: new Date().toISOString()
+      }))
+    }));
+
     const defaultData: DatabaseSchema = {
       version: "2.0.0",
       last_updated: new Date().toISOString(),
-      roads: DEFAULT_ROADS,
-      defects: DEFAULT_DEFECTS,
+      roads: cleanRoads,
+      defects: [],
       video_inspections: [],
-      work_orders: DEFAULT_WORK_ORDERS,
+      work_orders: [],
       vehicles: DEFAULT_VEHICLES,
-      next_defect_id: 6,
+      next_defect_id: 1,
       next_inspection_id: 1,
-      next_work_order_id: 2
+      next_work_order_id: 1
     };
     this.memoryData = defaultData;
     this.persistSync(defaultData);

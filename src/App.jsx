@@ -220,6 +220,30 @@ export default function App() {
     }
   };
 
+  const handleResetDB = async () => {
+    const confirmReset = window.confirm(
+      "⚠️ RESET PROTOTYPE DATABASE?\n\nThis will clear all detected potholes, video inspections, and reset road corridor health scores to 96% (Clean Baseline).\n\nUse this right before presenting your demo to show a fresh, live detection run from 0!"
+    );
+    if (!confirmReset) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/db/reset`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setDefects([]);
+        await fetchAllData();
+        alert("✨ Database Reset Complete!\n\nAll previous detections have been cleared. The system is pristine and ready for your prototype demonstration!");
+      } else {
+        alert("Failed to reset: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Error resetting database: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const isServerOfflineEffective = serverStatus === 'disconnected' || simulatedServerOffline;
   const isGpsLostEffective = gpsStatus === 'lost' || simulatedGpsLost;
   const isGpsDegradedEffective = gpsStatus === 'degraded' && !simulatedGpsLost;
@@ -248,6 +272,7 @@ export default function App() {
           setLoading(true);
           fetchAllData();
         }}
+        onResetDB={handleResetDB}
         loading={loading}
         lastRefreshed={lastRefreshed}
         metrics={metrics}

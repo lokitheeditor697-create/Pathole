@@ -13,7 +13,8 @@ import {
   Wifi,
   WifiOff,
   Radio,
-  Activity
+  Activity,
+  RotateCcw
 } from 'lucide-react';
 import { API_BASE } from '../config';
 
@@ -25,6 +26,7 @@ export default function Header({
   onTogglePatrol,
   onOpenAlertModal,
   onRefresh,
+  onResetDB,
   loading,
   lastRefreshed,
   serverStatus = 'connected',
@@ -332,6 +334,32 @@ export default function Header({
             <Download size={13} />
             <span>DB Backup</span>
           </a>
+
+          {/* Restart / Reset Database for Prototype Demo */}
+          {onResetDB && (
+            <button
+              onClick={onResetDB}
+              disabled={loading}
+              title="Reset database to clean baseline before presenting your prototype (clears previous detections & resets road health)"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: loading ? 'default' : 'pointer',
+                backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                color: '#f87171',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <RotateCcw size={13} color="#f87171" />
+              <span>Reset DB (Demo Prep)</span>
+            </button>
+          )}
 
           {/* Refresh */}
           <button

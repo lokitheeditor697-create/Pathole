@@ -1611,8 +1611,12 @@ app.get("/api/db/export", (req: Request, res: Response) => {
 
 app.post("/api/db/reset", (req: Request, res: Response) => {
   const resetData = municipalDB.resetToDefault();
-  verifiedDefects = resetData.defects;
-  res.json({ status: "success", message: "Database reset to certified municipal baseline", stats: municipalDB.getStats() });
+  verifiedDefects = [];
+  res.json({ 
+    status: "success", 
+    message: "Database reset to pristine prototype state. Ready for live demonstration!", 
+    stats: municipalDB.getStats() 
+  });
 });
 
 app.get("/api/video_inspections", (req: Request, res: Response) => {
