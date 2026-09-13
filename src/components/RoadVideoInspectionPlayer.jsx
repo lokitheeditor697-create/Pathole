@@ -1338,28 +1338,46 @@ export default function RoadVideoInspectionPlayer({
               <span>{isAiScanning ? 'Scanning...' : 'Re-Scan Video'}</span>
             </button>
 
-            {/* Manual Frame Capture & Log */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                style={{
-                  backgroundColor: '#1e293b',
-                  color: '#f8fafc',
-                  border: '1px solid #334155',
-                  padding: '5px 8px',
-                  borderRadius: '6px',
-                  fontSize: '11px'
-                }}
-              >
-                <option value="pothole">🕳️ Pothole (D40)</option>
-                <option value="longitudinal_crack">⚡ Longitudinal Crack (D00)</option>
-                <option value="transverse_crack">➖ Transverse Crack (D01)</option>
-                <option value="alligator_crack">🕸️ Alligator Fatigue Crack (D20)</option>
-                <option value="road_patch">🩹 Road Patch Deterioration (D44)</option>
-                <option value="rutting">📉 Rutting Depression (D30)</option>
-                <option value="waterlogging">🌊 Waterlogging Ponding (D50)</option>
-              </select>
+            {/* Multi-Hazard Active Badge & Quick Log Frame Button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {aiModelMode === 'rdd2022' ? (
+                <div
+                  title="All 7 defect classes (Potholes, Cracks, Patches, Rutting, Waterlogging) are scanned and classified simultaneously"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: 'rgba(13, 148, 136, 0.2)',
+                    border: '1px solid rgba(45, 212, 191, 0.45)',
+                    padding: '5px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    color: '#2dd4bf',
+                    fontWeight: '700'
+                  }}
+                >
+                  <Sparkles size={12} color="#2dd4bf" />
+                  <span>🌐 All 7 Defects Scanned at Once</span>
+                </div>
+              ) : (
+                <div
+                  title="Dedicated single-hazard fast pothole model"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: 'rgba(37, 99, 235, 0.18)',
+                    border: '1px solid rgba(56, 189, 248, 0.4)',
+                    padding: '5px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    color: '#38bdf8',
+                    fontWeight: '700'
+                  }}
+                >
+                  <span>🎯 Pothole Dedicated Mode</span>
+                </div>
+              )}
 
               <button
                 onClick={captureAndLogCurrentFrame}
