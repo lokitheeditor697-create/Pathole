@@ -1264,12 +1264,23 @@ const videoScanCache = new Map<string, any>();
 
 // Load precomputed AI scans (YOLOv8 ByteTrack) so cloud instances (Render) without PyTorch runtime have 100% full defect detection accuracy
 let PRECOMPUTED_SCANS: Record<string, { total_defects: number; unique_defects: any[]; moments: any[] }> = {};
-try {
-  const cachePath = path.join(process.cwd(), "data", "precomputed_scans.json");
-  if (fs.existsSync(cachePath)) {
-    PRECOMPUTED_SCANS = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
-    console.log(`[Video AI Engine] Loaded precomputed YOLOv8 ByteTrack scans for ${Object.keys(PRECOMPUTED_SCANS).length} videos.`);
+function getPrecomputedScans(): Record<string, any> {
+  try {
+    const cachePath = path.join(process.cwd(), "data", "precomputed_scans.json");
+    if (fs.existsSync(cachePath)) {
+      const parsed = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
+      PRECOMPUTED_SCANS = parsed;
+      return parsed;
+    }
+  } catch (e) {
+    console.warn("Could not reload precomputed scans:", e);
   }
+  return PRECOMPUTED_SCANS;
+}
+
+try {
+  PRECOMPUTED_SCANS = getPrecomputedScans();
+  console.log(`[Video AI Engine] Loaded precomputed YOLOv8 ByteTrack scans for ${Object.keys(PRECOMPUTED_SCANS).length} videos.`);
 } catch (e) {
   console.warn("Could not load precomputed scans:", e);
 }
@@ -1418,6 +1429,13 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
       videoScanCache.set(cacheKey, scanPayload);
       return scanPayload;
     };
+
+    // If precomputed scans exist and not forcing a re-scan, serve immediately for instantaneous load
+    const currentPrecomputed = getPrecomputedScans();
+    const precomputedMatch = currentPrecomputed[cacheKey] || (model_mode === 'pothole' ? currentPrecomputed[cleanName] : null);
+    if (!forceRescan && precomputedMatch) {
+      return res.status(200).json(buildPayload(precomputedMatch.moments || [], precomputedMatch.unique_defects || []));
+    }
 
     // 100% Real YOLOv8 AI Video Inference (PyTorch + ByteTrack)
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {

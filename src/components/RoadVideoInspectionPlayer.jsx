@@ -96,15 +96,19 @@ export default function RoadVideoInspectionPlayer({
   // ─────────────────────────────────────────────────────────────────────────────
   // Automated AI Video Inspection Routine (Real fine-tuned YOLOv8)
   // ─────────────────────────────────────────────────────────────────────────────
-  const runAiVideoInspection = useCallback(async (videoDurationSec, fileOverride = null, modeOverride = null) => {
+  const runAiVideoInspection = useCallback(async (videoDurationSec, fileOverride = null, modeOverride = null, forceRescan = false) => {
     const dur = Math.max(4, videoDurationSec || duration || 10);
     const targetFile = fileOverride || videoSourceFilename || uploadedFile?.name || 'real_dashcam.mp4';
     const activeMode = modeOverride || aiModelMode;
 
     const scanKey = `${targetFile}_${activeMode}_${Math.round(dur)}`;
     if (isScanningRef.current) return;
+    if (forceRescan) {
+      lastScannedKeyRef.current = '';
+    } else {
+      lastScannedKeyRef.current = scanKey;
+    }
     isScanningRef.current = true;
-    lastScannedKeyRef.current = scanKey;
 
     setIsAiScanning(true);
     setScanTotalSteps(3);
@@ -125,7 +129,7 @@ export default function RoadVideoInspectionPlayer({
           longitude: activeVehicle?.longitude || 80.2330,
           vehicle_id: activeVehicle?.vehicle_id || 'Transit Video Inspection',
           model_mode: activeMode,
-          force_rescan: true
+          force_rescan: forceRescan
         })
       });
 
@@ -805,7 +809,7 @@ export default function RoadVideoInspectionPlayer({
             </button>
           )}
           <button
-            onClick={() => runAiVideoInspection(duration, videoSourceFilename)}
+            onClick={() => runAiVideoInspection(duration, videoSourceFilename, null, true)}
             disabled={isAiScanning}
             style={{
               backgroundColor: '#0284c7',
@@ -1437,7 +1441,7 @@ export default function RoadVideoInspectionPlayer({
 
             {/* Re-Run AI Scan Button */}
             <button
-              onClick={() => runAiVideoInspection(duration)}
+              onClick={() => runAiVideoInspection(duration, null, null, true)}
               disabled={isAiScanning}
               title="Re-run YOLOv8 Road AI scan across keyframes"
               style={{

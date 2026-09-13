@@ -270,7 +270,10 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5)
             with open(cache_file, "r") as f:
                 scans_data = json.load(f)
         video_key = os.path.basename(video_path)
-        scans_data[video_key] = result_payload
+        model_tag = "rdd2022" if "rdd2022" in str(actual_model) else "pothole"
+        scans_data[f"{video_key}_{model_tag}"] = result_payload
+        if model_tag == "pothole":
+            scans_data[video_key] = result_payload
         with open(cache_file, "w") as f:
             json.dump(scans_data, f, indent=2)
     except Exception as e:
