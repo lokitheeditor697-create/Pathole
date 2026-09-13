@@ -1874,6 +1874,8 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
+    app.use("/videos", express.static(path.join(process.cwd(), "public", "videos")));
+    app.use(express.static(path.join(process.cwd(), "public")));
     app.use(express.static(distPath));
     app.get("*", (req: Request, res: Response) => {
       res.sendFile(path.join(distPath, "index.html"));
