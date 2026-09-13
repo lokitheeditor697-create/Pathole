@@ -24,7 +24,8 @@ export default function RoadVideoInspectionPlayer({
   activeVehicle,
   onDefectLogged,
   onSelectAnotherFile,
-  aiModelMode = 'pothole'
+  aiModelMode = 'pothole',
+  setAiModelMode
 }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -87,17 +88,18 @@ export default function RoadVideoInspectionPlayer({
   // ─────────────────────────────────────────────────────────────────────────────
   // Automated AI Video Inspection Routine (Real fine-tuned YOLOv8)
   // ─────────────────────────────────────────────────────────────────────────────
-  const runAiVideoInspection = useCallback(async (videoDurationSec, fileOverride = null) => {
+  const runAiVideoInspection = useCallback(async (videoDurationSec, fileOverride = null, modeOverride = null) => {
     const dur = Math.max(4, videoDurationSec || duration || 10);
     const targetFile = fileOverride || videoSourceFilename || uploadedFile?.name || 'real_dashcam.mp4';
+    const activeMode = modeOverride || aiModelMode;
     setIsAiScanning(true);
     setScanTotalSteps(3);
     setScanStep(1);
-    setScanStatusMessage('Initializing fine-tuned YOLOv8 on actual video frames...');
+    setScanStatusMessage(`Initializing ${activeMode === 'rdd2022' ? 'YOLOv8 7-Class RDD2022' : 'YOLOv8 Dedicated Pothole'} model...`);
 
     try {
       setScanStep(2);
-      setScanStatusMessage(`Running real AI inference (${aiModelMode === 'rdd2022' ? '7-Class RDD2022' : 'Dedicated Pothole'}) on "${targetFile}"...`);
+      setScanStatusMessage(`Running real AI inference (${activeMode === 'rdd2022' ? '7-Class RDD2022' : 'Dedicated Pothole'}) on "${targetFile}"...`);
 
       const res = await fetch(`${API_BASE}/api/detect/video-scan`, {
         method: 'POST',
@@ -108,14 +110,16 @@ export default function RoadVideoInspectionPlayer({
           latitude: activeVehicle?.latitude || 13.0780,
           longitude: activeVehicle?.longitude || 80.2330,
           vehicle_id: activeVehicle?.vehicle_id || 'Transit Video Inspection',
-          model_mode: aiModelMode
+          model_mode: activeMode,
+          force_rescan: true
         })
       });
 
       if (res.ok) {
         const data = await res.json();
         setScanStep(3);
-        setScanStatusMessage(`Inference complete: ${data.total_defects} real road distresses identified.`);
+        const modeLabel = activeMode === 'rdd2022' ? '7-Class RDD2022' : 'Dedicated Pothole';
+        setScanStatusMessage(`Inference complete [${modeLabel}]: ${data.total_defects} road distresses identified.`);
 
         if (Array.isArray(data.moments) && data.moments.length > 0) {
           const mappedMoments = data.moments.map((m, idx) => ({
@@ -152,7 +156,7 @@ export default function RoadVideoInspectionPlayer({
           data.defects.forEach((d) => onDefectLogged(d));
         }
 
-        showToast(`AI Video Scan: ${data.total_defects} real defects verified & logged into GIS.`, 'success');
+        showToast(`AI Video Scan [${modeLabel}]: ${data.total_defects} real defects verified & logged.`, 'success');
       } else {
         setDetectedMoments([]);
       }
@@ -165,6 +169,16 @@ export default function RoadVideoInspectionPlayer({
       }, 500);
     }
   }, [duration, videoSourceFilename, uploadedFile, activeVehicle, onDefectLogged, aiModelMode]);
+
+  // Model Switch Handler
+  const handleSwitchModel = (newMode) => {
+    if (setAiModelMode) setAiModelMode(newMode);
+    setDetectedMoments([]);
+    setActiveDefectsOnScreen([]);
+    setActiveDefectOnScreen(null);
+    lockedTracksRef.current.clear();
+    runAiVideoInspection(duration, videoSourceFilename, newMode);
+  };
 
   // Re-run AI inspection whenever the user changes the active AI model mode
   useEffect(() => {
@@ -520,11 +534,16 @@ export default function RoadVideoInspectionPlayer({
         position: 'relative'
       }}
     >
-      {/* Sample Video Selector Bar */}
+      {/* Sample Video Selector Bar & Model Switcher */}
       <div className="video-player-toolbar" style={{
         padding: '8px 12px',
         backgroundColor: '#0f172a',
-        borderBottom: '1px solid #1e293b'
+        borderBottom: '1px solid #1e293b',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '8px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -555,6 +574,63 @@ export default function RoadVideoInspectionPlayer({
               </option>
             ))}
           </select>
+        </div>
+
+        {/* AI Model Switcher Button Group directly in Video Player */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor: '#020617',
+          border: '1px solid #334155',
+          borderRadius: '7px',
+          padding: '2px',
+          gap: '3px'
+        }}>
+          <button
+            onClick={() => handleSwitchModel('pothole')}
+            disabled={isAiScanning}
+            title="Switch to Dedicated Single-Class Pothole Detector (99.5% Precision)"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 9px',
+              borderRadius: '5px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              border: 'none',
+              backgroundColor: aiModelMode === 'pothole' ? '#2563eb' : 'transparent',
+              color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8',
+              boxShadow: aiModelMode === 'pothole' ? '0 0 8px rgba(37,99,235,0.4)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>🎯 Pothole Dedicated</span>
+          </button>
+
+          <button
+            onClick={() => handleSwitchModel('rdd2022')}
+            disabled={isAiScanning}
+            title="Switch to 7-Class Road Defect Model (Potholes, Cracks, Patches, Rutting, Waterlogging)"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 9px',
+              borderRadius: '5px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              border: 'none',
+              backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
+              color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8',
+              boxShadow: aiModelMode === 'rdd2022' ? '0 0 8px rgba(13,148,136,0.4)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>🌐 7-Class RDD2022</span>
+          </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -960,6 +1036,38 @@ export default function RoadVideoInspectionPlayer({
                 ? 'AI Analyzing Road Frames...'
                 : `${detectedMoments.length > 0 ? `${detectedMoments.length} Defects Found` : '0 Defects Found'}`}
             </span>
+          </div>
+        </div>
+
+        {/* Top-Right Active Model HUD Badge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            zIndex: 20
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.92)' : 'rgba(37, 99, 235, 0.92)',
+              backdropFilter: 'blur(6px)',
+              color: '#ffffff',
+              fontSize: '11px',
+              fontWeight: '800',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              border: `1px solid ${aiModelMode === 'rdd2022' ? '#2dd4bf' : '#60a5fa'}`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: `0 0 12px ${aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.5)' : 'rgba(37, 99, 235, 0.5)'}`
+            }}
+          >
+            <span>{aiModelMode === 'rdd2022' ? '🌐 YOLOv8 7-Class RDD2022' : '🎯 YOLOv8 Dedicated Pothole'}</span>
           </div>
         </div>
 

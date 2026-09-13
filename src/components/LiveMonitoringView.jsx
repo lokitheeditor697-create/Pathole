@@ -400,6 +400,7 @@ export default function LiveMonitoringView({
                 activeVehicle={activeVehicle}
                 onDefectLogged={onRefreshData}
                 aiModelMode={aiModelMode}
+                setAiModelMode={setAiModelMode}
               />
             )}
 
@@ -409,6 +410,7 @@ export default function LiveMonitoringView({
                 activeVehicle={activeVehicle}
                 onRefreshData={onRefreshData}
                 aiModelMode={aiModelMode}
+                setAiModelMode={setAiModelMode}
               />
             )}
 

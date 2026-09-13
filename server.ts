@@ -1271,8 +1271,9 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
     } = req.body;
 
     const cleanName = path.basename(file_name);
+    const forceRescan = Boolean(req.body?.force_rescan);
     const cacheKey = `${cleanName}_${model_mode}`;
-    if (videoScanCache.has(cacheKey)) {
+    if (!forceRescan && videoScanCache.has(cacheKey)) {
       return res.status(200).json(videoScanCache.get(cacheKey));
     }
 

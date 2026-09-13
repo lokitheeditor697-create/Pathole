@@ -15,7 +15,8 @@ import { API_BASE } from '../config';
 export default function WebcamPotholeDetector({
   activeVehicle,
   onRefreshData,
-  aiModelMode = 'pothole'
+  aiModelMode = 'pothole',
+  setAiModelMode
 }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -458,7 +459,8 @@ export default function WebcamPotholeDetector({
       manual_class: defectToLog.class_name,
       confidence: defectToLog.confidence || 0.88,
       vehicle_id: `${activeVehicle?.vehicle_id || 'Mobile Road Patrol'} (Live Device)`,
-      snapshot_thumbnail: dataUrl
+      snapshot_thumbnail: dataUrl,
+      model_mode: aiModelMode
     };
 
     try {
@@ -756,6 +758,20 @@ export default function WebcamPotholeDetector({
                 >
                   RULE: {alertCriteria}
                 </div>
+
+                <div
+                  style={{
+                    backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.9)' : 'rgba(37, 99, 235, 0.9)',
+                    border: `1px solid ${aiModelMode === 'rdd2022' ? '#2dd4bf' : '#60a5fa'}`,
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    fontSize: '10px',
+                    color: '#ffffff',
+                    fontWeight: '800'
+                  }}
+                >
+                  {aiModelMode === 'rdd2022' ? '🌐 RDD2022' : '🎯 POTHOLE'}
+                </div>
               </div>
             </div>
 
@@ -806,6 +822,58 @@ export default function WebcamPotholeDetector({
       >
         {/* Left: Camera Switch, Torch, Audio & Sensitivity */}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+          {/* AI Model Switcher Toggle */}
+          {setAiModelMode && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: '#020617',
+              border: '1px solid #334155',
+              borderRadius: '6px',
+              padding: '2px',
+              gap: '2px'
+            }}>
+              <button
+                onClick={() => setAiModelMode('pothole')}
+                title="Targeted Single-Class Pothole Detector"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  border: 'none',
+                  backgroundColor: aiModelMode === 'pothole' ? '#2563eb' : 'transparent',
+                  color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8'
+                }}
+              >
+                <span>🎯 Pothole</span>
+              </button>
+              <button
+                onClick={() => setAiModelMode('rdd2022')}
+                title="7-Class Road Defect Model (Potholes, Cracks, Patches, Rutting, Waterlogging)"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  border: 'none',
+                  backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
+                  color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8'
+                }}
+              >
+                <span>🌐 RDD2022</span>
+              </button>
+            </div>
+          )}
+
           {/* Flip Camera (Rear Road vs Front) */}
           <button
             onClick={toggleCameraFacing}
