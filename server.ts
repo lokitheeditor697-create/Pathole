@@ -1015,159 +1015,7 @@ app.post("/api/observations", (req: Request, res: Response) => {
   }
 });
 
-// Single inference run
-app.post("/api/inference", (req: Request, res: Response) => {
-  const { frame_id, confidence_threshold } = req.body;
-  const thresh = confidence_threshold || 0.5;
 
-  // Deterministic YOLOv8 sample predictions for 7 classes
-  const detections = [
-    {
-      class_name: "pothole",
-      confidence: 0.88,
-      severity: "High",
-      bounding_box: {
-        x_min: 205,
-        y_min: 165,
-        x_max: 275,
-        y_max: 207,
-        pixel_area: 2940,
-        estimated_physical_width_cm: 48.0,
-        estimated_physical_length_cm: 32.5,
-      },
-    },
-    {
-      class_name: "longitudinal_crack",
-      confidence: 0.74,
-      severity: "Medium",
-      bounding_box: {
-        x_min: 140,
-        y_min: 145,
-        x_max: 178,
-        y_max: 230,
-        pixel_area: 3230,
-        estimated_physical_width_cm: 18.0,
-        estimated_physical_length_cm: 95.0,
-      },
-    },
-  ].filter((d) => d.confidence >= thresh);
-
-  res.json({
-    frame_id: frame_id || "frame_001",
-    model_version: "YOLOv8-road-v1",
-    inference_latency_ms: 14.5,
-    fps: 29.8,
-    detections,
-  });
-});
-
-// Real-world Road Image/Video Detection & Upload Endpoint
-app.post("/api/detect/upload", (req: Request, res: Response) => {
-  try {
-    const {
-      file_name,
-      media_type,
-      latitude,
-      longitude,
-      manual_class,
-      confidence,
-      vehicle_id
-    } = req.body;
-
-    const lat = latitude ? Number(latitude) : 13.0780;
-    const lon = longitude ? Number(longitude) : 80.2330;
-    const vId = vehicle_id || "User Real Road Inspection";
-
-    // Select defect class (or pick appropriate class like pothole/crack)
-    const pickedClass: DefectClass = manual_class && PHASE1_CLASSES.includes(manual_class)
-      ? manual_class
-      : (PHASE1_CLASSES[Math.floor(Math.random() * 4)] as DefectClass); // pothole, longitudinal_crack, transverse_crack, alligator_crack
-
-    const conf = confidence ? Number(confidence) : Math.round((0.82 + Math.random() * 0.12) * 100) / 100;
-    const { segment, chainage_m } = matchNearestSegment(lat, lon);
-
-    // Physical dimensions based on class
-    let widthCm = 45.0;
-    let lengthCm = 35.0;
-    if (pickedClass === "pothole") {
-      widthCm = Math.round((35 + Math.random() * 30) * 10) / 10;
-      lengthCm = Math.round((30 + Math.random() * 25) * 10) / 10;
-    } else if (pickedClass.includes("crack")) {
-      widthCm = Math.round((10 + Math.random() * 15) * 10) / 10;
-      lengthCm = Math.round((60 + Math.random() * 80) * 10) / 10;
-    } else if (pickedClass === "waterlogging") {
-      widthCm = 150.0;
-      lengthCm = 80.0;
-    }
-
-    const newDefect: DefectItem = {
-      id: nextDefectId++,
-      detection_id: `DET-REAL-${String(nextDefectId).padStart(3, "0")}`,
-      defect_type: pickedClass,
-      class_name: pickedClass,
-      latitude: lat,
-      longitude: lon,
-      severity: conf >= 0.85 ? "Critical" : conf >= 0.70 ? "High" : "Medium",
-      confidence: conf,
-      road_id: segment.road_id,
-      segment_id: segment.segment_id,
-      exact_chainage_m: chainage_m,
-      bus_count: 1,
-      bus_ids: vId,
-      reporting_vehicles: [vId],
-      total_detections: 1,
-      is_multi_bus_verified: false,
-      bbox: {
-        x_min: Math.floor(160 + Math.random() * 80),
-        y_min: Math.floor(140 + Math.random() * 60),
-        x_max: Math.floor(300 + Math.random() * 60),
-        y_max: Math.floor(220 + Math.random() * 50),
-        pixel_area: 7200,
-        estimated_physical_width_cm: widthCm,
-        estimated_physical_length_cm: lengthCm,
-      },
-      first_detected: new Date().toISOString(),
-      last_detected: new Date().toISOString(),
-      model_version: "YOLOv8-road-v1",
-    };
-
-    // Persist to Municipal DB
-    try {
-      municipalDB.upsertDefect(newDefect);
-      municipalDB.updateSegmentHealth(segment.segment_id, newDefect.severity === "Critical" ? -6 : -3);
-    } catch {
-      // Ignored
-    }
-
-    // Send push alert according to active criteria rule
-    const alertCheck = evaluateAlertTrigger(newDefect, false);
-    if (alertCheck.shouldAlert) {
-      triggerAutomatedAlert(newDefect, alertCheck.reason);
-    }
-
-    res.status(201).json({
-      status: "success",
-      source_file: file_name || "real_road_capture",
-      media_type: media_type || "image",
-      detected_defect: newDefect,
-      alert_dispatched: alertCheck.shouldAlert,
-      alert_reason: alertCheck.reason,
-      matched_segment: {
-        road_name: segment.road_name,
-        segment_id: segment.segment_id,
-        chainage_m: chainage_m,
-      },
-      model_inference: {
-        model: "YOLOv8-road-v1",
-        latency_ms: 15.1,
-        fps: 29.8,
-        confidence: conf,
-      }
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // Get available real road sample videos for testing and demonstration
 app.get("/api/sample-videos", (req: Request, res: Response) => {
@@ -1541,18 +1389,7 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
       return scanPayload;
     };
 
-    // If precomputed scans exist and force_rescan is not requested, return instantly (<20ms)
-    const isCustomUpload = cleanName.startsWith("upload_") || cleanName.startsWith("user_") || !PRECOMPUTED_SCANS[cleanName];
-    const forceRescan = Boolean(req.body?.force_rescan);
-
-    if (!isCustomUpload && !forceRescan && PRECOMPUTED_SCANS[cleanName]) {
-      const pre = PRECOMPUTED_SCANS[cleanName];
-      if (Array.isArray(pre.moments) && pre.moments.length > 0) {
-        return res.status(200).json(buildPayload(pre.moments, pre.unique_defects || []));
-      }
-    }
-
-    // Check if python environment is functional for real-time inference
+    // 100% Real YOLOv8 AI Video Inference (PyTorch + ByteTrack)
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
       const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.35`;
       exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
@@ -1563,30 +1400,26 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
             const parsed = JSON.parse(stdout.trim());
             if (Array.isArray(parsed.moments)) moments = parsed.moments;
             if (Array.isArray(parsed.unique_defects)) uniqueDefectsList = parsed.unique_defects;
+            // Return actual live YOLOv8 model output directly (clean road -> 0 defects, damaged road -> exact defects)
+            return res.status(200).json(buildPayload(moments, uniqueDefectsList));
           } catch (e) {
             console.error("Failed to parse YOLO output:", e);
           }
         }
 
-        // If Python run produced results, return it
-        if (moments.length > 0) {
-          return res.status(200).json(buildPayload(moments, uniqueDefectsList));
+        // Only in case of Python execution failure, check exact file cache
+        if (PRECOMPUTED_SCANS[cleanName]?.moments) {
+          const pre = PRECOMPUTED_SCANS[cleanName];
+          return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
         }
 
-        // Otherwise fallback to precomputed scans
-        const pre = PRECOMPUTED_SCANS[cleanName] || PRECOMPUTED_SCANS["real_dashcam.mp4"];
-        if (pre && Array.isArray(pre.moments) && pre.moments.length > 0) {
-          return res.status(200).json(buildPayload(pre.moments, pre.unique_defects || []));
-        }
-
-        // Default empty if none matched
         return res.status(200).json(buildPayload([], []));
       });
     } else {
-      // Cloud deployment (Render) without local PyTorch: load full precomputed YOLOv8 inference scans
-      const pre = PRECOMPUTED_SCANS[cleanName] || PRECOMPUTED_SCANS["real_dashcam.mp4"];
-      if (pre && Array.isArray(pre.moments) && pre.moments.length > 0) {
-        return res.status(200).json(buildPayload(pre.moments, pre.unique_defects || []));
+      // Cloud environment without PyTorch runtime: check if exact file was pre-indexed
+      if (PRECOMPUTED_SCANS[cleanName]?.moments) {
+        const pre = PRECOMPUTED_SCANS[cleanName];
+        return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
       }
 
       res.status(200).json(buildPayload([], []));

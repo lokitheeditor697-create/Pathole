@@ -164,7 +164,14 @@ export default function RoadVideoInspectionPlayer({
         setIsAiScanning(false);
       }, 500);
     }
-  }, [duration, videoSourceFilename, uploadedFile, activeVehicle, onDefectLogged]);
+  }, [duration, videoSourceFilename, uploadedFile, activeVehicle, onDefectLogged, aiModelMode]);
+
+  // Re-run AI inspection whenever the user changes the active AI model mode
+  useEffect(() => {
+    if (videoReady && duration > 0) {
+      runAiVideoInspection(duration);
+    }
+  }, [aiModelMode, videoReady, duration, runAiVideoInspection]);
 
   // Video metadata loaded handler
   const handleLoadedMetadata = () => {
