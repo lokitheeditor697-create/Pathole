@@ -121,7 +121,7 @@ export default function RoadVideoInspectionPlayer({
       const applyAutonomousFallback = () => {
         const cleanName = (targetFile || '').replace(/\\/g, '/').split('/').pop() || 'real_dashcam.mp4';
         const cacheKey = `${cleanName}_${activeMode}`;
-        const fallback = precomputedScans[cacheKey] || (activeMode === 'pothole' ? precomputedScans[cleanName] : null) || precomputedScans['real_dashcam.mp4_' + activeMode] || precomputedScans['real_dashcam.mp4'];
+        const fallback = precomputedScans[cacheKey] || (activeMode === 'pothole' ? precomputedScans[cleanName] : null);
         
         if (fallback && Array.isArray(fallback.moments) && fallback.moments.length > 0) {
           const mappedMoments = fallback.moments.map((m, idx) => {

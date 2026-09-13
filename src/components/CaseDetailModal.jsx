@@ -820,87 +820,111 @@ export default function CaseDetailModal({
                 </span>
               </div>
 
-              <div style={{ position: 'relative', paddingLeft: '24px' }}>
-                {/* Vertical Line */}
+              {(!caseItem.events || caseItem.events.length === 0) ? (
                 <div
                   style={{
-                    position: 'absolute',
-                    top: '10px',
-                    bottom: '10px',
-                    left: '7px',
-                    width: '2px',
-                    backgroundColor: '#1e293b'
+                    padding: '36px 20px',
+                    textAlign: 'center',
+                    backgroundColor: '#131e3b',
+                    borderRadius: '10px',
+                    border: '1px dashed #334155',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px'
                   }}
-                />
+                >
+                  <Activity size={24} color="#38bdf8" />
+                  <strong style={{ fontSize: '13px', color: '#f8fafc' }}>
+                    No Hardcoded Lifecycle Events
+                  </strong>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', maxWidth: '420px', lineHeight: 1.5 }}>
+                    Real-time detection is active. Lifecycle events (work order assignment, contractor repair, and post-repair AI edge scan) are dynamically appended as actions are executed.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ position: 'relative', paddingLeft: '24px' }}>
+                  {/* Vertical Line */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '10px',
+                      bottom: '10px',
+                      left: '7px',
+                      width: '2px',
+                      backgroundColor: '#1e293b'
+                    }}
+                  />
 
-                {caseItem.events?.map((evt, idx) => {
-                  const toColor = STATUS_COLORS[evt.to_status]?.text || '#38bdf8';
-                  return (
-                    <div
-                      key={evt.id || idx}
-                      style={{
-                        position: 'relative',
-                        marginBottom: '18px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '4px'
-                      }}
-                    >
-                      {/* Node Bullet */}
-                      <span
-                        style={{
-                          position: 'absolute',
-                          left: '-24px',
-                          top: '4px',
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '50%',
-                          backgroundColor: '#0f172a',
-                          border: `3px solid ${toColor}`,
-                          boxShadow: `0 0 8px ${toColor}`
-                        }}
-                      />
-
+                  {caseItem.events.map((evt, idx) => {
+                    const toColor = STATUS_COLORS[evt.to_status]?.text || '#38bdf8';
+                    return (
                       <div
+                        key={evt.id || idx}
                         style={{
-                          backgroundColor: '#131e3b',
-                          border: '1px solid #1e293b',
-                          borderRadius: '8px',
-                          padding: '12px 16px'
+                          position: 'relative',
+                          marginBottom: '18px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '4px'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <strong style={{ fontSize: '13px', color: '#f8fafc' }}>{evt.action}</strong>
-                            <span
-                              style={{
-                                fontSize: '10px',
-                                fontWeight: '700',
-                                padding: '1px 6px',
-                                borderRadius: '4px',
-                                backgroundColor: STATUS_COLORS[evt.to_status]?.bg || 'rgba(56, 189, 248, 0.1)',
-                                color: toColor
-                              }}
-                            >
-                              {evt.to_status}
+                        {/* Node Bullet */}
+                        <span
+                          style={{
+                            position: 'absolute',
+                            left: '-24px',
+                            top: '4px',
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '50%',
+                            backgroundColor: '#0f172a',
+                            border: `3px solid ${toColor}`,
+                            boxShadow: `0 0 8px ${toColor}`
+                          }}
+                        />
+
+                        <div
+                          style={{
+                            backgroundColor: '#131e3b',
+                            border: '1px solid #1e293b',
+                            borderRadius: '8px',
+                            padding: '12px 16px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <strong style={{ fontSize: '13px', color: '#f8fafc' }}>{evt.action}</strong>
+                              <span
+                                style={{
+                                  fontSize: '10px',
+                                  fontWeight: '700',
+                                  padding: '1px 6px',
+                                  borderRadius: '4px',
+                                  backgroundColor: STATUS_COLORS[evt.to_status]?.bg || 'rgba(56, 189, 248, 0.1)',
+                                  color: toColor
+                                }}
+                              >
+                                {evt.to_status}
+                              </span>
+                            </div>
+                            <span style={{ fontSize: '11px', color: '#64748b' }}>
+                              {new Date(evt.timestamp).toLocaleString()}
                             </span>
                           </div>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>
-                            {new Date(evt.timestamp).toLocaleString()}
+
+                          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>
+                            {evt.notes || `Case transition logged by ${evt.actor}`}
+                          </p>
+                          <span style={{ fontSize: '10px', color: '#475569', display: 'block', marginTop: '4px' }}>
+                            Actor: {evt.actor}
                           </span>
                         </div>
-
-                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>
-                          {evt.notes || `Case transition logged by ${evt.actor}`}
-                        </p>
-                        <span style={{ fontSize: '10px', color: '#475569', display: 'block', marginTop: '4px' }}>
-                          Actor: {evt.actor}
-                        </span>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 

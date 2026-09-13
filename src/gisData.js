@@ -407,43 +407,7 @@ export const DEFAULT_CASES = [
       model_version: "YOLOv8m 7-Class Road Anomaly Model",
       reporting_vehicles: ["MTC 46G", "MTC 27B"]
     },
-    events: [
-      {
-        id: "EVT-001-1",
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        to_status: "DETECTED",
-        actor: "YOLOv8 Vision Engine",
-        action: "Defect Identified by Vision Engine",
-        notes: "Detected with 88.0% confidence."
-      },
-      {
-        id: "EVT-001-2",
-        timestamp: new Date(Date.now() - 72000000).toISOString(),
-        from_status: "DETECTED",
-        to_status: "REPORTED",
-        actor: "Municipal Ingestion Pipeline",
-        action: "Municipal Case Created",
-        notes: "Emergency P1 defect case logged to city registry."
-      },
-      {
-        id: "EVT-001-3",
-        timestamp: new Date(Date.now() - 43200000).toISOString(),
-        from_status: "REPORTED",
-        to_status: "ASSIGNED",
-        actor: "GCC Central Dispatch",
-        action: "Assigned to PWD Rapid Action Crew #4",
-        notes: "Work order dispatched for quick patch."
-      },
-      {
-        id: "EVT-001-4",
-        timestamp: new Date(Date.now() - 14400000).toISOString(),
-        from_status: "ASSIGNED",
-        to_status: "VERIFICATION_REQUIRED",
-        actor: "Contractor Portal",
-        action: "Cold-Mix Asphalt Patch Applied",
-        notes: "Repair marked complete. Awaiting Dashcam AI scan."
-      }
-    ],
+    events: [],
     communications: [],
     recurrence_count: 0,
     previous_case_ids: []
@@ -481,34 +445,7 @@ export const DEFAULT_CASES = [
       model_version: "YOLOv8m 7-Class Road Anomaly Model",
       reporting_vehicles: ["MTC 46G"]
     },
-    events: [
-      {
-        id: "EVT-002-1",
-        timestamp: new Date(Date.now() - 172800000).toISOString(),
-        to_status: "DETECTED",
-        actor: "YOLOv8 Vision Engine",
-        action: "Defect Identified by Vision Engine",
-        notes: "Detected with 74.0% confidence."
-      },
-      {
-        id: "EVT-002-2",
-        timestamp: new Date(Date.now() - 160000000).toISOString(),
-        from_status: "DETECTED",
-        to_status: "REPORTED",
-        actor: "Municipal Ingestion Pipeline",
-        action: "Municipal Case Created",
-        notes: "High priority defect case logged."
-      },
-      {
-        id: "EVT-002-3",
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        from_status: "REPORTED",
-        to_status: "ASSIGNED",
-        actor: "GCC Maintenance Division",
-        action: "Work Order Assigned to Crew #2",
-        notes: "Scheduled for night maintenance."
-      }
-    ],
+    events: [],
     communications: [],
     recurrence_count: 0,
     previous_case_ids: []
@@ -546,25 +483,7 @@ export const DEFAULT_CASES = [
       model_version: "YOLOv8m 7-Class Road Anomaly Model",
       reporting_vehicles: ["MTC 15G"]
     },
-    events: [
-      {
-        id: "EVT-003-1",
-        timestamp: new Date(Date.now() - 259200000).toISOString(),
-        to_status: "DETECTED",
-        actor: "YOLOv8 Vision Engine",
-        action: "Defect Identified by Vision Engine",
-        notes: "Severe crack logged with 71.0% confidence."
-      },
-      {
-        id: "EVT-003-2",
-        timestamp: new Date(Date.now() - 250000000).toISOString(),
-        from_status: "DETECTED",
-        to_status: "REPORTED",
-        actor: "Municipal Ingestion Pipeline",
-        action: "Municipal Case Created",
-        notes: "Routine case logged for crack sealing."
-      }
-    ],
+    events: [],
     communications: [],
     recurrence_count: 0,
     previous_case_ids: []
