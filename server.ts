@@ -1377,8 +1377,14 @@ function resolveModelPath(requestedMode?: string): { modelPath: string; modelNam
   const defaultModelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
   const rddModelPath = path.join(process.cwd(), "detector", "rdd2022_multiclass.pt");
   const crddcModelPath = path.join(process.cwd(), "detector", "collabdoor_yolov8s_crddc.pt");
+  const potbotModelPath = path.join(process.cwd(), "detector", "potbot_yolov8m.pt");
   const bestModelPath = path.join(process.cwd(), "detector", "best.pt");
   const activePath = fs.existsSync(defaultModelPath) ? defaultModelPath : (fs.existsSync(bestModelPath) ? bestModelPath : defaultModelPath);
+
+  if (requestedMode === "potbot" || requestedMode === "potbot_yolov8m" || requestedMode === "potbot_best") {
+    const activePotbot = fs.existsSync(potbotModelPath) ? potbotModelPath : activePath;
+    return { modelPath: activePotbot, modelName: "PotBot AI Dedicated Pothole Model (YOLOv8m)" };
+  }
 
   if (requestedMode === "rdd2022" || requestedMode === "multiclass" || requestedMode === "crddc") {
     const activeRdd = fs.existsSync(rddModelPath) ? rddModelPath : (fs.existsSync(crddcModelPath) ? crddcModelPath : activePath);
@@ -1398,6 +1404,7 @@ function getPythonExe(): string {
 app.get("/api/model-info", (req: Request, res: Response) => {
   const potholePath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
   const rddPath = path.join(process.cwd(), "detector", "rdd2022_multiclass.pt");
+  const potbotPath = path.join(process.cwd(), "detector", "potbot_yolov8m.pt");
   const bestPath = path.join(process.cwd(), "detector", "best.pt");
 
   res.json({
@@ -1418,7 +1425,10 @@ app.get("/api/model-info", (req: Request, res: Response) => {
           "Pothole",
           "Speed-Bump"
         ],
-        accuracy: "74.5% mAP50"
+        accuracy: "74.5% mAP50",
+        size: "52 MB",
+        params: "25.86M",
+        type: "Multi-Class Anomaly & Traffic"
       },
       rdd2022: {
         id: "rdd2022",
@@ -1433,7 +1443,25 @@ app.get("/api/model-info", (req: Request, res: Response) => {
           "Alligator Crack",
           "Potholes"
         ],
-        accuracy: "CRDDC Benchmark Trained"
+        accuracy: "68.5% mAP50",
+        size: "89.5 MB",
+        params: "11.2M",
+        type: "Structural Crack & Pavement Damage"
+      },
+      potbot: {
+        id: "potbot",
+        name: "PotBot AI Dedicated Pothole Model",
+        badge: "PotBot YOLOv8m • 148.5MB",
+        description: "High-capacity deep neural detector trained exclusively for road potholes and deep asphalt voids",
+        available: fs.existsSync(potbotPath),
+        path: "detector/potbot_yolov8m.pt",
+        classes: [
+          "pothole"
+        ],
+        accuracy: "PotBot Deep High-Capacity",
+        size: "148.5 MB",
+        params: "25.86M",
+        type: "Dedicated High-Capacity Pothole Specialist"
       }
     },
     active_default: "pothole"

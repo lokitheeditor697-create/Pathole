@@ -1,7 +1,7 @@
 # 🌐 Interactive Codebase Structure & Knowledge Graph (Graphify)
 
-Generated at: `2026-09-13T14:06:48.897Z`
-Total Modules / Nodes: **43** | Relationships / Links: **52**
+Generated at: `2026-09-13T16:48:20.778Z`
+Total Modules / Nodes: **41** | Relationships / Links: **58**
 
 ---
 

@@ -30,6 +30,12 @@ public/videos/uploads/*
 !public/videos/uploads/.gitkeep
 ml/raw/
 
+# Scratch & Temporary Testing Scripts
+scratch/
+test_*.py
+frontend/
 
+# Model Weights & Backups (Heavy weights hosted on Hugging Face: https://huggingface.co/Logesshhh/road-anomaly-pothole-yolov8m)
+detector/potbot_yolov8m.pt
 detector/*_backup.pt
-
+detector/collabdoor_*.pt

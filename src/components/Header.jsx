@@ -339,6 +339,36 @@ export default function Header({
               YOLOv8s
             </span>
           </button>
+
+          <button
+            onClick={() => setAiModelMode('potbot')}
+            title="PotBot AI Dedicated Deep Pothole Specialist (YOLOv8m • 148.5MB)"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              border: 'none',
+              backgroundColor: aiModelMode === 'potbot' ? '#7c3aed' : 'transparent',
+              color: aiModelMode === 'potbot' ? '#ffffff' : '#94a3b8',
+              boxShadow: aiModelMode === 'potbot' ? '0 0 8px rgba(124, 58, 237, 0.4)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>🤖 PotBot Pothole</span>
+            <span style={{
+              fontSize: '9px',
+              backgroundColor: aiModelMode === 'potbot' ? 'rgba(255,255,255,0.2)' : 'rgba(51,65,85,0.5)',
+              padding: '1px 4px',
+              borderRadius: '3px'
+            }}>
+              148MB
+            </span>
+          </button>
         </div>
       </div>
     </header>

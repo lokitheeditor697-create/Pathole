@@ -776,8 +776,8 @@ export default function WebcamPotholeDetector({
 
                 <div
                   style={{
-                    backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.9)' : 'rgba(37, 99, 235, 0.9)',
-                    border: `1px solid ${aiModelMode === 'rdd2022' ? '#2dd4bf' : '#60a5fa'}`,
+                    backgroundColor: aiModelMode === 'potbot' ? 'rgba(124, 58, 237, 0.9)' : (aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.9)' : 'rgba(37, 99, 235, 0.9)'),
+                    border: `1px solid ${aiModelMode === 'potbot' ? '#c084fc' : (aiModelMode === 'rdd2022' ? '#2dd4bf' : '#60a5fa')}`,
                     padding: '4px 8px',
                     borderRadius: '6px',
                     fontSize: '10px',
@@ -785,7 +785,7 @@ export default function WebcamPotholeDetector({
                     fontWeight: '800'
                   }}
                 >
-                  {aiModelMode === 'rdd2022' ? '🌐 RDD2022' : '🎯 POTHOLE'}
+                  {aiModelMode === 'potbot' ? '🤖 POTBOT' : (aiModelMode === 'rdd2022' ? '🌐 RDD2022' : '🎯 POTHOLE')}
                 </div>
               </div>
             </div>
@@ -886,6 +886,25 @@ export default function WebcamPotholeDetector({
                 }}
               >
                 <span>🌐 RDD2022</span>
+              </button>
+              <button
+                onClick={() => setAiModelMode('potbot')}
+                title="PotBot Dedicated Deep Pothole Model (YOLOv8m 148.5MB)"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  border: 'none',
+                  backgroundColor: aiModelMode === 'potbot' ? '#7c3aed' : 'transparent',
+                  color: aiModelMode === 'potbot' ? '#ffffff' : '#94a3b8'
+                }}
+              >
+                <span>🤖 PotBot</span>
               </button>
             </div>
           )}

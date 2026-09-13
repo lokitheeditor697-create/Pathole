@@ -21,6 +21,7 @@ def resolve_model_path(provided_path=None):
     if provided_path and os.path.exists(provided_path):
         return provided_path
     candidates = [
+        "detector/potbot_yolov8m.pt",
         "detector/best.pt",
         "best.pt",
         "detector/pothole_yolov8.pt",
@@ -178,7 +179,7 @@ if __name__ == "__main__":
     img_input = sys.argv[1]
     m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/pothole_yolov8.pt"
     c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.30
-    mode_arg = sys.argv[4] if len(sys.argv) > 4 else ("rdd2022" if "rdd2022" in m_path else "pothole")
+    mode_arg = sys.argv[4] if len(sys.argv) > 4 else ("potbot" if "potbot" in m_path else ("rdd2022" if "rdd2022" in m_path else "pothole"))
     is_multi = (mode_arg == "rdd2022") or ("rdd2022" in m_path) or ("multiclass" in mode_arg)
 
     res = analyze_image(img_input, m_path, c_thresh, is_multiclass=is_multi)

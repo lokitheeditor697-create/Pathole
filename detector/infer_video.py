@@ -17,7 +17,10 @@ import numpy as np
 from ultralytics import YOLO
 
 def resolve_model_path(provided_path=None):
+    if provided_path and os.path.exists(provided_path):
+        return provided_path
     candidates = [
+        "detector/potbot_yolov8m.pt",
         "detector/best.pt",
         "best.pt",
         "detector/pothole_yolov8.pt",
@@ -131,7 +134,7 @@ def classify_road_distress(frame, coords, default_cls='pothole'):
     # 7. Surface cavity / pothole (D40):
     return 'pothole'
 
-def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5, is_multiclass=False):
+def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5, is_multiclass=False, mode_name="pothole"):
     if not os.path.exists(video_path):
         return {"error": f"Video not found: {video_path}"}
     
@@ -334,7 +337,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5,
             with open(cache_file, "r") as f:
                 scans_data = json.load(f)
         video_key = os.path.basename(video_path)
-        model_tag = "rdd2022" if is_multiclass else "pothole"
+        model_tag = "rdd2022" if is_multiclass else ("potbot" if "potbot" in str(mode_name) else "pothole")
         scans_data[f"{video_key}_{model_tag}"] = result_payload
         if model_tag == "pothole":
             scans_data[video_key] = result_payload
@@ -353,11 +356,11 @@ if __name__ == "__main__":
     v_path = sys.argv[1]
     m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/pothole_yolov8.pt"
     c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.28
-    mode_arg = sys.argv[4] if len(sys.argv) > 4 else ("rdd2022" if "rdd2022" in m_path else "pothole")
+    mode_arg = sys.argv[4] if len(sys.argv) > 4 else ("potbot" if "potbot" in m_path else ("rdd2022" if "rdd2022" in m_path else "pothole"))
     is_multi = (mode_arg == "rdd2022") or ("rdd2022" in m_path) or ("multiclass" in mode_arg)
 
     if is_multi:
         c_thresh = min(c_thresh, 0.22)
 
-    res = analyze_video(v_path, m_path, c_thresh, is_multiclass=is_multi)
+    res = analyze_video(v_path, m_path, c_thresh, is_multiclass=is_multi, mode_name=mode_arg)
     print(json.dumps(res))

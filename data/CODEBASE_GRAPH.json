@@ -1,10 +1,10 @@
 {
   "version": "2.0.0",
   "project": "AI Road Intelligence & Pavement Maintenance Platform",
-  "generated_at": "2026-09-13T14:06:48.897Z",
+  "generated_at": "2026-09-13T16:48:20.778Z",
   "stats": {
-    "total_nodes": 43,
-    "total_links": 52,
+    "total_nodes": 41,
+    "total_links": 58,
     "modules": [
       "Root Config & Server",
       "Frontend Core",
@@ -21,7 +21,7 @@
       "id": "server.ts",
       "name": "server.ts",
       "group": "Root Config & Server",
-      "size": 77073,
+      "size": 94191,
       "path": "server.ts",
       "category": "server"
     },
@@ -29,7 +29,7 @@
       "id": "vite.config.js",
       "name": "vite.config.js",
       "group": "Root Config & Server",
-      "size": 336,
+      "size": 335,
       "path": "vite.config.js",
       "category": "config"
     },
@@ -61,7 +61,7 @@
       "id": "src/App.jsx",
       "name": "App.jsx",
       "group": "Frontend Core",
-      "size": 15878,
+      "size": 16185,
       "path": "src/App.jsx",
       "category": "module"
     },
@@ -77,7 +77,7 @@
       "id": "src/gisData.js",
       "name": "gisData.js",
       "group": "Frontend Core",
-      "size": 7358,
+      "size": 17300,
       "path": "src/gisData.js",
       "category": "module"
     },
@@ -101,7 +101,7 @@
       "id": "src/components/AIPerformanceView.jsx",
       "name": "AIPerformanceView.jsx",
       "group": "React UI Components",
-      "size": 14207,
+      "size": 21377,
       "path": "src/components/AIPerformanceView.jsx",
       "category": "component"
     },
@@ -114,10 +114,26 @@
       "category": "component"
     },
     {
+      "id": "src/components/CaseDetailModal.jsx",
+      "name": "CaseDetailModal.jsx",
+      "group": "React UI Components",
+      "size": 68981,
+      "path": "src/components/CaseDetailModal.jsx",
+      "category": "component"
+    },
+    {
+      "id": "src/components/CaseManagementView.jsx",
+      "name": "CaseManagementView.jsx",
+      "group": "React UI Components",
+      "size": 33201,
+      "path": "src/components/CaseManagementView.jsx",
+      "category": "component"
+    },
+    {
       "id": "src/components/DefectInventoryView.jsx",
       "name": "DefectInventoryView.jsx",
       "group": "React UI Components",
-      "size": 15480,
+      "size": 16585,
       "path": "src/components/DefectInventoryView.jsx",
       "category": "component"
     },
@@ -133,7 +149,7 @@
       "id": "src/components/Header.jsx",
       "name": "Header.jsx",
       "group": "React UI Components",
-      "size": 17627,
+      "size": 14632,
       "path": "src/components/Header.jsx",
       "category": "component"
     },
@@ -149,7 +165,7 @@
       "id": "src/components/LiveMonitoringView.jsx",
       "name": "LiveMonitoringView.jsx",
       "group": "React UI Components",
-      "size": 41524,
+      "size": 44108,
       "path": "src/components/LiveMonitoringView.jsx",
       "category": "component"
     },
@@ -165,7 +181,7 @@
       "id": "src/components/PatrolFleetView.jsx",
       "name": "PatrolFleetView.jsx",
       "group": "React UI Components",
-      "size": 10007,
+      "size": 10241,
       "path": "src/components/PatrolFleetView.jsx",
       "category": "component"
     },
@@ -173,7 +189,7 @@
       "id": "src/components/PatrolHUD.jsx",
       "name": "PatrolHUD.jsx",
       "group": "React UI Components",
-      "size": 37805,
+      "size": 37802,
       "path": "src/components/PatrolHUD.jsx",
       "category": "component"
     },
@@ -197,7 +213,7 @@
       "id": "src/components/RoadVideoInspectionPlayer.jsx",
       "name": "RoadVideoInspectionPlayer.jsx",
       "group": "React UI Components",
-      "size": 65226,
+      "size": 66907,
       "path": "src/components/RoadVideoInspectionPlayer.jsx",
       "category": "component"
     },
@@ -205,7 +221,7 @@
       "id": "src/components/WebcamPotholeDetector.jsx",
       "name": "WebcamPotholeDetector.jsx",
       "group": "React UI Components",
-      "size": 41470,
+      "size": 42429,
       "path": "src/components/WebcamPotholeDetector.jsx",
       "category": "component"
     },
@@ -213,7 +229,7 @@
       "id": "server/db.ts",
       "name": "db.ts",
       "group": "Backend Database",
-      "size": 23725,
+      "size": 56629,
       "path": "server/db.ts",
       "category": "module"
     },
@@ -223,30 +239,6 @@
       "group": "AI & Inference Engine",
       "size": 52022354,
       "path": "detector/best.pt",
-      "category": "ai"
-    },
-    {
-      "id": "detector/best_nano_backup.pt",
-      "name": "best_nano_backup.pt",
-      "group": "AI & Inference Engine",
-      "size": 6251818,
-      "path": "detector/best_nano_backup.pt",
-      "category": "ai"
-    },
-    {
-      "id": "detector/collabdoor_yolov8m.pt",
-      "name": "collabdoor_yolov8m.pt",
-      "group": "AI & Inference Engine",
-      "size": 52022354,
-      "path": "detector/collabdoor_yolov8m.pt",
-      "category": "ai"
-    },
-    {
-      "id": "detector/collabdoor_yolov8s_crddc.pt",
-      "name": "collabdoor_yolov8s_crddc.pt",
-      "group": "AI & Inference Engine",
-      "size": 89569358,
-      "path": "detector/collabdoor_yolov8s_crddc.pt",
       "category": "ai"
     },
     {
@@ -285,7 +277,7 @@
       "id": "detector/infer_image.py",
       "name": "infer_image.py",
       "group": "AI & Inference Engine",
-      "size": 7923,
+      "size": 8000,
       "path": "detector/infer_image.py",
       "category": "ai"
     },
@@ -293,8 +285,16 @@
       "id": "detector/infer_video.py",
       "name": "infer_video.py",
       "group": "AI & Inference Engine",
-      "size": 14907,
+      "size": 15158,
       "path": "detector/infer_video.py",
+      "category": "ai"
+    },
+    {
+      "id": "detector/potbot_yolov8m.pt",
+      "name": "potbot_yolov8m.pt",
+      "group": "AI & Inference Engine",
+      "size": 155679888,
+      "path": "detector/potbot_yolov8m.pt",
       "category": "ai"
     },
     {
@@ -306,27 +306,11 @@
       "category": "ai"
     },
     {
-      "id": "detector/pothole_yolov8_nano_backup.pt",
-      "name": "pothole_yolov8_nano_backup.pt",
-      "group": "AI & Inference Engine",
-      "size": 6251818,
-      "path": "detector/pothole_yolov8_nano_backup.pt",
-      "category": "ai"
-    },
-    {
       "id": "detector/rdd2022_multiclass.pt",
       "name": "rdd2022_multiclass.pt",
       "group": "AI & Inference Engine",
       "size": 89569358,
       "path": "detector/rdd2022_multiclass.pt",
-      "category": "ai"
-    },
-    {
-      "id": "detector/rdd2022_multiclass_old_backup.pt",
-      "name": "rdd2022_multiclass_old_backup.pt",
-      "group": "AI & Inference Engine",
-      "size": 22524394,
-      "path": "detector/rdd2022_multiclass_old_backup.pt",
       "category": "ai"
     },
     {
@@ -385,6 +369,11 @@
     },
     {
       "source": "src/App.jsx",
+      "target": "src/components/CaseManagementView",
+      "type": "import"
+    },
+    {
+      "source": "src/App.jsx",
       "target": "src/components/PatrolFleetView",
       "type": "import"
     },
@@ -436,6 +425,26 @@
     {
       "source": "src/components/AlertTestModal.jsx",
       "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/CaseDetailModal.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/CaseManagementView.jsx",
+      "target": "src/components/CaseDetailModal",
+      "type": "import"
+    },
+    {
+      "source": "src/components/CaseManagementView.jsx",
+      "target": "src/config",
+      "type": "import"
+    },
+    {
+      "source": "src/components/CaseManagementView.jsx",
+      "target": "src/gisData",
       "type": "import"
     },
     {
@@ -549,10 +558,16 @@
       "label": "7-Class RDD2022 Defect Weights"
     },
     {
+      "source": "server.ts",
+      "target": "detector/potbot_yolov8m.pt",
+      "type": "architecture",
+      "label": "PotBot Dedicated Pothole Weights"
+    },
+    {
       "source": "src/App.jsx",
       "target": "src/components/Header.jsx",
       "type": "architecture",
-      "label": "Dual Model Mode & Navigation"
+      "label": "Tri-Model Mode & Navigation"
     },
     {
       "source": "src/App.jsx",
@@ -588,7 +603,7 @@
       "source": "src/App.jsx",
       "target": "src/components/AIPerformanceView.jsx",
       "type": "architecture",
-      "label": "Dual Model Governance & mAP"
+      "label": "Tri-Model Governance & mAP"
     },
     {
       "source": "src/components/LiveMonitoringView.jsx",

@@ -114,7 +114,7 @@ export default function RoadVideoInspectionPlayer({
     setIsAiScanning(true);
     setScanTotalSteps(3);
     setScanStep(1);
-    setScanStatusMessage(`Initializing ${activeMode === 'rdd2022' ? 'YOLOv8s CRDDC Road Damage' : 'YOLOv8m 7-Class Road Anomaly'} model...`);
+    setScanStatusMessage(`Initializing ${activeMode === 'potbot' ? 'PotBot YOLOv8m Dedicated Pothole' : (activeMode === 'rdd2022' ? 'YOLOv8s CRDDC Road Damage' : 'YOLOv8m 7-Class Road Anomaly')} model...`);
 
     try {
       setScanStep(2);
@@ -139,7 +139,7 @@ export default function RoadVideoInspectionPlayer({
           setDetectedMoments(mappedMoments);
           const totalCount = fallback.unique_defects_count || fallback.unique_defects?.length || mappedMoments.length;
           setScanStep(3);
-          const modeLabel = activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly';
+          const modeLabel = activeMode === 'potbot' ? 'PotBot Dedicated Pothole' : (activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly');
           setScanStatusMessage(`Autonomous Edge Scan [${modeLabel}]: ${totalCount} road distresses identified.`);
           showToast(`Autonomous Edge AI [${modeLabel}]: ${totalCount} real defects loaded.`, 'info');
           if (onDefectLogged && Array.isArray(fallback.unique_defects)) {
@@ -167,7 +167,7 @@ export default function RoadVideoInspectionPlayer({
       if (res.ok) {
         const data = await res.json();
         setScanStep(3);
-        const modeLabel = activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly';
+        const modeLabel = activeMode === 'potbot' ? 'PotBot Dedicated Pothole' : (activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly');
         setScanStatusMessage(`Inference complete [${modeLabel}]: ${data.total_defects} road distresses identified.`);
 
         if (Array.isArray(data.moments) && data.moments.length > 0) {
@@ -787,6 +787,29 @@ export default function RoadVideoInspectionPlayer({
           >
             <span>🌐 CRDDC Road Damage</span>
           </button>
+
+          <button
+            onClick={() => handleSwitchModel('potbot')}
+            disabled={isAiScanning}
+            title="Switch to PotBot Dedicated Pothole Specialist (YOLOv8m 148.5MB)"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 9px',
+              borderRadius: '5px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              border: 'none',
+              backgroundColor: aiModelMode === 'potbot' ? '#7c3aed' : 'transparent',
+              color: aiModelMode === 'potbot' ? '#ffffff' : '#94a3b8',
+              boxShadow: aiModelMode === 'potbot' ? '0 0 8px rgba(124,58,237,0.4)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>🤖 PotBot Pothole (148MB)</span>
+          </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1227,21 +1250,21 @@ export default function RoadVideoInspectionPlayer({
         >
           <div
             style={{
-              backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.92)' : 'rgba(37, 99, 235, 0.92)',
+              backgroundColor: aiModelMode === 'potbot' ? 'rgba(124, 58, 237, 0.92)' : (aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.92)' : 'rgba(37, 99, 235, 0.92)'),
               backdropFilter: 'blur(6px)',
               color: '#ffffff',
               fontSize: '11px',
               fontWeight: '800',
               padding: '4px 10px',
               borderRadius: '6px',
-              border: `1px solid ${aiModelMode === 'rdd2022' ? '#2dd4bf' : '#60a5fa'}`,
+              border: `1px solid ${aiModelMode === 'potbot' ? '#c084fc' : (aiModelMode === 'rdd2022' ? '#2dd4bf' : '#60a5fa')}`,
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: `0 0 12px ${aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.5)' : 'rgba(37, 99, 235, 0.5)'}`
+              boxShadow: `0 0 12px ${aiModelMode === 'potbot' ? 'rgba(124, 58, 237, 0.5)' : (aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.5)' : 'rgba(37, 99, 235, 0.5)')}`
             }}
           >
-            <span>{aiModelMode === 'rdd2022' ? '🌐 YOLOv8s CRDDC Road Damage' : '🎯 YOLOv8m 7-Class Road Anomaly'}</span>
+            <span>{aiModelMode === 'potbot' ? '🤖 PotBot YOLOv8m Dedicated Pothole' : (aiModelMode === 'rdd2022' ? '🌐 YOLOv8s CRDDC Road Damage' : '🎯 YOLOv8m 7-Class Road Anomaly')}</span>
           </div>
 
           {isFullscreen && (
@@ -1486,9 +1509,28 @@ export default function RoadVideoInspectionPlayer({
 
             {/* Multi-Hazard Active Badge & Quick Log Frame Button */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {aiModelMode === 'rdd2022' ? (
+              {aiModelMode === 'potbot' ? (
                 <div
-                  title="All 7 defect classes (Potholes, Cracks, Patches, Rutting, Waterlogging) are scanned and classified simultaneously"
+                  title="PotBot AI dedicated deep pothole detection model (148.5MB)"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: 'rgba(124, 58, 237, 0.2)',
+                    border: '1px solid rgba(192, 132, 252, 0.45)',
+                    padding: '5px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    color: '#c084fc',
+                    fontWeight: '700'
+                  }}
+                >
+                  <Sparkles size={12} color="#c084fc" />
+                  <span>🤖 PotBot Dedicated Pothole Active</span>
+                </div>
+              ) : aiModelMode === 'rdd2022' ? (
+                <div
+                  title="All 4 CRDDC defect classes scanned and classified simultaneously"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1503,11 +1545,11 @@ export default function RoadVideoInspectionPlayer({
                   }}
                 >
                   <Sparkles size={12} color="#2dd4bf" />
-                  <span>🌐 All 7 Defects Scanned at Once</span>
+                  <span>🌐 CRDDC Road Damage Active</span>
                 </div>
               ) : (
                 <div
-                  title="Dedicated single-hazard fast pothole model"
+                  title="7-Class Road Anomaly & Safety Defect Model"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1521,7 +1563,7 @@ export default function RoadVideoInspectionPlayer({
                     fontWeight: '700'
                   }}
                 >
-                  <span>🎯 7-Class Road Anomaly Mode</span>
+                  <span>🎯 7-Class Road Anomaly Active</span>
                 </div>
               )}
 

@@ -27,7 +27,7 @@ export default function App() {
   const [vehicles, setVehicles] = useState(DEFAULT_VEHICLES);
   const [systemStatus, setSystemStatus] = useState(null);
 
-  // AI Model Mode: 'pothole' (Single-Class Dedicated) | 'rdd2022' (7-Class Multi-Defect)
+  // AI Model Mode: 'pothole' (7-Class Anomaly) | 'rdd2022' (CRDDC Multi-Damage) | 'potbot' (PotBot Dedicated Pothole 148MB)
   const [aiModelMode, setAiModelMode] = useState('pothole');
 
   // Connection & GPS Operational Reliability States
