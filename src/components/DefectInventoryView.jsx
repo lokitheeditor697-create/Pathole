@@ -7,6 +7,7 @@ import {
   Download
 } from 'lucide-react';
 import { API_BASE } from '../config';
+import { getDefectMeta } from '../utils/defectMeta';
 
 const PHASE1_CLASSES = [
   'ALL',
@@ -137,11 +138,15 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
                 fontSize: '12px'
               }}
             >
-              {PHASE1_CLASSES.map((c) => (
-                <option key={c} value={c}>
-                  {c.replace('_', ' ').toUpperCase()}
-                </option>
-              ))}
+              {PHASE1_CLASSES.map((c) => {
+                if (c === 'ALL') return <option key="ALL" value="ALL">🔍 All 7 Distress Types</option>;
+                const meta = getDefectMeta(c);
+                return (
+                  <option key={c} value={c}>
+                    {meta.icon} {meta.fullLabel}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -215,6 +220,7 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
         <div className="responsive-card-grid">
           {filtered.map((defect) => {
 
+          const meta = getDefectMeta(defect.class_name);
           const isMulti = defect.is_multi_bus_verified;
           const sevColor =
             defect.severity === 'Critical'
@@ -231,7 +237,7 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
               style={{
                 backgroundColor: '#0f172a',
                 borderRadius: '10px',
-                border: `1px solid ${isMulti ? 'rgba(34, 197, 94, 0.3)' : '#1e293b'}`,
+                border: `1px solid ${isMulti ? 'rgba(34, 197, 94, 0.4)' : meta.borderColor ? `${meta.borderColor}44` : '#1e293b'}`,
                 padding: '16px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -242,7 +248,7 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
               {/* Header row */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#64748b' }}>
                       {defect.detection_id}
                     </span>
@@ -257,10 +263,25 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
                     }}>
                       {defect.severity}
                     </span>
+                    <span style={{
+                      fontSize: '10px',
+                      backgroundColor: meta.bgColor,
+                      color: meta.textColor,
+                      border: `1px solid ${meta.borderColor}55`,
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      fontWeight: '800'
+                    }}>
+                      {meta.code}
+                    </span>
                   </div>
-                  <h3 style={{ margin: '4px 0 0 0', fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>
-                    {defect.class_name.replace('_', ' ').toUpperCase()}
+                  <h3 style={{ margin: '6px 0 0 0', fontSize: '15px', fontWeight: '800', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{meta.icon}</span>
+                    <span>{meta.name}</span>
                   </h3>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                    {meta.category} · {meta.description}
+                  </div>
                 </div>
 
                 {isMulti ? (

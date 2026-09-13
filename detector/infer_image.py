@@ -25,6 +25,26 @@ def resolve_model_path(provided_path=None):
             return c
     return provided_path or "detector/pothole_yolov8.pt"
 
+CLASS_METADATA = {
+    'pothole': {'code': 'D40', 'display_name': 'Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void'},
+    'longitudinal_crack': {'code': 'D00', 'display_name': 'Longitudinal Crack (D00)', 'prefix': 'LCRK', 'category': 'Structural Crack'},
+    'transverse_crack': {'code': 'D01', 'display_name': 'Transverse Crack (D01)', 'prefix': 'TCRK', 'category': 'Thermal/Shrinkage Crack'},
+    'alligator_crack': {'code': 'D20', 'display_name': 'Alligator Fatigue Crack (D20)', 'prefix': 'ACRK', 'category': 'Structural Fatigue'},
+    'crack': {'code': 'D00/D01', 'display_name': 'Surface Crack', 'prefix': 'CRK', 'category': 'Surface Crack'},
+    'road_patch': {'code': 'D44', 'display_name': 'Road Patch / Deterioration (D44)', 'prefix': 'PTCH', 'category': 'Pavement Patch'},
+    'rutting': {'code': 'D30', 'display_name': 'Rutting / Wheel Depression (D30)', 'prefix': 'RUT', 'category': 'Deformation'},
+    'waterlogging': {'code': 'D50', 'display_name': 'Waterlogging / Drainage Ponding (D50)', 'prefix': 'WLOG', 'category': 'Drainage Hazard'},
+}
+
+def get_defect_meta(cls_name):
+    norm = str(cls_name).lower().strip()
+    return CLASS_METADATA.get(norm, {
+        'code': 'DST',
+        'display_name': norm.replace('_', ' ').title(),
+        'prefix': 'DST',
+        'category': 'Road Distress'
+    })
+
 def analyze_image(image_input, model_path=None, conf_thresh=0.30):
     actual_model = resolve_model_path(model_path)
     if not os.path.exists(actual_model):
@@ -54,11 +74,12 @@ def analyze_image(image_input, model_path=None, conf_thresh=0.30):
     detections = []
 
     for r in results:
-        for box in r.boxes:
+        for idx, box in enumerate(r.boxes):
             cls_id = int(box.cls[0])
             cls_name = model.names.get(cls_id, "pothole")
             conf = float(box.conf[0])
             coords = box.xyxy[0].tolist()
+            meta = get_defect_meta(cls_name)
 
             bx = int(coords[0])
             by = int(coords[1])
@@ -70,7 +91,12 @@ def analyze_image(image_input, model_path=None, conf_thresh=0.30):
             severity = "Critical" if conf >= 0.75 else "High" if conf >= 0.55 else "Medium"
 
             detections.append({
+                "pothole_id": f"{meta['prefix']}-#{idx + 1:02d}",
                 "class_name": cls_name,
+                "display_name": meta['display_name'],
+                "rdd_code": meta['code'],
+                "category": meta['category'],
+                "confidence": round(conf, 2),
                 "conf": round(conf, 2),
                 "severity": severity,
                 "wCm": est_w_cm,

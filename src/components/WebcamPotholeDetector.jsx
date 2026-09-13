@@ -11,6 +11,7 @@ import {
   VolumeX
 } from 'lucide-react';
 import { API_BASE } from '../config';
+import { getDefectMeta, formatDefectId } from '../utils/defectMeta';
 
 export default function WebcamPotholeDetector({
   activeVehicle,
@@ -332,15 +333,20 @@ export default function WebcamPotholeDetector({
         }
 
         const severity = estWCm >= 45 ? 'Critical' : estWCm >= 25 ? 'High' : 'Moderate';
+        const meta = getDefectMeta(detectedClass);
 
         setDetectionState({
           hasDefect: true,
           class_name: detectedClass,
+          display_name: meta.fullLabel,
+          rdd_code: meta.code,
+          category: meta.category,
+          color: meta.color,
           confidence: rawConfidence,
           bbox: { xPct, yPct, wPct, hPct },
           dimensions: { width_cm: estWCm, length_cm: estLCm },
           severity,
-          statusText: `ROAD DEFECT DETECTED: ${detectedClass.toUpperCase()} (${(rawConfidence * 100).toFixed(0)}%)`,
+          statusText: `${meta.icon} ${meta.fullLabel} DETECTED (${(rawConfidence * 100).toFixed(0)}%)`,
           roadLuminance: Math.round(avgRoadLuma),
           anomalyScore: anomalyCount
         });
@@ -591,68 +597,77 @@ export default function WebcamPotholeDetector({
             </div>
 
             {/* Active YOLOv8 Bounding Box on Detected Defect */}
-            {detectionState.hasDefect && detectionState.bbox && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: `${detectionState.bbox.yPct}%`,
-                  left: `${detectionState.bbox.xPct}%`,
-                  width: `${detectionState.bbox.wPct}%`,
-                  height: `${detectionState.bbox.hPct}%`,
-                  border: '2.5px solid #22c55e',
-                  backgroundColor: 'rgba(34, 197, 94, 0.22)',
-                  borderRadius: '4px',
-                  pointerEvents: 'none',
-                  boxShadow: '0 0 16px rgba(34, 197, 94, 0.6)',
-                  transition: 'all 0.2s ease-out'
-                }}
-              >
-                {/* Corner Accents */}
-                <div style={{ position: 'absolute', top: -3, left: -3, width: 8, height: 8, borderTop: '3px solid #22c55e', borderLeft: '3px solid #22c55e' }} />
-                <div style={{ position: 'absolute', top: -3, right: -3, width: 8, height: 8, borderTop: '3px solid #22c55e', borderRight: '3px solid #22c55e' }} />
-                <div style={{ position: 'absolute', bottom: -3, left: -3, width: 8, height: 8, borderBottom: '3px solid #22c55e', borderLeft: '3px solid #22c55e' }} />
-                <div style={{ position: 'absolute', bottom: -3, right: -3, width: 8, height: 8, borderBottom: '3px solid #22c55e', borderRight: '3px solid #22c55e' }} />
-
-                {/* Defect Tag Header */}
+            {detectionState.hasDefect && detectionState.bbox && (() => {
+              const meta = getDefectMeta(detectionState.class_name);
+              const boxColor = meta.color || '#22c55e';
+              return (
                 <div
                   style={{
                     position: 'absolute',
-                    top: '-24px',
-                    left: '-2px',
-                    backgroundColor: '#22c55e',
-                    color: '#000000',
-                    padding: '2px 8px',
-                    fontSize: '11px',
-                    fontWeight: '800',
-                    fontFamily: 'monospace',
-                    borderRadius: '3px 3px 0 0',
-                    whiteSpace: 'nowrap',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
+                    top: `${detectionState.bbox.yPct}%`,
+                    left: `${detectionState.bbox.xPct}%`,
+                    width: `${detectionState.bbox.wPct}%`,
+                    height: `${detectionState.bbox.hPct}%`,
+                    border: `2.5px solid ${boxColor}`,
+                    backgroundColor: `${boxColor}22`,
+                    borderRadius: '4px',
+                    pointerEvents: 'none',
+                    boxShadow: `0 0 16px ${boxColor}88`,
+                    transition: 'all 0.15s ease-out'
                   }}
                 >
-                  <span>{detectionState.class_name.toUpperCase()}</span>
-                  <span>{(detectionState.confidence * 100).toFixed(0)}%</span>
-                </div>
+                  {/* Corner Accents */}
+                  <div style={{ position: 'absolute', top: -3, left: -3, width: 8, height: 8, borderTop: `3px solid ${boxColor}`, borderLeft: `3px solid ${boxColor}` }} />
+                  <div style={{ position: 'absolute', top: -3, right: -3, width: 8, height: 8, borderTop: `3px solid ${boxColor}`, borderRight: `3px solid ${boxColor}` }} />
+                  <div style={{ position: 'absolute', bottom: -3, left: -3, width: 8, height: 8, borderBottom: `3px solid ${boxColor}`, borderLeft: `3px solid ${boxColor}` }} />
+                  <div style={{ position: 'absolute', bottom: -3, right: -3, width: 8, height: 8, borderBottom: `3px solid ${boxColor}`, borderRight: `3px solid ${boxColor}` }} />
 
-                {/* Dimension Tag */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '4px',
-                    left: '6px',
-                    color: '#ffffff',
-                    fontSize: '10px',
-                    fontWeight: '700',
-                    fontFamily: 'monospace',
-                    textShadow: '0 1px 3px rgba(0,0,0,0.9)'
-                  }}
-                >
-                  EST: {detectionState.dimensions.width_cm}cm × {detectionState.dimensions.length_cm}cm [{detectionState.severity}]
+                  {/* Defect Tag Header */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '-25px',
+                      left: '-2px',
+                      backgroundColor: boxColor,
+                      color: '#000000',
+                      padding: '2px 8px',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      fontFamily: 'monospace',
+                      borderRadius: '3px 3px 0 0',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.6)'
+                    }}
+                  >
+                    <span>{meta.icon}</span>
+                    <span>{meta.fullLabel}</span>
+                    <span>{(detectionState.confidence * 100).toFixed(0)}%</span>
+                  </div>
+
+                  {/* Dimension Tag */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '4px',
+                      left: '6px',
+                      backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                      padding: '1px 5px',
+                      borderRadius: '3px',
+                      color: '#ffffff',
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      fontFamily: 'monospace',
+                      textShadow: '0 1px 3px rgba(0,0,0,0.9)'
+                    }}
+                  >
+                    {meta.category} · {detectionState.dimensions.width_cm}cm × {detectionState.dimensions.length_cm}cm [{detectionState.severity}]
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Scanning Reticle */}
             {!detectionState.hasDefect && (
@@ -935,12 +950,14 @@ export default function WebcamPotholeDetector({
                 fontWeight: '600'
               }}
             >
-              <option value="auto">Auto-Detect (Any Defect)</option>
-              <option value="pothole">Pothole (Cavity)</option>
-              <option value="alligator_crack">Alligator Crack</option>
-              <option value="longitudinal_crack">Longitudinal Crack</option>
-              <option value="transverse_crack">Transverse Crack</option>
-              <option value="waterlogging">Waterlogging</option>
+              <option value="auto">🔍 Auto-Detect (All 7 Distress Types)</option>
+              <option value="pothole">🕳️ Pothole (D40)</option>
+              <option value="longitudinal_crack">⚡ Longitudinal Crack (D00)</option>
+              <option value="transverse_crack">➖ Transverse Crack (D01)</option>
+              <option value="alligator_crack">🕸️ Alligator Fatigue Crack (D20)</option>
+              <option value="road_patch">🩹 Road Patch Deterioration (D44)</option>
+              <option value="rutting">📉 Rutting Depression (D30)</option>
+              <option value="waterlogging">🌊 Waterlogging Ponding (D50)</option>
             </select>
           </div>
 

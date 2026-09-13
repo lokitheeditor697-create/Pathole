@@ -23,6 +23,26 @@ def resolve_model_path(provided_path=None):
             return c
     return provided_path or "detector/pothole_yolov8.pt"
 
+CLASS_METADATA = {
+    'pothole': {'code': 'D40', 'display_name': 'Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void'},
+    'longitudinal_crack': {'code': 'D00', 'display_name': 'Longitudinal Crack (D00)', 'prefix': 'LCRK', 'category': 'Structural Crack'},
+    'transverse_crack': {'code': 'D01', 'display_name': 'Transverse Crack (D01)', 'prefix': 'TCRK', 'category': 'Thermal/Shrinkage Crack'},
+    'alligator_crack': {'code': 'D20', 'display_name': 'Alligator Fatigue Crack (D20)', 'prefix': 'ACRK', 'category': 'Structural Fatigue'},
+    'crack': {'code': 'D00/D01', 'display_name': 'Surface Crack', 'prefix': 'CRK', 'category': 'Surface Crack'},
+    'road_patch': {'code': 'D44', 'display_name': 'Road Patch / Deterioration (D44)', 'prefix': 'PTCH', 'category': 'Pavement Patch'},
+    'rutting': {'code': 'D30', 'display_name': 'Rutting / Wheel Depression (D30)', 'prefix': 'RUT', 'category': 'Deformation'},
+    'waterlogging': {'code': 'D50', 'display_name': 'Waterlogging / Drainage Ponding (D50)', 'prefix': 'WLOG', 'category': 'Drainage Hazard'},
+}
+
+def get_defect_meta(cls_name):
+    norm = str(cls_name).lower().strip()
+    return CLASS_METADATA.get(norm, {
+        'code': 'DST',
+        'display_name': norm.replace('_', ' ').title(),
+        'prefix': 'DST',
+        'category': 'Road Distress'
+    })
+
 def compute_iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
@@ -93,7 +113,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=4):
                         'track_id': track_id
                     })
 
-            # Intra-frame NMS: Suppress duplicate overlapping boxes on the same pothole in this frame
+            # Intra-frame NMS: Suppress duplicate overlapping boxes on the same defect in this frame
             frame_boxes.sort(key=lambda x: x['conf'], reverse=True)
             deduped_frame_boxes = []
             for candidate in frame_boxes:
@@ -125,6 +145,9 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=4):
                         t_id = next_fallback_track_id
                         next_fallback_track_id += 1
 
+                meta = get_defect_meta(cls_name)
+                formatted_pothole_id = f"{meta['prefix']}-#{int(t_id):02d}"
+
                 bx = int(coords[0])
                 by = int(coords[1])
                 bw = int(coords[2] - coords[0])
@@ -134,10 +157,13 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=4):
                 severity = "Critical" if conf >= 0.75 else "High" if conf >= 0.55 else "Medium"
 
                 moment_obj = {
-                    "pothole_id": f"PTH-#{int(t_id):02d}",
+                    "pothole_id": formatted_pothole_id,
                     "track_id": t_id,
                     "time": current_time,
                     "class_name": cls_name,
+                    "display_name": meta['display_name'],
+                    "rdd_code": meta['code'],
+                    "category": meta['category'],
                     "conf": round(conf, 2),
                     "severity": severity,
                     "wCm": est_w_cm,
@@ -177,11 +203,15 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=4):
 
     cap.release()
 
-    # User specification: Use the last info before the pothole is out of range
+    # User specification: Use the last info before the defect is out of range
     unique_list = []
     for t_id, v in tracked_unique_defects.items():
         chosen = dict(v.get('last_moment') or v.get('best_moment'))
-        chosen['pothole_id'] = f"PTH-#{int(t_id):02d}"
+        meta = get_defect_meta(chosen.get('class_name', 'pothole'))
+        chosen['pothole_id'] = f"{meta['prefix']}-#{int(t_id):02d}"
+        chosen['display_name'] = meta['display_name']
+        chosen['rdd_code'] = meta['code']
+        chosen['category'] = meta['category']
         chosen['first_seen_sec'] = v['first_seen']
         chosen['last_seen_sec'] = v['last_seen']
         chosen['total_sightings'] = v['sightings']

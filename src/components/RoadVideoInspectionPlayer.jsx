@@ -17,6 +17,7 @@ import {
   Upload
 } from 'lucide-react';
 import { API_BASE } from '../config';
+import { getDefectMeta, formatDefectId } from '../utils/defectMeta';
 
 export default function RoadVideoInspectionPlayer({
   uploadedFile,
@@ -122,31 +123,47 @@ export default function RoadVideoInspectionPlayer({
         setScanStatusMessage(`Inference complete [${modeLabel}]: ${data.total_defects} road distresses identified.`);
 
         if (Array.isArray(data.moments) && data.moments.length > 0) {
-          const mappedMoments = data.moments.map((m, idx) => ({
-            ...m,
-            pothole_id: m.pothole_id || (m.track_id ? `PTH-#${String(m.track_id).padStart(2, '0')}` : `PTH-#${String(idx + 1).padStart(2, '0')}`)
-          }));
+          const mappedMoments = data.moments.map((m, idx) => {
+            const meta = getDefectMeta(m.class_name);
+            const formattedId = m.pothole_id || formatDefectId(m.track_id || idx + 1, m.class_name);
+            return {
+              ...m,
+              pothole_id: formattedId,
+              display_name: m.display_name || meta.fullLabel,
+              rdd_code: m.rdd_code || meta.code,
+              category: m.category || meta.category,
+              color: meta.color
+            };
+          });
           setDetectedMoments(mappedMoments);
         } else if (Array.isArray(data.defects) && data.defects.length > 0) {
-          const mappedMoments = data.defects.map((d, idx) => ({
-            time: d.video_timestamp_sec || 1.5,
-            pothole_id: d.pothole_id || `PTH-#${String(idx + 1).padStart(2, '0')}`,
-            track_id: idx + 1,
-            class_name: d.class_name,
-            conf: d.confidence,
-            severity: d.severity,
-            wCm: d.bbox?.estimated_physical_width_cm || 50,
-            lCm: d.bbox?.estimated_physical_length_cm || 40,
-            bbox: {
-              x: d.bbox?.x_min || 200,
-              y: d.bbox?.y_min || 150,
-              w: (d.bbox?.x_max || 320) - (d.bbox?.x_min || 200),
-              h: (d.bbox?.y_max || 220) - (d.bbox?.y_min || 150),
-              video_w: d.moment_bbox?.video_w || 1280,
-              video_h: d.moment_bbox?.video_h || 720
-            },
-            detection_id: d.detection_id
-          }));
+          const mappedMoments = data.defects.map((d, idx) => {
+            const meta = getDefectMeta(d.class_name);
+            const formattedId = d.pothole_id || formatDefectId(idx + 1, d.class_name);
+            return {
+              time: d.video_timestamp_sec || 1.5,
+              pothole_id: formattedId,
+              track_id: idx + 1,
+              class_name: d.class_name,
+              display_name: meta.fullLabel,
+              rdd_code: meta.code,
+              category: meta.category,
+              color: meta.color,
+              conf: d.confidence,
+              severity: d.severity,
+              wCm: d.bbox?.estimated_physical_width_cm || 50,
+              lCm: d.bbox?.estimated_physical_length_cm || 40,
+              bbox: {
+                x: d.bbox?.x_min || 200,
+                y: d.bbox?.y_min || 150,
+                w: (d.bbox?.x_max || 320) - (d.bbox?.x_min || 200),
+                h: (d.bbox?.y_max || 220) - (d.bbox?.y_min || 150),
+                video_w: d.moment_bbox?.video_w || 1280,
+                video_h: d.moment_bbox?.video_h || 720
+              },
+              detection_id: d.detection_id
+            };
+          });
           setDetectedMoments(mappedMoments);
         } else {
           setDetectedMoments([]);
@@ -265,7 +282,8 @@ export default function RoadVideoInspectionPlayer({
         ? String(cand.track_id)
         : cand.pothole_id || `${cand.class_name}-${Math.round((cand.bbox?.x || 0) / 40)}`;
 
-      const potholeId = cand.pothole_id || `PTH-#${String(cand.track_id || 1).padStart(2, '0')}`;
+      const potholeId = cand.pothole_id || formatDefectId(cand.track_id || 1, cand.class_name);
+      const meta = getDefectMeta(cand.class_name);
 
       let trackRecord = lockedTracksRef.current.get(trackKey);
       if (!trackRecord) {
@@ -274,18 +292,22 @@ export default function RoadVideoInspectionPlayer({
           lockedConf: cand.conf,
           firstSeen: cur,
           lastSeen: cur,
-          lastInfoBeforeExit: cand,
+          lastInfoBeforeExit: { ...cand, pothole_id: potholeId, display_name: meta.fullLabel, rdd_code: meta.code, color: meta.color },
           isLocked: true
         };
         lockedTracksRef.current.set(trackKey, trackRecord);
       } else {
         trackRecord.lastSeen = cur;
-        trackRecord.lastInfoBeforeExit = { ...cand, pothole_id: potholeId };
+        trackRecord.lastInfoBeforeExit = { ...cand, pothole_id: potholeId, display_name: meta.fullLabel, rdd_code: meta.code, color: meta.color };
       }
 
       return {
         ...cand,
         pothole_id: potholeId,
+        display_name: meta.fullLabel,
+        rdd_code: meta.code,
+        category: meta.category,
+        color: meta.color,
         conf: trackRecord.lockedConf, // Keep stable locked % (prevents misleading fluttering values)
         is_locked: true,
         lastInfoBeforeExit: trackRecord.lastInfoBeforeExit
@@ -299,11 +321,15 @@ export default function RoadVideoInspectionPlayer({
         // The last info before out of range is considered as the confirmed defect measurement
         const finalInfo = trackRecord.lastInfoBeforeExit;
         if (onDefectLogged && finalInfo) {
+          const meta = getDefectMeta(finalInfo.class_name);
           onDefectLogged({
             detection_id: `DET-CONFIRMED-${finalInfo.pothole_id || key}`,
             pothole_id: finalInfo.pothole_id,
             defect_type: finalInfo.class_name,
             class_name: finalInfo.class_name,
+            display_name: meta.fullLabel,
+            rdd_code: meta.code,
+            category: meta.category,
             severity: finalInfo.severity,
             confidence: trackRecord.lockedConf,
             exact_chainage_m: Math.round(100 + (trackRecord.lastSeen * 8.5)),
@@ -326,10 +352,12 @@ export default function RoadVideoInspectionPlayer({
 
     // Auto-pause feature if enabled
     if (autoPauseOnDefects && lockedTraces.length > 0 && lastAutoPausedMoment !== lockedTraces[0].time) {
+      const topDefect = lockedTraces[0];
+      const meta = getDefectMeta(topDefect.class_name);
       videoRef.current.pause();
       setIsPlaying(false);
-      setLastAutoPausedMoment(lockedTraces[0].time);
-      showToast(`Auto-paused at defect: ${lockedTraces[0].class_name.toUpperCase()} (${lockedTraces[0].pothole_id})`, 'info');
+      setLastAutoPausedMoment(topDefect.time);
+      showToast(`Auto-paused at defect: ${meta.icon} ${meta.fullLabel} (${topDefect.pothole_id})`, 'info');
     }
   };
 
@@ -762,104 +790,119 @@ export default function RoadVideoInspectionPlayer({
           />
 
           {/* Real-Time YOLOv8 Defect Bounding Box Overlays (All defects in current timestamp) */}
-          {!videoError && activeDefectsOnScreen.map((defect, dIdx) => (
-            <div
-              key={dIdx}
-              style={{
-                position: 'absolute',
-                top: `${((defect.bbox.y) / (defect.bbox.video_h || 720)) * 100}%`,
-                left: `${((defect.bbox.x) / (defect.bbox.video_w || 1280)) * 100}%`,
-                width: `${((defect.bbox.w) / (defect.bbox.video_w || 1280)) * 100}%`,
-                height: `${((defect.bbox.h) / (defect.bbox.video_h || 720)) * 100}%`,
-                border: `2.5px solid ${getSeverityColor(defect.severity)}`,
-                backgroundColor: `${getSeverityColor(defect.severity)}22`,
-                borderRadius: '4px',
-                boxShadow: `0 0 16px ${getSeverityColor(defect.severity)}88`,
-                pointerEvents: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                padding: '4px',
-                zIndex: 15,
-                transition: 'all 0.1s ease-out'
-              }}
-            >
-              {/* Top Badge: Pothole ID, Class, Locked status, & Confidence */}
+          {!videoError && activeDefectsOnScreen.map((defect, dIdx) => {
+            const meta = getDefectMeta(defect.class_name);
+            const boxColor = meta.color || getSeverityColor(defect.severity);
+            const sevColor = getSeverityColor(defect.severity);
+
+            return (
               <div
+                key={dIdx}
                 style={{
-                  backgroundColor: '#090d16',
-                  color: '#f8fafc',
-                  fontSize: '11px',
-                  fontWeight: '800',
-                  padding: '3px 7px',
+                  position: 'absolute',
+                  top: `${((defect.bbox.y) / (defect.bbox.video_h || 720)) * 100}%`,
+                  left: `${((defect.bbox.x) / (defect.bbox.video_w || 1280)) * 100}%`,
+                  width: `${((defect.bbox.w) / (defect.bbox.video_w || 1280)) * 100}%`,
+                  height: `${((defect.bbox.h) / (defect.bbox.video_h || 720)) * 100}%`,
+                  border: `2.5px solid ${boxColor}`,
+                  backgroundColor: `${boxColor}22`,
                   borderRadius: '4px',
-                  alignSelf: 'flex-start',
-                  border: `1.5px solid ${getSeverityColor(defect.severity)}`,
-                  boxShadow: '0 3px 8px rgba(0,0,0,0.8)',
+                  boxShadow: `0 0 16px ${boxColor}66`,
+                  pointerEvents: 'none',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  padding: '4px',
+                  zIndex: 15,
+                  transition: 'all 0.1s ease-out'
                 }}
               >
-                {/* Pothole ID */}
-                <span style={{
-                  backgroundColor: '#1e293b',
-                  color: '#38bdf8',
-                  padding: '1px 5px',
-                  borderRadius: '3px',
-                  fontSize: '10px',
-                  fontFamily: 'monospace',
-                  fontWeight: '900',
-                  letterSpacing: '0.04em'
-                }}>
-                  {defect.pothole_id || `PTH-#${String(defect.track_id || 1).padStart(2, '0')}`}
-                </span>
+                {/* Top Badge: Defect ID, Distress Icon & Full Name, Locked status, & Confidence */}
+                <div
+                  style={{
+                    backgroundColor: 'rgba(9, 13, 22, 0.95)',
+                    backdropFilter: 'blur(4px)',
+                    color: '#f8fafc',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    alignSelf: 'flex-start',
+                    border: `1.5px solid ${boxColor}`,
+                    boxShadow: '0 3px 10px rgba(0,0,0,0.85)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {/* Defect Code/ID */}
+                  <span style={{
+                    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                    color: meta.textColor || '#38bdf8',
+                    padding: '1px 6px',
+                    borderRadius: '3px',
+                    fontSize: '10px',
+                    fontFamily: 'monospace',
+                    fontWeight: '900',
+                    border: `1px solid ${boxColor}44`,
+                    letterSpacing: '0.04em'
+                  }}>
+                    {defect.pothole_id || formatDefectId(defect.track_id || 1, defect.class_name)}
+                  </span>
 
-                <span style={{ color: getSeverityColor(defect.severity) }}>
-                  {defect.class_name.toUpperCase().replace('_', ' ')}
-                </span>
+                  {/* Defect Name & Code */}
+                  <span style={{ color: boxColor, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>{meta.icon}</span>
+                    <span>{meta.fullLabel}</span>
+                  </span>
 
-                {/* Locked indicator tag */}
-                <span style={{
-                  fontSize: '9px',
-                  backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                  color: '#4ade80',
-                  border: '1px solid rgba(34, 197, 94, 0.4)',
-                  padding: '0 4px',
-                  borderRadius: '2px',
-                  fontWeight: '800'
-                }}>
-                  LOCKED
-                </span>
+                  {/* Locked indicator tag */}
+                  <span style={{
+                    fontSize: '9px',
+                    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                    color: '#4ade80',
+                    border: '1px solid rgba(34, 197, 94, 0.4)',
+                    padding: '0 4px',
+                    borderRadius: '2px',
+                    fontWeight: '800'
+                  }}>
+                    LOCKED
+                  </span>
 
-                <span style={{ color: '#94a3b8', fontSize: '10px' }}>
-                  {(defect.conf * 100).toFixed(0)}%
-                </span>
+                  <span style={{ color: '#94a3b8', fontSize: '10px' }}>
+                    {(defect.conf * 100).toFixed(0)}%
+                  </span>
+                </div>
+
+                {/* Bottom Badge: Category, Physical Dimensions & Severity */}
+                <div
+                  style={{
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    backdropFilter: 'blur(4px)',
+                    color: '#f8fafc',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    padding: '2px 7px',
+                    borderRadius: '3px',
+                    alignSelf: 'flex-end',
+                    border: '1px solid #334155',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span style={{ color: '#94a3b8', fontSize: '9px' }}>{meta.category}</span>
+                  <span style={{ color: '#475569' }}>·</span>
+                  <span>{defect.wCm}cm × {defect.lCm}cm</span>
+                  <span style={{ color: '#475569' }}>·</span>
+                  <span style={{ color: sevColor, fontWeight: '800' }}>
+                    {defect.severity}
+                  </span>
+                </div>
               </div>
-
-              {/* Bottom Badge: Physical Dimensions & Severity */}
-              <div
-                style={{
-                  backgroundColor: 'rgba(15, 23, 42, 0.94)',
-                  color: '#f8fafc',
-                  fontSize: '10px',
-                  fontWeight: '700',
-                  padding: '2px 6px',
-                  borderRadius: '3px',
-                  alignSelf: 'flex-end',
-                  border: '1px solid #334155',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <span>{defect.wCm}cm × {defect.lCm}cm</span>
-                <span style={{ color: getSeverityColor(defect.severity) }}>
-                  {defect.severity}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Video Decoding Error Fallback Card */}
@@ -1309,10 +1352,13 @@ export default function RoadVideoInspectionPlayer({
                   fontSize: '11px'
                 }}
               >
-                <option value="pothole">Pothole</option>
-                <option value="alligator_crack">Alligator Crack</option>
-                <option value="longitudinal_crack">Longitudinal Crack</option>
-                <option value="waterlogging">Waterlogging</option>
+                <option value="pothole">🕳️ Pothole (D40)</option>
+                <option value="longitudinal_crack">⚡ Longitudinal Crack (D00)</option>
+                <option value="transverse_crack">➖ Transverse Crack (D01)</option>
+                <option value="alligator_crack">🕸️ Alligator Fatigue Crack (D20)</option>
+                <option value="road_patch">🩹 Road Patch Deterioration (D44)</option>
+                <option value="rutting">📉 Rutting Depression (D30)</option>
+                <option value="waterlogging">🌊 Waterlogging Ponding (D50)</option>
               </select>
 
               <button
@@ -1398,19 +1444,21 @@ export default function RoadVideoInspectionPlayer({
 
           {detectedMoments.length === 0 ? (
             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-              {isAiScanning ? 'Scanning video frames with YOLOv8-road-v1...' : 'No road distress identified in this clip.'}
+              {isAiScanning ? 'Scanning video frames with YOLOv8...' : 'No road distress identified in this clip.'}
             </span>
           ) : (
             detectedMoments.map((m, idx) => {
+              const meta = getDefectMeta(m.class_name);
               const isMatch = Math.abs(currentTime - m.time) < 0.95;
+              const chipColor = meta.color || getSeverityColor(m.severity);
               return (
                 <button
                   key={idx}
                   onClick={() => handleSeek(m.time)}
                   style={{
-                    backgroundColor: isMatch ? `${getSeverityColor(m.severity)}25` : '#1e293b',
-                    color: isMatch ? getSeverityColor(m.severity) : '#94a3b8',
-                    border: `1px solid ${isMatch ? getSeverityColor(m.severity) : '#334155'}`,
+                    backgroundColor: isMatch ? `${chipColor}25` : '#1e293b',
+                    color: isMatch ? chipColor : '#94a3b8',
+                    border: `1px solid ${isMatch ? chipColor : '#334155'}`,
                     padding: '3px 8px',
                     borderRadius: '4px',
                     fontSize: '10px',
@@ -1419,15 +1467,26 @@ export default function RoadVideoInspectionPlayer({
                     whiteSpace: 'nowrap',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
-                    boxShadow: isMatch ? `0 0 8px ${getSeverityColor(m.severity)}44` : 'none',
+                    gap: '5px',
+                    boxShadow: isMatch ? `0 0 8px ${chipColor}44` : 'none',
                     transition: 'all 0.15s ease-in-out'
                   }}
                 >
                   <Clock size={10} />
                   <span>{formatTime(m.time)}</span>
                   <span>·</span>
-                  <span>{m.class_name.replace('_', ' ')} ({m.wCm}cm)</span>
+                  <span>{meta.icon} {meta.name}</span>
+                  <span style={{
+                    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                    color: meta.textColor || '#38bdf8',
+                    padding: '0 4px',
+                    borderRadius: '2px',
+                    fontSize: '9px',
+                    fontFamily: 'monospace'
+                  }}>
+                    {m.pothole_id || meta.code}
+                  </span>
+                  <span>({m.wCm}cm)</span>
                   <span style={{ color: getSeverityColor(m.severity), fontSize: '9px' }}>
                     [{m.severity}]
                   </span>
