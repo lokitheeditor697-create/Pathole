@@ -8,7 +8,6 @@
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "lint": "oxlint",
     "graphify": "node scripts/graphify.cjs",
-    "train:rdd2022": "python ml/training/train_rdd2022.py",
     "start": "node dist/server.cjs"
   },
   "engines": {
