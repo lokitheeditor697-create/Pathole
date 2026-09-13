@@ -1,6 +1,7 @@
 """
 Real-time Video Inference Service
-Runs fine-tuned YOLOv8 on actual video frames and outputs real detections as JSON.
+Runs 100% genuine fine-tuned YOLOv8 neural networks directly using their trained weights and classes.
+No artificial heuristic overrides.
 """
 
 import os
@@ -20,45 +21,63 @@ def resolve_model_path(provided_path=None):
     if provided_path and os.path.exists(provided_path):
         return provided_path
     candidates = [
+        "detector/roadguard_yolov8.pt",
         "detector/potbot_yolov8m.pt",
-        "detector/best.pt",
-        "best.pt",
         "detector/pothole_yolov8.pt",
-        "pothole_yolov8.pt"
+        "detector/rdd2022_multiclass.pt",
+        "detector/best.pt"
     ]
     for c in candidates:
         if os.path.exists(c):
             return c
-    return provided_path or "detector/pothole_yolov8.pt"
+    return provided_path or "detector/roadguard_yolov8.pt"
 
 CLASS_METADATA = {
-    'pothole': {'code': 'D40', 'display_name': 'Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void'},
-    'speed-bump': {'code': 'D60', 'display_name': 'Speed Bump / Hump (D60)', 'prefix': 'BMP', 'category': 'Traffic Calming'},
-    'speed_bump': {'code': 'D60', 'display_name': 'Speed Bump / Hump (D60)', 'prefix': 'BMP', 'category': 'Traffic Calming'},
-    'crack-severe': {'code': 'D02', 'display_name': 'Severe Structural Crack (D02)', 'prefix': 'SCRK', 'category': 'Severe Structural Crack'},
-    'crack_severe': {'code': 'D02', 'display_name': 'Severe Structural Crack (D02)', 'prefix': 'SCRK', 'category': 'Severe Structural Crack'},
-    'longitudinal_crack': {'code': 'D00', 'display_name': 'Longitudinal Crack (D00)', 'prefix': 'LCRK', 'category': 'Structural Crack'},
-    'transverse_crack': {'code': 'D01', 'display_name': 'Transverse Crack (D01)', 'prefix': 'TCRK', 'category': 'Thermal/Shrinkage Crack'},
-    'alligator_crack': {'code': 'D20', 'display_name': 'Alligator Fatigue Crack (D20)', 'prefix': 'ACRK', 'category': 'Structural Fatigue'},
-    'crack': {'code': 'D00/D01', 'display_name': 'Surface Crack', 'prefix': 'CRK', 'category': 'Surface Crack'},
-    'heavy-vehicle': {'code': 'VH', 'display_name': 'Heavy Vehicle', 'prefix': 'HVH', 'category': 'Vehicle Traffic'},
-    'heavy_vehicle': {'code': 'VH', 'display_name': 'Heavy Vehicle', 'prefix': 'HVH', 'category': 'Vehicle Traffic'},
-    'light-vehicle': {'code': 'VL', 'display_name': 'Light Vehicle', 'prefix': 'LVH', 'category': 'Vehicle Traffic'},
-    'light_vehicle': {'code': 'VL', 'display_name': 'Light Vehicle', 'prefix': 'LVH', 'category': 'Vehicle Traffic'},
-    'pedestrian': {'code': 'PED', 'display_name': 'Pedestrian', 'prefix': 'PED', 'category': 'Vulnerable Road User'},
-    'road_patch': {'code': 'D44', 'display_name': 'Road Patch / Deterioration (D44)', 'prefix': 'PTCH', 'category': 'Pavement Patch'},
-    'rutting': {'code': 'D30', 'display_name': 'Rutting / Wheel Depression (D30)', 'prefix': 'RUT', 'category': 'Deformation'},
-    'waterlogging': {'code': 'D50', 'display_name': 'Waterlogging / Drainage Ponding (D50)', 'prefix': 'WLOG', 'category': 'Drainage Hazard'},
+    # RoadGuard / Road Doctor trained classes
+    'minor_pothole': {'code': 'D40-MIN', 'display_name': 'Minor Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void', 'severity': 'Medium'},
+    'moderate_pothole': {'code': 'D40-MOD', 'display_name': 'Moderate Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void', 'severity': 'High'},
+    'major_pothole': {'code': 'D40-MAJ', 'display_name': 'Major Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void', 'severity': 'Critical'},
+    'pothole': {'code': 'D40', 'display_name': 'Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void', 'severity': 'High'},
+    'potholes': {'code': 'D40', 'display_name': 'Potholes (D40)', 'prefix': 'PTH', 'category': 'Surface Void', 'severity': 'High'},
+    
+    'low_cracking': {'code': 'D00-L', 'display_name': 'Low Surface Cracking', 'prefix': 'CRK', 'category': 'Surface Crack', 'severity': 'Low'},
+    'medium_cracking': {'code': 'D00-M', 'display_name': 'Medium Surface Cracking', 'prefix': 'CRK', 'category': 'Surface Crack', 'severity': 'Medium'},
+    'high_cracking': {'code': 'D00-H', 'display_name': 'High Severe Cracking', 'prefix': 'CRK', 'category': 'Severe Structural Crack', 'severity': 'Critical'},
+    
+    'minor_edge_break': {'code': 'D42-MIN', 'display_name': 'Minor Edge Break', 'prefix': 'EDG', 'category': 'Pavement Edge Defect', 'severity': 'Medium'},
+    'modrate_edge_break': {'code': 'D42-MOD', 'display_name': 'Moderate Edge Break', 'prefix': 'EDG', 'category': 'Pavement Edge Defect', 'severity': 'High'},
+    'moderate_edge_break': {'code': 'D42-MOD', 'display_name': 'Moderate Edge Break', 'prefix': 'EDG', 'category': 'Pavement Edge Defect', 'severity': 'High'},
+    'major_edge_break': {'code': 'D42-MAJ', 'display_name': 'Major Edge Break', 'prefix': 'EDG', 'category': 'Pavement Edge Defect', 'severity': 'Critical'},
+
+    # CRDDC / Multi-class models
+    'longitudinal crack': {'code': 'D00', 'display_name': 'Longitudinal Crack (D00)', 'prefix': 'LCRK', 'category': 'Structural Crack', 'severity': 'Medium'},
+    'transverse crack': {'code': 'D01', 'display_name': 'Transverse Crack (D01)', 'prefix': 'TCRK', 'category': 'Thermal Crack', 'severity': 'Medium'},
+    'alligator crack': {'code': 'D20', 'display_name': 'Alligator Fatigue Crack (D20)', 'prefix': 'ACRK', 'category': 'Structural Fatigue', 'severity': 'High'},
+    
+    # 7-Class Anomaly Model
+    'speed-bump': {'code': 'D60', 'display_name': 'Speed Bump / Hump (D60)', 'prefix': 'BMP', 'category': 'Traffic Calming', 'severity': 'Medium'},
+    'speed_bump': {'code': 'D60', 'display_name': 'Speed Bump / Hump (D60)', 'prefix': 'BMP', 'category': 'Traffic Calming', 'severity': 'Medium'},
+    'crack-severe': {'code': 'D02', 'display_name': 'Severe Structural Crack (D02)', 'prefix': 'SCRK', 'category': 'Severe Structural Crack', 'severity': 'Critical'},
+    'crack': {'code': 'D00', 'display_name': 'Surface Crack', 'prefix': 'CRK', 'category': 'Surface Crack', 'severity': 'Medium'},
+    'heavy-vehicle': {'code': 'VH', 'display_name': 'Heavy Vehicle', 'prefix': 'HVH', 'category': 'Vehicle Traffic', 'severity': 'Low'},
+    'light-vehicle': {'code': 'VL', 'display_name': 'Light Vehicle', 'prefix': 'LVH', 'category': 'Vehicle Traffic', 'severity': 'Low'},
+    'pedestrian': {'code': 'PED', 'display_name': 'Pedestrian', 'prefix': 'PED', 'category': 'Vulnerable Road User', 'severity': 'Low'}
 }
 
 def get_defect_meta(cls_name):
-    norm = str(cls_name).lower().strip()
-    return CLASS_METADATA.get(norm, {
+    norm = str(cls_name).lower().strip().replace('-', '_')
+    if norm in CLASS_METADATA:
+        return CLASS_METADATA[norm]
+    norm_space = str(cls_name).lower().strip()
+    if norm_space in CLASS_METADATA:
+        return CLASS_METADATA[norm_space]
+    return {
         'code': 'DST',
-        'display_name': norm.replace('_', ' ').title(),
+        'display_name': str(cls_name).replace('_', ' ').title(),
         'prefix': 'DST',
-        'category': 'Road Distress'
-    })
+        'category': 'Road Distress',
+        'severity': 'Medium'
+    }
 
 def compute_iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
@@ -72,69 +91,16 @@ def compute_iou(boxA, boxB):
 
 def is_same_track(coords1, coords2, w, h):
     iou = compute_iou(coords1, coords2)
-    if iou > 0.15:
+    if iou > 0.18:
         return True
     cx1 = (coords1[0] + coords1[2]) / 2.0 / w
     cy1 = (coords1[1] + coords1[3]) / 2.0 / h
     cx2 = (coords2[0] + coords2[2]) / 2.0 / w
     cy2 = (coords2[1] + coords2[3]) / 2.0 / h
     dist = ((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2) ** 0.5
-    return dist < 0.14
+    return dist < 0.18
 
-def classify_road_distress(frame, coords, default_cls='pothole'):
-    h_img, w_img, _ = frame.shape
-    bx1, by1 = max(0, int(coords[0])), max(0, int(coords[1]))
-    bx2, by2 = min(w_img, int(coords[2])), min(h_img, int(coords[3]))
-    bw, bh = max(1, bx2 - bx1), max(1, by2 - by1)
-    aspect = bw / float(bh)
-    
-    roi = frame[by1:by2, bx1:bx2]
-    if roi.size == 0:
-        return default_cls
-    
-    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    mean_luma = float(gray.mean())
-    var_luma = float(gray.var())
-    
-    # Compute Sobel edge gradients to evaluate crack morphology & texture
-    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
-    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
-    edge_density = float(np.mean(np.abs(sobelx) + np.abs(sobely)))
-    
-    # 1. Waterlogging / Drainage Ponding (D50):
-    # Specular reflection from open sky, high relative luminance with low internal surface roughness
-    if mean_luma > 135 and var_luma < 750:
-        return 'waterlogging'
-    
-    # 2. Transverse Crack (D01):
-    # Horizontal fissure across the pavement lane (width substantially exceeds height)
-    if aspect > 2.6 and edge_density < 48:
-        return 'transverse_crack'
-    
-    # 3. Longitudinal Crack (D00):
-    # Linear vertical fissure oriented parallel to traffic lane / wheel line
-    if aspect < 0.5:
-        return 'longitudinal_crack'
-    
-    # 4. Alligator Fatigue Crack (D20):
-    # High edge-frequency crocodile cracking pattern across the patch
-    if edge_density > 50 and 0.6 < aspect < 1.9:
-        return 'alligator_crack'
-    
-    # 5. Road Patch / Utility Cut (D44):
-    # Wide rectangular asphalt repair covering significant road surface
-    if (bw * bh) > 0.10 * (w_img * h_img):
-        return 'road_patch'
-    
-    # 6. Rutting (D30):
-    # Longitudinal channel in the wheel path
-    if 0.45 <= aspect <= 0.85 and by1 > 0.45 * h_img:
-        return 'rutting'
-    
-    # 7. Surface cavity / pothole (D40):
-    return 'pothole'
-
-def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5, is_multiclass=False, mode_name="pothole"):
+def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=3.0, mode_name="roadguard"):
     if not os.path.exists(video_path):
         return {"error": f"Video not found: {video_path}"}
     
@@ -153,7 +119,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5,
 
     frame_interval = max(1, int(fps / sample_fps))
     
-    # 1. Fast Batch Sampling of Video Frames
+    # 1. Sample Video Frames
     sampled_frames = []
     sampled_times = []
     frame_idx = 0
@@ -180,76 +146,78 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5,
             "moments": []
         }
 
-    # 2. Lightning Fast Batch Inference (PyTorch Batching)
+    # 2. Real Batch Inference directly with Ultralytics PyTorch
     BATCH_SIZE = 16
     all_results = []
     for i in range(0, len(sampled_frames), BATCH_SIZE):
         batch = sampled_frames[i : i + BATCH_SIZE]
-        batch_results = model(batch, imgsz=480, conf=conf_thresh, iou=0.45, verbose=False)
+        batch_results = model(batch, imgsz=640, conf=conf_thresh, iou=0.40, verbose=False)
         all_results.extend(batch_results)
 
-    # 3. Post-Process & Multi-Defect Spatial Correlation
-    moments = []
+    # 3. Post-Process with Spatial Deduplication and Track Continuity
+    raw_moments = []
     tracked_unique_defects = {}
-    next_fallback_track_id = 1
+    next_track_id = 1
 
     for frame, current_time, r in zip(sampled_frames, sampled_times, all_results):
         h, w, _ = frame.shape
         frame_boxes = []
 
-        for box in r.boxes:
-            coords = box.xyxy[0].tolist() # [x1, y1, x2, y2]
-            
-            # Refined road surface filter: Exclude only extreme top sky (center above 18% height)
-            center_y = (coords[1] + coords[3]) / 2.0
-            if center_y < 0.18 * h:
-                continue
+        if r.boxes is not None:
+            for box in r.boxes:
+                coords = box.xyxy[0].tolist()
+                
+                # Exclude extreme top sky (above 15% height)
+                center_y = (coords[1] + coords[3]) / 2.0
+                if center_y < 0.15 * h:
+                    continue
 
-            cls_id = int(box.cls[0])
-            cls_name = model.names.get(cls_id, "pothole")
-            conf = float(box.conf[0])
+                cls_id = int(box.cls[0])
+                cls_name = model.names.get(cls_id, "pothole")
+                conf = float(box.conf[0])
 
-            if is_multiclass:
-                cls_name = classify_road_distress(frame, coords, default_cls=cls_name)
-
-            frame_boxes.append({
-                'coords': coords,
-                'cls_name': cls_name,
-                'conf': conf,
-                'track_id': None
-            })
+                frame_boxes.append({
+                    'coords': coords,
+                    'cls_name': cls_name,
+                    'conf': conf
+                })
 
         # Intra-frame NMS: Suppress duplicate overlapping boxes on the same defect in this frame
         frame_boxes.sort(key=lambda x: x['conf'], reverse=True)
         deduped_frame_boxes = []
         for candidate in frame_boxes:
+            c1 = candidate['coords']
             overlap = False
             for kept in deduped_frame_boxes:
-                if compute_iou(candidate['coords'], kept['coords']) > 0.35:
+                c2 = kept['coords']
+                iou = compute_iou(c1, c2)
+                cx1, cy1 = (c1[0] + c1[2]) / 2.0 / w, (c1[1] + c1[3]) / 2.0 / h
+                cx2, cy2 = (c2[0] + c2[2]) / 2.0 / w, (c2[1] + c2[3]) / 2.0 / h
+                dist = ((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2) ** 0.5
+                if iou > 0.20 or dist < 0.14:
                     overlap = True
                     break
             if not overlap:
                 deduped_frame_boxes.append(candidate)
 
-        # Assign / correlate unique defects across time
+        # Correlate across time to maintain stable single track IDs
         for b in deduped_frame_boxes:
             coords = b['coords']
             conf = b['conf']
             cls_name = b['cls_name']
-            t_id = b['track_id']
 
-            if t_id is None:
-                matched = None
-                for existing_id, item in tracked_unique_defects.items():
-                    if current_time - item['last_seen'] <= 1.8:
-                        if is_same_track(coords, item['last_coords'], w, h):
-                            matched = existing_id
-                            break
-                if matched is not None:
-                    t_id = matched
-                else:
-                    t_id = next_fallback_track_id
-                    next_fallback_track_id += 1
+            matched_id = None
+            for existing_id, item in tracked_unique_defects.items():
+                if current_time - item['last_seen'] <= 1.2:
+                    if is_same_track(coords, item['last_coords'], w, h):
+                        matched_id = existing_id
+                        break
+            
+            if matched_id is not None:
+                t_id = matched_id
+            else:
+                t_id = next_track_id
+                next_track_id += 1
 
             meta = get_defect_meta(cls_name)
             formatted_pothole_id = f"{meta['prefix']}-#{int(t_id):02d}"
@@ -258,9 +226,8 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5,
             by = int(coords[1])
             bw = int(coords[2] - coords[0])
             bh = int(coords[3] - coords[1])
-            est_w_cm = round((bw / w) * 180, 1)
-            est_l_cm = round((bh / h) * 120, 1)
-            severity = "Critical" if conf >= 0.70 or est_w_cm >= 40 else "High" if conf >= 0.45 or est_w_cm >= 25 else "Medium"
+            est_w_cm = round((bw / w) * 160, 1)
+            est_l_cm = round((bh / h) * 110, 1)
 
             moment_obj = {
                 "pothole_id": formatted_pothole_id,
@@ -271,7 +238,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5,
                 "rdd_code": meta['code'],
                 "category": meta['category'],
                 "conf": round(conf, 2),
-                "severity": severity,
+                "severity": meta.get('severity', 'High'),
                 "wCm": est_w_cm,
                 "lCm": est_l_cm,
                 "bbox": {
@@ -283,7 +250,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5,
                     "video_h": h
                 }
             }
-            moments.append(moment_obj)
+            raw_moments.append(moment_obj)
 
             if t_id in tracked_unique_defects:
                 tracked_unique_defects[t_id]['last_seen'] = current_time
@@ -305,10 +272,19 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5,
                     'last_moment': moment_obj
                 }
 
-    # Extract unique defect summary
+    # Filter out single-frame false alarms (< 2 sightings unless high confidence >= 0.55)
+    valid_track_ids = {
+        t_id for t_id, v in tracked_unique_defects.items()
+        if v['sightings'] >= 2 or v['best_conf'] >= 0.55
+    }
+
+    filtered_moments = [m for m in raw_moments if m['track_id'] in valid_track_ids]
+
     unique_list = []
     for t_id, v in tracked_unique_defects.items():
-        chosen = dict(v.get('last_moment') or v.get('best_moment'))
+        if t_id not in valid_track_ids:
+            continue
+        chosen = dict(v.get('best_moment') or v.get('last_moment'))
         meta = get_defect_meta(chosen.get('class_name', 'pothole'))
         chosen['pothole_id'] = f"{meta['prefix']}-#{int(t_id):02d}"
         chosen['display_name'] = meta['display_name']
@@ -325,26 +301,9 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5,
         "total_frames": frame_idx,
         "unique_defects_count": len(unique_list),
         "unique_defects": unique_list,
-        "detected_count": len(unique_list),
-        "moments": moments
+        "detected_count": len(filtered_moments),
+        "moments": filtered_moments
     }
-
-    # Save to disk cache for instantaneous future loads
-    try:
-        cache_file = os.path.join("data", "precomputed_scans.json")
-        scans_data = {}
-        if os.path.exists(cache_file):
-            with open(cache_file, "r") as f:
-                scans_data = json.load(f)
-        video_key = os.path.basename(video_path)
-        model_tag = "rdd2022" if is_multiclass else ("potbot" if "potbot" in str(mode_name) else "pothole")
-        scans_data[f"{video_key}_{model_tag}"] = result_payload
-        if model_tag == "pothole":
-            scans_data[video_key] = result_payload
-        with open(cache_file, "w") as f:
-            json.dump(scans_data, f, indent=2)
-    except Exception as e:
-        pass
 
     return result_payload
 
@@ -354,13 +313,9 @@ if __name__ == "__main__":
         sys.exit(1)
 
     v_path = sys.argv[1]
-    m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/pothole_yolov8.pt"
-    c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.28
-    mode_arg = sys.argv[4] if len(sys.argv) > 4 else ("potbot" if "potbot" in m_path else ("rdd2022" if "rdd2022" in m_path else "pothole"))
-    is_multi = (mode_arg == "rdd2022") or ("rdd2022" in m_path) or ("multiclass" in mode_arg)
+    m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/roadguard_yolov8.pt"
+    c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.35
+    mode_arg = sys.argv[4] if len(sys.argv) > 4 else "roadguard"
 
-    if is_multi:
-        c_thresh = min(c_thresh, 0.22)
-
-    res = analyze_video(v_path, m_path, c_thresh, is_multiclass=is_multi, mode_name=mode_arg)
+    res = analyze_video(v_path, m_path, c_thresh, mode_name=mode_arg)
     print(json.dumps(res))

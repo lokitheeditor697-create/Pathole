@@ -286,6 +286,39 @@ export default function Header({
           </span>
 
           <button
+            onClick={() => setAiModelMode('roadguard')}
+            title="Road Doctor (RoadGuard 9-Class Pavement Model) — Minor/Moderate/Major Potholes, Cracking & Edge Breaks"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              border: aiModelMode === 'roadguard' ? '1px solid rgba(34, 197, 94, 0.5)' : '1px solid transparent',
+              backgroundColor: aiModelMode === 'roadguard' ? '#16a34a' : 'transparent',
+              color: aiModelMode === 'roadguard' ? '#ffffff' : '#94a3b8',
+              boxShadow: aiModelMode === 'roadguard' ? '0 0 8px rgba(34, 197, 94, 0.4)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            {aiModelMode === 'roadguard' && (
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
+            )}
+            <span>🛡️ Road Doctor</span>
+            <span style={{
+              fontSize: '9px',
+              backgroundColor: aiModelMode === 'roadguard' ? 'rgba(255,255,255,0.2)' : 'rgba(51,65,85,0.5)',
+              padding: '1px 4px',
+              borderRadius: '3px'
+            }}>
+              9-Class
+            </span>
+          </button>
+
+          <button
             onClick={() => setAiModelMode('pothole')}
             title="Targeted Road Anomaly & Pothole Model (YOLOv8m) — Only this model is active"
             style={{

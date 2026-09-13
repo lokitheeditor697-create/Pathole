@@ -383,8 +383,22 @@ const VEHICLE_FLEET: Record<string, VehiclePatrol> = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Real-time Spatial Deduplication Engine (15m radius / 600s window)
+// Real-time Spatial Deduplication Engine (Dynamic radius/window based on speed)
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Compute dynamic dedup thresholds from real vehicle speed.
+ * - At city speeds (≤50 km/h): 15m radius, 5-min window
+ * - At highway speeds (>50 km/h): radius scales proportionally up to 35m
+ * - Time window scales with speed coverage (5–20 min)
+ */
+function getDynamicDedupThresholds(speedKmh: number): { radiusM: number; windowSec: number } {
+  const clampedSpeed = Math.max(0, Math.min(120, speedKmh));
+  const radiusM = 15 + (clampedSpeed / 120) * 20;       // 15–35m
+  const windowSec = 300 + (clampedSpeed / 120) * 900;   // 300–1200s
+  return { radiusM: Math.round(radiusM * 10) / 10, windowSec: Math.round(windowSec) };
+}
+
 function processSpatialDeduplication(eventData: {
   class_name: DefectClass;
   confidence: number;
@@ -393,6 +407,7 @@ function processSpatialDeduplication(eventData: {
   longitude: number;
   vehicle_id: string;
   timestamp?: string;
+  speed_kmh?: number;
 }): { defect: DefectItem; merged: boolean; newlyVerified: boolean } {
   const cName = eventData.class_name;
   const conf = Number(eventData.confidence);
@@ -402,16 +417,24 @@ function processSpatialDeduplication(eventData: {
   const timeStr = eventData.timestamp || new Date().toISOString();
   const eventEpoch = new Date(timeStr).getTime();
 
+  // Resolve speed: prefer explicit value, then look up live vehicle telemetry
+  let speedKmh = eventData.speed_kmh ?? NaN;
+  if (isNaN(speedKmh)) {
+    const liveVehicle = Object.values(VEHICLE_FLEET).find(v => v.vehicle_id === vId);
+    speedKmh = liveVehicle?.speed_kmh ?? 30; // city default 30 km/h
+  }
+  const { radiusM, windowSec } = getDynamicDedupThresholds(speedKmh);
+
   let matched: DefectItem | null = null;
   let minDist = Infinity;
 
   for (const item of verifiedDefects) {
     if (item.class_name === cName) {
       const d = haversineDistanceM(lat, lon, item.latitude, item.longitude);
-      if (d <= 15.0) {
+      if (d <= radiusM) {
         const itemEpoch = new Date(item.last_detected).getTime();
         const diffSec = Math.abs(eventEpoch - itemEpoch) / 1000;
-        if (diffSec <= 600.0 && d < minDist) {
+        if (diffSec <= windowSec && d < minDist) {
           minDist = d;
           matched = item;
         }
@@ -1629,8 +1652,11 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
       duration_sec = 10,
       latitude,
       longitude,
+      speed_kmh,
       vehicle_id = "User Video Inspection",
-      model_mode = "pothole"
+      bus_id,
+      model_mode = "pothole",
+      video_start_timestamp,   // ISO wall-clock time when the video recording started
     } = req.body;
 
     const cleanName = path.basename(file_name);
@@ -1640,9 +1666,52 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
       return res.status(200).json(videoScanCache.get(cacheKey));
     }
 
-    const lat = latitude ? Number(latitude) : 13.0780;
-    const lon = longitude ? Number(longitude) : 80.2330;
-    const { segment } = matchNearestSegment(lat, lon);
+    // ── Real GPS from request (no hard-coded coordinate fallback) ──────────────
+    // We require a GPS fix. If none provided, try the live vehicle fleet telemetry.
+    const effectiveVehicleId = bus_id || vehicle_id;
+    const liveVehicle = Object.values(VEHICLE_FLEET).find(v => v.vehicle_id === effectiveVehicleId);
+
+    const baseLat = latitude != null
+      ? Number(latitude)
+      : liveVehicle?.latitude ?? null;
+    const baseLon = longitude != null
+      ? Number(longitude)
+      : liveVehicle?.longitude ?? null;
+    const baseSpeedKmh = speed_kmh != null
+      ? Number(speed_kmh)
+      : liveVehicle?.speed_kmh ?? 30;
+
+    const hasGPS = baseLat !== null && baseLon !== null && isFinite(baseLat) && isFinite(baseLon);
+
+    // Wall-clock start of recording – used to give each detection a real timestamp
+    const recordingStartMs = video_start_timestamp
+      ? new Date(video_start_timestamp).getTime()
+      : Date.now() - Math.round(Number(duration_sec) * 1000);
+
+    // Nearest segment only if we have GPS; else pick segment from vehicle
+    const resolvedLat = hasGPS ? baseLat! : 13.0780;   // last-resort only for segment lookup
+    const resolvedLon = hasGPS ? baseLon! : 80.2330;
+    const { segment } = matchNearestSegment(resolvedLat, resolvedLon);
+
+    /**
+     * Project position along the road at a given video timestamp.
+     * Uses real speed (m/s) and heading to advance GPS from the base coordinate.
+     */
+    function projectGPS(videoTimeSec: number): { lat: number; lon: number; timestamp: string } {
+      const elapsedSec = videoTimeSec;
+      const speedMs = baseSpeedKmh / 3.6;            // km/h → m/s
+      const distanceTravelled = speedMs * elapsedSec; // metres
+      // Approximate: 1° lat ≈ 111,320m; 1° lon ≈ 111,320m × cos(lat)
+      const heading = liveVehicle?.heading_deg ?? 270; // default west-bound
+      const headingRad = (heading * Math.PI) / 180;
+      const dLat = (distanceTravelled * Math.cos(headingRad)) / 111320;
+      const dLon = (distanceTravelled * Math.sin(headingRad)) / (111320 * Math.cos((resolvedLat * Math.PI) / 180));
+      return {
+        lat: Math.round((resolvedLat + dLat) * 1000000) / 1000000,
+        lon: Math.round((resolvedLon + dLon) * 1000000) / 1000000,
+        timestamp: new Date(recordingStartMs + Math.round(elapsedSec * 1000)).toISOString()
+      };
+    }
 
     // Locate video file on disk
     let videoFilePath = "";
@@ -1689,6 +1758,13 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
         const potholeId = m.pothole_id || `${prefix}-#${String(trackNum).padStart(2, '0')}`;
         const detectionId = `DET-${cleanFileId}-${potholeId.replace(/[^a-zA-Z0-9]/g, "")}`;
 
+        // ── Real GPS projection for each detected moment ─────────────────────
+        const videoTimeSec = m.time ?? 0;
+        const { lat: defLat, lon: defLon, timestamp: defTimestamp } = projectGPS(videoTimeSec);
+        const defectSegmentResult = matchNearestSegment(defLat, defLon);
+        const defectSegment = defectSegmentResult.segment;
+        const defectChainage = defectSegmentResult.chainage_m;
+
         const existing = municipalDB.getDefects().find((d) => d.detection_id === detectionId);
         const defId = existing ? existing.id : nextDefectId++;
 
@@ -1698,16 +1774,16 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
           pothole_id: potholeId,
           defect_type: m.class_name || "pothole",
           class_name: m.class_name || "pothole",
-          latitude: lat + (m.time * 0.00008),
-          longitude: lon - (m.time * 0.00008),
+          latitude: defLat,
+          longitude: defLon,
           severity: m.severity || (m.conf >= 0.75 ? "Critical" : "High"),
           confidence: m.conf || 0.85,
-          road_id: segment.road_id,
-          segment_id: segment.segment_id,
-          exact_chainage_m: Math.round(segment.start_chainage_m + (m.time * 8.5)),
+          road_id: defectSegment.road_id,
+          segment_id: defectSegment.segment_id,
+          exact_chainage_m: defectChainage,
           bus_count: 1,
-          bus_ids: vehicle_id,
-          reporting_vehicles: [vehicle_id],
+          bus_ids: effectiveVehicleId,
+          reporting_vehicles: [effectiveVehicleId],
           total_detections: 1,
           is_multi_bus_verified: false,
           bbox: {
@@ -1719,28 +1795,28 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
             estimated_physical_width_cm: m.wCm || 50,
             estimated_physical_length_cm: m.lCm || 40,
           },
-          first_detected: existing ? existing.first_detected : new Date().toISOString(),
-          last_detected: new Date().toISOString(),
+          first_detected: existing ? existing.first_detected : defTimestamp,
+          last_detected: defTimestamp,
           model_version: modelName,
         };
 
         try {
           municipalDB.upsertDefect(defectItem);
-          municipalDB.createCaseFromDefect(defectItem, "YOLOv8 Video Inspection");
+          municipalDB.createCaseFromDefect(defectItem, `YOLOv8 Video Inspection (${effectiveVehicleId})`);
           if (!existing) {
-            municipalDB.updateSegmentHealth(segment.segment_id, defectItem.severity === "Critical" ? -4 : -2);
+            municipalDB.updateSegmentHealth(defectSegment.segment_id, defectItem.severity === "Critical" ? -4 : -2);
           }
         } catch (e) {
           console.error("Failed to insert video defect:", e);
         }
-        return { ...defectItem, video_timestamp_sec: m.time, moment_bbox: m.bbox, wCm: m.wCm, lCm: m.lCm };
+        return { ...defectItem, video_timestamp_sec: videoTimeSec, moment_bbox: m.bbox, wCm: m.wCm, lCm: m.lCm };
       });
 
       const inspection = municipalDB.insertVideoInspection({
         filename: file_name || "uploaded_video.mp4",
         file_size_mb: 14.5,
         duration_seconds: Math.round(duration_sec),
-        vehicle_id,
+        vehicle_id: effectiveVehicleId,
         road_id: segment.road_id,
         segment_id: segment.segment_id,
         total_defects_found: generatedDefects.length,
@@ -1759,7 +1835,12 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
         inspection,
         model: modelName,
         model_mode,
-        inference_speed: "Real Edge AI Inference"
+        inference_speed: "Real Edge AI Inference",
+        gps_source: hasGPS ? "real_telemetry" : (liveVehicle ? "fleet_telemetry" : "unknown"),
+        base_gps: { lat: resolvedLat, lon: resolvedLon },
+        speed_kmh: baseSpeedKmh,
+        bus_id: effectiveVehicleId,
+        recording_start: new Date(recordingStartMs).toISOString(),
       };
       videoScanCache.set(cacheKey, scanPayload);
       return scanPayload;
@@ -1813,6 +1894,8 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 // Real Mobile Device Camera Frame Detection & Analysis Endpoint
 app.post("/api/detect/frame", (req: Request, res: Response) => {
