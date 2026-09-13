@@ -1,17 +1,19 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "project": "AI Road Intelligence & Pavement Maintenance Platform",
-  "generated_at": "2026-09-12T16:30:24.266Z",
+  "generated_at": "2026-09-13T02:50:31.726Z",
   "stats": {
-    "total_nodes": 31,
-    "total_links": 41,
+    "total_nodes": 38,
+    "total_links": 48,
     "modules": [
       "Root Config & Server",
-      "Frontend / UI",
-      "React Components",
-      "Backend / DB",
-      "AI & Computer Vision",
-      "Edge Dashcam"
+      "Frontend Core",
+      "React UI Components",
+      "Backend Database",
+      "AI & Inference Engine",
+      "ML Pipelines & Converters",
+      "ML GPU Training",
+      "Edge Dashcam Sensor"
     ]
   },
   "nodes": [
@@ -19,7 +21,7 @@
       "id": "server.ts",
       "name": "server.ts",
       "group": "Root Config & Server",
-      "size": 77458,
+      "size": 79404,
       "path": "server.ts",
       "category": "server"
     },
@@ -35,7 +37,7 @@
       "id": "package.json",
       "name": "package.json",
       "group": "Root Config & Server",
-      "size": 1127,
+      "size": 1234,
       "path": "package.json",
       "category": "config"
     },
@@ -48,17 +50,25 @@
       "category": "config"
     },
     {
+      "id": "README.md",
+      "name": "README.md",
+      "group": "Root Config & Server",
+      "size": 6307,
+      "path": "README.md",
+      "category": "config"
+    },
+    {
       "id": "src/App.jsx",
       "name": "App.jsx",
-      "group": "Frontend / UI",
-      "size": 13887,
+      "group": "Frontend Core",
+      "size": 14297,
       "path": "src/App.jsx",
       "category": "module"
     },
     {
       "id": "src/config.js",
       "name": "config.js",
-      "group": "Frontend / UI",
+      "group": "Frontend Core",
       "size": 263,
       "path": "src/config.js",
       "category": "module"
@@ -66,7 +76,7 @@
     {
       "id": "src/gisData.js",
       "name": "gisData.js",
-      "group": "Frontend / UI",
+      "group": "Frontend Core",
       "size": 7358,
       "path": "src/gisData.js",
       "category": "module"
@@ -74,7 +84,7 @@
     {
       "id": "src/main.jsx",
       "name": "main.jsx",
-      "group": "Frontend / UI",
+      "group": "Frontend Core",
       "size": 239,
       "path": "src/main.jsx",
       "category": "module"
@@ -82,7 +92,7 @@
     {
       "id": "src/types.ts",
       "name": "types.ts",
-      "group": "Frontend / UI",
+      "group": "Frontend Core",
       "size": 3228,
       "path": "src/types.ts",
       "category": "module"
@@ -90,15 +100,15 @@
     {
       "id": "src/components/AIPerformanceView.jsx",
       "name": "AIPerformanceView.jsx",
-      "group": "React Components",
-      "size": 11232,
+      "group": "React UI Components",
+      "size": 13842,
       "path": "src/components/AIPerformanceView.jsx",
       "category": "component"
     },
     {
       "id": "src/components/AlertTestModal.jsx",
       "name": "AlertTestModal.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 22337,
       "path": "src/components/AlertTestModal.jsx",
       "category": "component"
@@ -106,7 +116,7 @@
     {
       "id": "src/components/DefectInventoryView.jsx",
       "name": "DefectInventoryView.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 14400,
       "path": "src/components/DefectInventoryView.jsx",
       "category": "component"
@@ -114,7 +124,7 @@
     {
       "id": "src/components/GoogleRoadHealthMapView.jsx",
       "name": "GoogleRoadHealthMapView.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 50788,
       "path": "src/components/GoogleRoadHealthMapView.jsx",
       "category": "component"
@@ -122,15 +132,15 @@
     {
       "id": "src/components/Header.jsx",
       "name": "Header.jsx",
-      "group": "React Components",
-      "size": 14251,
+      "group": "React UI Components",
+      "size": 17355,
       "path": "src/components/Header.jsx",
       "category": "component"
     },
     {
       "id": "src/components/LeafletRoadHealthMap.jsx",
       "name": "LeafletRoadHealthMap.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 11356,
       "path": "src/components/LeafletRoadHealthMap.jsx",
       "category": "component"
@@ -138,15 +148,15 @@
     {
       "id": "src/components/LiveMonitoringView.jsx",
       "name": "LiveMonitoringView.jsx",
-      "group": "React Components",
-      "size": 41142,
+      "group": "React UI Components",
+      "size": 41326,
       "path": "src/components/LiveMonitoringView.jsx",
       "category": "component"
     },
     {
       "id": "src/components/OperationalAlertBanner.jsx",
       "name": "OperationalAlertBanner.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 9233,
       "path": "src/components/OperationalAlertBanner.jsx",
       "category": "component"
@@ -154,7 +164,7 @@
     {
       "id": "src/components/PatrolFleetView.jsx",
       "name": "PatrolFleetView.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 10007,
       "path": "src/components/PatrolFleetView.jsx",
       "category": "component"
@@ -162,7 +172,7 @@
     {
       "id": "src/components/PatrolHUD.jsx",
       "name": "PatrolHUD.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 37805,
       "path": "src/components/PatrolHUD.jsx",
       "category": "component"
@@ -170,7 +180,7 @@
     {
       "id": "src/components/ReliabilityDiagnosticsModal.jsx",
       "name": "ReliabilityDiagnosticsModal.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 18648,
       "path": "src/components/ReliabilityDiagnosticsModal.jsx",
       "category": "component"
@@ -178,7 +188,7 @@
     {
       "id": "src/components/RoadHealthMapView.jsx",
       "name": "RoadHealthMapView.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 201,
       "path": "src/components/RoadHealthMapView.jsx",
       "category": "component"
@@ -186,7 +196,7 @@
     {
       "id": "src/components/RoadVideoInspectionPlayer.jsx",
       "name": "RoadVideoInspectionPlayer.jsx",
-      "group": "React Components",
+      "group": "React UI Components",
       "size": 49855,
       "path": "src/components/RoadVideoInspectionPlayer.jsx",
       "category": "component"
@@ -194,23 +204,31 @@
     {
       "id": "src/components/WebcamPotholeDetector.jsx",
       "name": "WebcamPotholeDetector.jsx",
-      "group": "React Components",
-      "size": 37720,
+      "group": "React UI Components",
+      "size": 37748,
       "path": "src/components/WebcamPotholeDetector.jsx",
       "category": "component"
     },
     {
       "id": "server/db.ts",
       "name": "db.ts",
-      "group": "Backend / DB",
+      "group": "Backend Database",
       "size": 23725,
       "path": "server/db.ts",
       "category": "module"
     },
     {
+      "id": "detector/best.pt",
+      "name": "best.pt",
+      "group": "AI & Inference Engine",
+      "size": 6251818,
+      "path": "detector/best.pt",
+      "category": "ai"
+    },
+    {
       "id": "detector/detect.py",
       "name": "detect.py",
-      "group": "AI & Computer Vision",
+      "group": "AI & Inference Engine",
       "size": 24544,
       "path": "detector/detect.py",
       "category": "ai"
@@ -218,7 +236,7 @@
     {
       "id": "detector/fast_cache.py",
       "name": "fast_cache.py",
-      "group": "AI & Computer Vision",
+      "group": "AI & Inference Engine",
       "size": 4118,
       "path": "detector/fast_cache.py",
       "category": "ai"
@@ -226,7 +244,7 @@
     {
       "id": "detector/generate_cache.py",
       "name": "generate_cache.py",
-      "group": "AI & Computer Vision",
+      "group": "AI & Inference Engine",
       "size": 1204,
       "path": "detector/generate_cache.py",
       "category": "ai"
@@ -234,7 +252,7 @@
     {
       "id": "detector/generate_sample_video.py",
       "name": "generate_sample_video.py",
-      "group": "AI & Computer Vision",
+      "group": "AI & Inference Engine",
       "size": 3160,
       "path": "detector/generate_sample_video.py",
       "category": "ai"
@@ -242,7 +260,7 @@
     {
       "id": "detector/infer_image.py",
       "name": "infer_image.py",
-      "group": "AI & Computer Vision",
+      "group": "AI & Inference Engine",
       "size": 3378,
       "path": "detector/infer_image.py",
       "category": "ai"
@@ -250,15 +268,55 @@
     {
       "id": "detector/infer_video.py",
       "name": "infer_video.py",
-      "group": "AI & Computer Vision",
+      "group": "AI & Inference Engine",
       "size": 8200,
       "path": "detector/infer_video.py",
       "category": "ai"
     },
     {
+      "id": "detector/pothole_yolov8.pt",
+      "name": "pothole_yolov8.pt",
+      "group": "AI & Inference Engine",
+      "size": 6251818,
+      "path": "detector/pothole_yolov8.pt",
+      "category": "ai"
+    },
+    {
+      "id": "detector/rdd2022_multiclass.pt",
+      "name": "rdd2022_multiclass.pt",
+      "group": "AI & Inference Engine",
+      "size": 22524394,
+      "path": "detector/rdd2022_multiclass.pt",
+      "category": "ai"
+    },
+    {
+      "id": "ml/scripts/convert_rdd2022_to_yolo.py",
+      "name": "convert_rdd2022_to_yolo.py",
+      "group": "ML Pipelines & Converters",
+      "size": 11381,
+      "path": "ml/scripts/convert_rdd2022_to_yolo.py",
+      "category": "ai"
+    },
+    {
+      "id": "ml/training/train_rdd2022.py",
+      "name": "train_rdd2022.py",
+      "group": "ML GPU Training",
+      "size": 2663,
+      "path": "ml/training/train_rdd2022.py",
+      "category": "ai"
+    },
+    {
+      "id": "ml/training/train_yolov8.py",
+      "name": "train_yolov8.py",
+      "group": "ML GPU Training",
+      "size": 1242,
+      "path": "ml/training/train_yolov8.py",
+      "category": "ai"
+    },
+    {
       "id": "edge/camera/edge_capture.py",
       "name": "edge_capture.py",
-      "group": "Edge Dashcam",
+      "group": "Edge Dashcam Sensor",
       "size": 1669,
       "path": "edge/camera/edge_capture.py",
       "category": "module"
@@ -404,31 +462,55 @@
       "source": "server.ts",
       "target": "server/db.ts",
       "type": "architecture",
-      "label": "ACID DB Operations"
+      "label": "ACID Municipal DB Operations"
+    },
+    {
+      "source": "server.ts",
+      "target": "detector/infer_image.py",
+      "type": "architecture",
+      "label": "YOLOv8 Single Frame Inference"
     },
     {
       "source": "server.ts",
       "target": "detector/infer_video.py",
       "type": "architecture",
-      "label": "YOLOv8 ByteTrack Inference"
+      "label": "YOLOv8 ByteTrack Video Inference"
+    },
+    {
+      "source": "server.ts",
+      "target": "detector/pothole_yolov8.pt",
+      "type": "architecture",
+      "label": "Dedicated Pothole Model Weights"
+    },
+    {
+      "source": "server.ts",
+      "target": "detector/rdd2022_multiclass.pt",
+      "type": "architecture",
+      "label": "7-Class RDD2022 Defect Weights"
     },
     {
       "source": "src/App.jsx",
       "target": "src/components/Header.jsx",
       "type": "architecture",
-      "label": "Navigation & Alert Dispatch"
+      "label": "Dual Model Mode & Navigation"
     },
     {
       "source": "src/App.jsx",
       "target": "src/components/LiveMonitoringView.jsx",
       "type": "architecture",
-      "label": "Live Video & Patrol Feed"
+      "label": "Live Video, Webcam & Uploads"
+    },
+    {
+      "source": "src/App.jsx",
+      "target": "src/components/GoogleRoadHealthMapView.jsx",
+      "type": "architecture",
+      "label": "Google Maps GIS Corridor Engine"
     },
     {
       "source": "src/App.jsx",
       "target": "src/components/LeafletRoadHealthMap.jsx",
       "type": "architecture",
-      "label": "OpenStreetMap GIS Health"
+      "label": "OpenStreetMap GIS Health Map"
     },
     {
       "source": "src/App.jsx",
@@ -440,37 +522,37 @@
       "source": "src/App.jsx",
       "target": "src/components/PatrolFleetView.jsx",
       "type": "architecture",
-      "label": "Fleet Telemetry Grid"
+      "label": "Patrol Fleet Telemetry Grid"
     },
     {
       "source": "src/App.jsx",
       "target": "src/components/AIPerformanceView.jsx",
       "type": "architecture",
-      "label": "Model Governance & mAP"
+      "label": "Dual Model Governance & mAP"
     },
     {
       "source": "src/components/LiveMonitoringView.jsx",
       "target": "src/components/RoadVideoInspectionPlayer.jsx",
       "type": "architecture",
-      "label": "Persistent Pothole ID Tracking"
+      "label": "ByteTrack Persistent ID Player"
     },
     {
       "source": "src/components/LiveMonitoringView.jsx",
       "target": "src/components/WebcamPotholeDetector.jsx",
       "type": "architecture",
-      "label": "Mobile GPS & Rear Cam Live AI"
+      "label": "Hardware Webcam & Real GPS"
     },
     {
       "source": "src/components/RoadVideoInspectionPlayer.jsx",
       "target": "server.ts",
       "type": "architecture",
-      "label": "POST /api/detect/video-scan"
+      "label": "POST /api/videos/scan"
     },
     {
       "source": "src/components/WebcamPotholeDetector.jsx",
       "target": "server.ts",
       "type": "architecture",
-      "label": "POST /api/detect/frame"
+      "label": "POST /api/detect"
     },
     {
       "source": "server.ts",
@@ -482,7 +564,25 @@
       "source": "server.ts",
       "target": "data/precomputed_scans.json",
       "type": "architecture",
-      "label": "Cloud Keyframe Fallback"
+      "label": "Cloud Precomputed Keyframes"
+    },
+    {
+      "source": "ml/Train_RDD2022_YOLOv8_Colab.ipynb",
+      "target": "ml/scripts/convert_rdd2022_to_yolo.py",
+      "type": "architecture",
+      "label": "VOC XML to YOLO Conversion"
+    },
+    {
+      "source": "ml/Train_RDD2022_YOLOv8_Colab.ipynb",
+      "target": "ml/training/train_rdd2022.py",
+      "type": "architecture",
+      "label": "YOLOv8 GPU Multi-Class Training"
+    },
+    {
+      "source": "ml/training/train_rdd2022.py",
+      "target": "detector/rdd2022_multiclass.pt",
+      "type": "architecture",
+      "label": "Exports Model Weights"
     }
   ]
 }
