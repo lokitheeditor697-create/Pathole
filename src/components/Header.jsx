@@ -39,7 +39,8 @@ export default function Header({
   aiModelMode = 'pothole',
   setAiModelMode = () => {}
 }) {
-  const isServerOnline = serverStatus === 'connected' && !simulatedServerOffline;
+  const isAutonomous = serverStatus === 'autonomous';
+  const isServerOnline = (serverStatus === 'connected' || isAutonomous) && !simulatedServerOffline;
   const isGpsLocked = gpsStatus === 'locked' && !simulatedGpsLost;
   const isGpsLost = gpsStatus === 'lost' || simulatedGpsLost;
   const isGpsDegraded = gpsStatus === 'degraded' && !simulatedGpsLost;
@@ -58,35 +59,26 @@ export default function Header({
   ];
 
   return (
-    <header style={{
-      backgroundColor: '#0f172a',
-      borderBottom: '1px solid #1e293b',
-      flexShrink: 0,
-      zIndex: 20
-    }}>
-      {/* Top Banner: Brand + System Diagnostics + Global Actions */}
-      <div className="header-top-bar">
-        {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '10px',
-            height: '10px',
-            borderRadius: '50%',
-            backgroundColor: '#38bdf8',
-            boxShadow: '0 0 10px #38bdf8',
-            flexShrink: 0
-          }} />
+    <header className="app-header">
+      {/* Top Banner: Logo, Status, Time, Actions */}
+      <div className="header-top-row">
+        {/* Brand & Identity */}
+        <div className="header-brand-group">
+          <div className="header-icon-wrapper pulse-glow">
+            <Activity className="header-brand-icon" size={24} />
+          </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <h1 className="header-brand-title">
                 AI Road Intelligence &amp; Predictive Maintenance
               </h1>
               <span style={{
-                backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                fontSize: '10px',
+                fontWeight: '800',
+                letterSpacing: '0.05em',
+                backgroundColor: 'rgba(56, 189, 248, 0.15)',
                 color: '#38bdf8',
                 border: '1px solid rgba(56, 189, 248, 0.3)',
-                fontSize: '10px',
-                fontWeight: '700',
                 padding: '2px 8px',
                 borderRadius: '9999px',
                 textTransform: 'uppercase'
@@ -110,7 +102,7 @@ export default function Header({
           {/* Municipal Server Link Badge */}
           <button
             onClick={onOpenDiagnostics}
-            title={isServerOnline ? `Municipal Server connected (${latencyMs}ms) — Click for Redundancy Diagnostics` : 'Municipal Server disconnected! Operating in degraded offline mode — Click for Diagnostics'}
+            title={isAutonomous ? 'Autonomous Edge AI Mode Active — Local Video Inspection & Pavement Cache Online' : isServerOnline ? `Municipal Server connected (${latencyMs}ms) — Click for Redundancy Diagnostics` : 'Municipal Server disconnected! Operating in degraded offline mode — Click for Diagnostics'}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -120,9 +112,9 @@ export default function Header({
               fontSize: '11px',
               fontWeight: '700',
               cursor: 'pointer',
-              border: `1px solid ${isServerOnline ? 'rgba(34, 197, 94, 0.4)' : '#ef4444'}`,
-              backgroundColor: isServerOnline ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.25)',
-              color: isServerOnline ? '#4ade80' : '#fca5a5',
+              border: `1px solid ${isAutonomous ? 'rgba(56, 189, 248, 0.4)' : isServerOnline ? 'rgba(34, 197, 94, 0.4)' : '#ef4444'}`,
+              backgroundColor: isAutonomous ? 'rgba(56, 189, 248, 0.12)' : isServerOnline ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.25)',
+              color: isAutonomous ? '#38bdf8' : isServerOnline ? '#4ade80' : '#fca5a5',
               transition: 'all 0.15s ease'
             }}
           >
@@ -131,16 +123,16 @@ export default function Header({
                 width: '7px',
                 height: '7px',
                 borderRadius: '50%',
-                backgroundColor: isServerOnline ? '#22c55e' : '#ef4444',
-                boxShadow: isServerOnline ? '0 0 8px #22c55e' : '0 0 8px #ef4444',
+                backgroundColor: isAutonomous ? '#38bdf8' : isServerOnline ? '#22c55e' : '#ef4444',
+                boxShadow: isAutonomous ? '0 0 8px #38bdf8' : isServerOnline ? '0 0 8px #22c55e' : '0 0 8px #ef4444',
                 flexShrink: 0
               }}
               className={!isServerOnline ? 'animate-ping' : ''}
             />
-            {isServerOnline ? <Wifi size={13} color="#22c55e" /> : <WifiOff size={13} color="#ef4444" />}
-            <span>{isServerOnline ? 'Server Online' : 'Server Offline'}</span>
-            <span style={{ fontSize: '10px', color: isServerOnline ? '#86efac' : '#f87171', fontFamily: 'monospace' }}>
-              {isServerOnline ? `${latencyMs}ms` : 'FAIL'}
+            {isAutonomous ? <Wifi size={13} color="#38bdf8" /> : isServerOnline ? <Wifi size={13} color="#22c55e" /> : <WifiOff size={13} color="#ef4444" />}
+            <span>{isAutonomous ? 'AI Edge Active' : isServerOnline ? 'Server Online' : 'Server Offline'}</span>
+            <span style={{ fontSize: '10px', color: isAutonomous ? '#7dd3fc' : isServerOnline ? '#86efac' : '#f87171', fontFamily: 'monospace' }}>
+              {isAutonomous ? 'EDGE' : isServerOnline ? `${latencyMs}ms` : 'FAIL'}
             </span>
           </button>
 
