@@ -13,7 +13,7 @@ export default defineConfig({
     allowedHosts: true,
   },
   build: {
-    emptyOutDir: false,
+    emptyOutDir: true,
   },
 })
 

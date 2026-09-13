@@ -30,3 +30,6 @@ public/videos/uploads/*
 !public/videos/uploads/.gitkeep
 ml/raw/
 
+
+detector/*_backup.pt
+

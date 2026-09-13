@@ -848,7 +848,7 @@ export default function PatrolHUD({
       <div
         style={{
           position: 'absolute',
-          bottom: '44px',
+          top: '44px',
           right: '12px',
           display: 'flex',
           alignItems: 'center',

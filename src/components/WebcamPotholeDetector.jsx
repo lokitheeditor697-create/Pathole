@@ -832,7 +832,8 @@ export default function WebcamPotholeDetector({
           flexWrap: 'wrap',
           justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '10px'
+          gap: '10px',
+          flexShrink: 0
         }}
       >
         {/* Left: Camera Switch, Torch, Audio & Sensitivity */}

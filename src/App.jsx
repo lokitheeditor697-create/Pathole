@@ -3,6 +3,7 @@ import Header from './components/Header';
 import LiveMonitoringView from './components/LiveMonitoringView';
 import RoadHealthMapView from './components/RoadHealthMapView';
 import DefectInventoryView from './components/DefectInventoryView';
+import CaseManagementView from './components/CaseManagementView';
 import PatrolFleetView from './components/PatrolFleetView';
 import AIPerformanceView from './components/AIPerformanceView';
 import AlertTestModal from './components/AlertTestModal';
@@ -366,6 +367,13 @@ export default function App() {
           <DefectInventoryView
             defects={defects}
             onOpenAlertModal={() => setIsAlertModalOpen(true)}
+          />
+        )}
+
+        {activeTab === 'CASES' && (
+          <CaseManagementView
+            onOpenAlertModal={() => setIsAlertModalOpen(true)}
+            onRefreshAllData={fetchAllData}
           />
         )}
 

@@ -31,13 +31,16 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
     if (selectedSeverity !== 'ALL' && d.severity !== selectedSeverity) return false;
     if (filterVerification === 'VERIFIED' && !d.is_multi_bus_verified) return false;
     if (filterVerification === 'PENDING' && d.is_multi_bus_verified) return false;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const matchId = d.detection_id.toLowerCase().includes(q);
-      const matchClass = d.class_name.toLowerCase().includes(q);
-      const matchSeg = d.segment_id.toLowerCase().includes(q);
-      const matchBus = d.bus_ids.toLowerCase().includes(q);
-      if (!matchId && !matchClass && !matchSeg && !matchBus) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const idStr = String(d.detection_id || '').toLowerCase();
+      const classStr = String(d.class_name || '').toLowerCase();
+      const segStr = String(d.segment_id || '').toLowerCase();
+      const busStr = Array.isArray(d.bus_ids)
+        ? d.bus_ids.join(' ').toLowerCase()
+        : String(d.bus_ids || '').toLowerCase();
+      const match = idStr.includes(q) || classStr.includes(q) || segStr.includes(q) || busStr.includes(q);
+      if (!match) return false;
     }
     return true;
   });
@@ -48,20 +51,20 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
       flexDirection: 'column',
       height: '100%',
       overflowY: 'auto',
-      backgroundColor: '#090d16',
+      backgroundColor: '#070c18',
       padding: '20px',
       gap: '16px'
     }}>
       {/* Top Filter Bar */}
-      <div style={{
-        backgroundColor: '#0f172a',
-        border: '1px solid #1e293b',
-        borderRadius: '10px',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px'
-      }}>
+      <div
+        className="glass-card"
+        style={{
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <div>
             <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#f8fafc' }}>
@@ -75,17 +78,10 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
           <a
             href={`${API_BASE}/api/reports/csv`}
             download="phase1_road_defects.csv"
+            className="btn-primary"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: '#0284c7',
-              color: '#ffffff',
-              textDecoration: 'none',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '700'
+              padding: '7px 14px',
+              fontSize: '12px'
             }}
           >
             <Download size={13} />
@@ -100,10 +96,10 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: '#1e293b',
-            border: '1px solid #334155',
-            borderRadius: '6px',
-            padding: '6px 12px',
+            backgroundColor: '#070f24',
+            border: '1px solid #273860',
+            borderRadius: '8px',
+            padding: '7px 12px',
             flex: '1 1 200px'
           }}>
             <Search size={14} color="#94a3b8" />
@@ -130,12 +126,14 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
               style={{
-                backgroundColor: '#1e293b',
+                backgroundColor: '#070f24',
                 color: '#f8fafc',
-                border: '1px solid #334155',
-                borderRadius: '6px',
-                padding: '6px 10px',
-                fontSize: '12px'
+                border: '1px solid #273860',
+                borderRadius: '8px',
+                padding: '7px 10px',
+                fontSize: '12px',
+                outline: 'none',
+                cursor: 'pointer'
               }}
             >
               {PHASE1_CLASSES.map((c) => {
@@ -157,12 +155,14 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
               value={selectedSeverity}
               onChange={(e) => setSelectedSeverity(e.target.value)}
               style={{
-                backgroundColor: '#1e293b',
+                backgroundColor: '#070f24',
                 color: '#f8fafc',
-                border: '1px solid #334155',
-                borderRadius: '6px',
-                padding: '6px 10px',
-                fontSize: '12px'
+                border: '1px solid #273860',
+                borderRadius: '8px',
+                padding: '7px 10px',
+                fontSize: '12px',
+                outline: 'none',
+                cursor: 'pointer'
               }}
             >
               {['ALL', 'Critical', 'High', 'Medium', 'Low'].map((s) => (
@@ -178,12 +178,14 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
               value={filterVerification}
               onChange={(e) => setFilterVerification(e.target.value)}
               style={{
-                backgroundColor: '#1e293b',
+                backgroundColor: '#070f24',
                 color: '#f8fafc',
-                border: '1px solid #334155',
-                borderRadius: '6px',
-                padding: '6px 10px',
-                fontSize: '12px'
+                border: '1px solid #273860',
+                borderRadius: '8px',
+                padding: '7px 10px',
+                fontSize: '12px',
+                outline: 'none',
+                cursor: 'pointer'
               }}
             >
               <option value="ALL">All Status</option>
@@ -200,14 +202,15 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
 
       {/* Defect Cards Grid */}
       {filtered.length === 0 ? (
-        <div style={{
-          backgroundColor: '#0f172a',
-          border: '1px dashed #334155',
-          borderRadius: '10px',
-          padding: '48px 24px',
-          textAlign: 'center',
-          color: '#94a3b8'
-        }}>
+        <div
+          className="glass-card"
+          style={{
+            borderStyle: 'dashed',
+            padding: '48px 24px',
+            textAlign: 'center',
+            color: '#94a3b8'
+          }}
+        >
           <CheckCircle2 size={36} color="#22c55e" style={{ margin: '0 auto 12px auto' }} />
           <h3 style={{ margin: '0 0 6px 0', color: '#f8fafc', fontSize: '15px' }}>
             No Defects Currently in Registry
@@ -219,180 +222,191 @@ export default function DefectInventoryView({ defects = [], onOpenAlertModal }) 
       ) : (
         <div className="responsive-card-grid">
           {filtered.map((defect) => {
+            const meta = getDefectMeta(defect.class_name);
+            const isMulti = Boolean(defect.is_multi_bus_verified);
+            const sevColor =
+              defect.severity === 'Critical'
+                ? '#ef4444'
+                : defect.severity === 'High'
+                ? '#f97316'
+                : defect.severity === 'Medium'
+                ? '#eab308'
+                : '#3b82f6';
 
-          const meta = getDefectMeta(defect.class_name);
-          const isMulti = defect.is_multi_bus_verified;
-          const sevColor =
-            defect.severity === 'Critical'
-              ? '#ef4444'
-              : defect.severity === 'High'
-              ? '#f97316'
-              : defect.severity === 'Medium'
-              ? '#eab308'
-              : '#3b82f6';
+            const busDisplay = Array.isArray(defect.bus_ids)
+              ? defect.bus_ids.join(', ')
+              : String(defect.bus_ids || 'Fleet Camera');
 
-          return (
-            <div
-              key={defect.id}
-              style={{
-                backgroundColor: '#0f172a',
-                borderRadius: '10px',
-                border: `1px solid ${isMulti ? 'rgba(34, 197, 94, 0.4)' : meta.borderColor ? `${meta.borderColor}44` : '#1e293b'}`,
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                position: 'relative'
-              }}
-            >
-              {/* Header row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#64748b' }}>
-                      {defect.detection_id}
-                    </span>
-                    <span style={{
+            const widthCm = defect.bbox?.estimated_physical_width_cm ?? '—';
+            const lengthCm = defect.bbox?.estimated_physical_length_cm ?? '—';
+            const pixelArea = defect.bbox?.pixel_area ? defect.bbox.pixel_area.toLocaleString() : '—';
+            const latStr = typeof defect.latitude === 'number' ? defect.latitude.toFixed(6) : '—';
+            const lngStr = typeof defect.longitude === 'number' ? defect.longitude.toFixed(6) : '—';
+            const confStr = typeof defect.confidence === 'number' ? `${(defect.confidence * 100).toFixed(1)}%` : '—';
+
+            return (
+              <div
+                key={defect.id || defect.detection_id}
+                className="glass-card"
+                style={{
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  position: 'relative',
+                  borderColor: isMulti ? 'rgba(34, 197, 94, 0.4)' : meta.borderColor ? `${meta.borderColor}44` : 'rgba(255, 255, 255, 0.08)'
+                }}
+              >
+                {/* Header row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#64748b' }}>
+                        {defect.detection_id}
+                      </span>
+                      <span style={{
+                        fontSize: '10px',
+                        backgroundColor: `${sevColor}22`,
+                        color: sevColor,
+                        border: `1px solid ${sevColor}44`,
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        fontWeight: '700'
+                      }}>
+                        {defect.severity}
+                      </span>
+                      <span style={{
+                        fontSize: '10px',
+                        backgroundColor: meta.bgColor,
+                        color: meta.textColor,
+                        border: `1px solid ${meta.borderColor}55`,
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        fontWeight: '800'
+                      }}>
+                        {meta.code}
+                      </span>
+                    </div>
+                    <h3 style={{ margin: '6px 0 0 0', fontSize: '15px', fontWeight: '800', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{meta.icon}</span>
+                      <span>{meta.name}</span>
+                    </h3>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                      {meta.category} · {meta.description}
+                    </div>
+                  </div>
+
+                  {isMulti ? (
+                    <div style={{
+                      backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                      color: '#4ade80',
+                      border: '1px solid #22c55e',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
                       fontSize: '10px',
-                      backgroundColor: `${sevColor}22`,
-                      color: sevColor,
-                      border: `1px solid ${sevColor}44`,
-                      padding: '1px 6px',
-                      borderRadius: '4px',
-                      fontWeight: '700'
+                      fontWeight: '800',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
                     }}>
-                      {defect.severity}
-                    </span>
-                    <span style={{
+                      <CheckCircle2 size={12} />
+                      <span>2+ BUSES VERIFIED</span>
+                    </div>
+                  ) : (
+                    <div style={{
+                      backgroundColor: 'rgba(100, 116, 139, 0.15)',
+                      color: '#94a3b8',
+                      border: '1px solid #334155',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
                       fontSize: '10px',
-                      backgroundColor: meta.bgColor,
-                      color: meta.textColor,
-                      border: `1px solid ${meta.borderColor}55`,
-                      padding: '1px 6px',
-                      borderRadius: '4px',
-                      fontWeight: '800'
+                      fontWeight: '600'
                     }}>
-                      {meta.code}
-                    </span>
+                      Single-Bus Sight
+                    </div>
+                  )}
+                </div>
+
+                {/* Physical Dimension vs Bounding Box */}
+                <div style={{
+                  backgroundColor: '#070f24',
+                  border: '1px solid #1e293b',
+                  borderRadius: '8px',
+                  padding: '10px 12px',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '8px',
+                  fontSize: '11px'
+                }}>
+                  <div>
+                    <span style={{ color: '#64748b', display: 'block' }}>EST. PHYSICAL SIZE</span>
+                    <strong style={{ color: '#38bdf8', fontSize: '12px' }}>
+                      {widthCm} cm × {lengthCm} cm
+                    </strong>
                   </div>
-                  <h3 style={{ margin: '6px 0 0 0', fontSize: '15px', fontWeight: '800', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>{meta.icon}</span>
-                    <span>{meta.name}</span>
-                  </h3>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                    {meta.category} · {meta.description}
+                  <div>
+                    <span style={{ color: '#64748b', display: 'block' }}>BBOX PIXEL AREA</span>
+                    <strong style={{ color: '#f8fafc' }}>
+                      {pixelArea} px²
+                    </strong>
                   </div>
                 </div>
 
-                {isMulti ? (
-                  <div style={{
-                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                    color: '#4ade80',
-                    border: '1px solid #22c55e',
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    fontSize: '10px',
-                    fontWeight: '800',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}>
-                    <CheckCircle2 size={12} />
-                    <span>2+ BUSES VERIFIED</span>
+                {/* Location & Chainage block */}
+                <div style={{
+                  fontSize: '11px',
+                  color: '#94a3b8',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <MapPin size={12} color="#38bdf8" />
+                    <span>Road Segment: <strong style={{ color: '#f8fafc' }}>{defect.segment_id}</strong> (Chainage: {defect.exact_chainage_m}m)</span>
                   </div>
-                ) : (
-                  <div style={{
-                    backgroundColor: 'rgba(100, 116, 139, 0.15)',
-                    color: '#94a3b8',
-                    border: '1px solid #334155',
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    fontSize: '10px',
-                    fontWeight: '600'
-                  }}>
-                    Single-Bus Sight
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '18px' }}>
+                    <span>Coordinates: {latStr}, {lngStr}</span>
+                    <span>Confidence: <strong style={{ color: '#4ade80' }}>{confStr}</strong></span>
                   </div>
-                )}
-              </div>
+                </div>
 
-              {/* Physical Dimension vs Bounding Box */}
-              <div style={{
-                backgroundColor: '#1e293b',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-                fontSize: '11px'
-              }}>
-                <div>
-                  <span style={{ color: '#64748b', display: 'block' }}>EST. PHYSICAL SIZE</span>
-                  <strong style={{ color: '#38bdf8', fontSize: '12px' }}>
-                    {defect.bbox.estimated_physical_width_cm} cm × {defect.bbox.estimated_physical_length_cm} cm
-                  </strong>
-                </div>
-                <div>
-                  <span style={{ color: '#64748b', display: 'block' }}>BBOX PIXEL AREA</span>
-                  <strong style={{ color: '#f8fafc' }}>
-                    {defect.bbox.pixel_area.toLocaleString()} px²
-                  </strong>
-                </div>
-              </div>
-
-              {/* Location & Chainage block */}
-              <div style={{
-                fontSize: '11px',
-                color: '#94a3b8',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <MapPin size={12} color="#38bdf8" />
-                  <span>Road Segment: <strong style={{ color: '#f8fafc' }}>{defect.segment_id}</strong> (Chainage: {defect.exact_chainage_m}m)</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '18px' }}>
-                  <span>Coordinates: {defect.latitude.toFixed(6)}, {defect.longitude.toFixed(6)}</span>
-                  <span>Confidence: <strong style={{ color: '#4ade80' }}>{(defect.confidence * 100).toFixed(1)}%</strong></span>
+                {/* Reporting Fleet Buses */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingTop: '8px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                  fontSize: '11px'
+                }}>
+                  <span style={{ color: '#64748b' }}>
+                    Reporting Fleet: <strong style={{ color: '#f8fafc' }}>{busDisplay}</strong>
+                  </span>
+                  <button
+                    onClick={onOpenAlertModal}
+                    style={{
+                      backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                      color: '#38bdf8',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Send size={11} />
+                    <span>Dispatch Ticket</span>
+                  </button>
                 </div>
               </div>
-
-              {/* Reporting Fleet Buses */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingTop: '8px',
-                borderTop: '1px solid #1e293b',
-                fontSize: '11px'
-              }}>
-                <span style={{ color: '#64748b' }}>
-                  Reporting Fleet: <strong style={{ color: '#f8fafc' }}>{defect.bus_ids}</strong>
-                </span>
-                <button
-                  onClick={onOpenAlertModal}
-                  style={{
-                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                    color: '#38bdf8',
-                    border: '1px solid rgba(56, 189, 248, 0.3)',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <Send size={11} />
-                  <span>Dispatch Ticket</span>
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

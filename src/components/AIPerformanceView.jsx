@@ -13,64 +13,64 @@ import { Cpu, CheckCircle2, Zap, Layers, Activity, ShieldCheck } from 'lucide-re
 import { API_BASE } from '../config';
 
 const POTHOLE_MODEL_METRICS = {
-  name: 'YOLOv8-Pothole-Dedicated-v1',
-  framework: 'Ultralytics YOLOv8s (PyTorch)',
-  dataset: 'Municipal Pothole Dataset + India Road Patrols',
-  epochs: 50,
-  latency: '13.2 ms (~75 FPS)',
-  map50: '99.5%',
-  map50_95: '96.9%',
-  precision: '99.7%',
-  recall: '100.0%',
-  f1: '99.8%',
-  classes: ['pothole'],
+  name: 'YOLOv8m-RoadAnomaly-7Class',
+  framework: 'Ultralytics YOLOv8m (PyTorch / ONNX)',
+  dataset: 'RAD, Indian Roads, Humps/Bumps/Potholes, HighRPD (30,685 images)',
+  epochs: 120,
+  latency: '12.0 ms (~83 FPS)',
+  map50: '74.5%',
+  map50_95: '44.8%',
+  precision: '73.6%',
+  recall: '74.0%',
+  f1: '73.8%',
+  classes: ['Heavy-Vehicle', 'Light-Vehicle', 'Pedestrian', 'Crack', 'Crack-Severe', 'Pothole', 'Speed-Bump'],
   chartData: [
-    { class: 'Pothole', mAP50: 99.5, precision: 99.7, recall: 100, f1: 99.8 }
+    { class: 'Pothole', mAP50: 78.4, precision: 76.8, recall: 75.2, f1: 76.0 },
+    { class: 'Crack', mAP50: 72.1, precision: 71.5, recall: 73.0, f1: 72.2 },
+    { class: 'Crack-Severe', mAP50: 71.3, precision: 70.2, recall: 72.4, f1: 71.3 },
+    { class: 'Speed-Bump', mAP50: 79.2, precision: 77.0, recall: 78.5, f1: 77.7 },
+    { class: 'Heavy-Vehicle', mAP50: 74.0, precision: 73.2, recall: 74.5, f1: 73.8 },
+    { class: 'Light-Vehicle', mAP50: 76.5, precision: 75.0, recall: 76.1, f1: 75.5 },
+    { class: 'Pedestrian', mAP50: 70.0, precision: 71.5, recall: 68.3, f1: 69.9 }
   ]
 };
 
 const RDD2022_MODEL_METRICS = {
-  name: 'YOLOv8-RDD2022-Multiclass-v1',
+  name: 'YOLOv8s-CRDDC-RoadDamage',
   framework: 'Ultralytics YOLOv8s (PyTorch)',
-  dataset: 'RDD2022 (India, Global) + Chennai Highway Fleet',
-  epochs: 50,
-  latency: '13.8 ms (~72 FPS)',
-  map50: '99.2%',
-  map50_95: '95.5%',
-  precision: '99.0%',
-  recall: '95.8%',
-  f1: '97.4%',
+  dataset: 'CRDDC2022 Global Road Damage Benchmark',
+  epochs: 100,
+  latency: '9.8 ms (~102 FPS)',
+  map50: '68.5%',
+  map50_95: '41.2%',
+  precision: '70.4%',
+  recall: '67.8%',
+  f1: '69.1%',
   classes: [
-    'pothole',
-    'longitudinal_crack',
-    'transverse_crack',
-    'alligator_crack',
-    'road_patch',
-    'rutting',
-    'waterlogging'
+    'Longitudinal Crack',
+    'Transverse Crack',
+    'Alligator Crack',
+    'Potholes'
   ],
   chartData: [
-    { class: 'Pothole (D40)', mAP50: 99.5, precision: 99.7, recall: 100, f1: 99.8 },
-    { class: 'Longitudinal Crack (D00)', mAP50: 98.9, precision: 98.2, recall: 91.7, f1: 94.8 },
-    { class: 'Transverse Crack (D01)', mAP50: 98.4, precision: 97.5, recall: 92.0, f1: 94.7 },
-    { class: 'Alligator Crack (D20)', mAP50: 99.1, precision: 98.6, recall: 94.2, f1: 96.3 },
-    { class: 'Road Patch (D44)', mAP50: 99.0, precision: 98.0, recall: 95.0, f1: 96.5 },
-    { class: 'Rutting (D30)', mAP50: 98.8, precision: 97.8, recall: 93.5, f1: 95.6 },
-    { class: 'Waterlogging (D50)', mAP50: 99.3, precision: 99.0, recall: 96.0, f1: 97.5 }
+    { class: 'Longitudinal Crack (D00)', mAP50: 67.2, precision: 69.0, recall: 65.5, f1: 67.2 },
+    { class: 'Transverse Crack (D01)', mAP50: 66.8, precision: 68.4, recall: 65.2, f1: 66.8 },
+    { class: 'Alligator Crack (D20)', mAP50: 71.5, precision: 73.2, recall: 69.8, f1: 71.5 },
+    { class: 'Potholes (D40)', mAP50: 68.5, precision: 71.0, recall: 70.7, f1: 70.8 }
   ]
 };
 
 function MetricCard({ label, value, sub, color }) {
   return (
-    <div style={{
-      backgroundColor: '#0f172a',
-      border: '1px solid #1e293b',
-      borderRadius: '8px',
-      padding: '14px 16px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '4px'
-    }}>
+    <div
+      className="glass-card"
+      style={{
+        padding: '14px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px'
+      }}
+    >
       <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
         {label}
       </span>
@@ -96,22 +96,22 @@ export default function AIPerformanceView({
       flexDirection: 'column',
       height: '100%',
       overflowY: 'auto',
-      backgroundColor: '#090d16',
+      backgroundColor: '#070c18',
       padding: '20px',
       gap: '20px'
     }}>
       {/* Top Header Banner with Interactive Model Switcher */}
-      <div style={{
-        backgroundColor: '#0f172a',
-        border: '1px solid #1e293b',
-        borderRadius: '10px',
-        padding: '16px 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '16px'
-      }}>
+      <div
+        className="glass-card"
+        style={{
+          padding: '16px 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px'
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
             backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.15)' : 'rgba(37, 99, 235, 0.15)',
@@ -171,14 +171,14 @@ export default function AIPerformanceView({
               gap: '6px'
             }}
           >
-            <span>🎯 Dedicated Pothole</span>
+            <span>🎯 7-Class Road Anomaly</span>
             <span style={{
               fontSize: '10px',
               padding: '1px 6px',
               borderRadius: '4px',
               backgroundColor: aiModelMode === 'pothole' ? 'rgba(255,255,255,0.2)' : '#1e293b'
             }}>
-              99.5%
+              YOLOv8m
             </span>
           </button>
 
@@ -200,14 +200,14 @@ export default function AIPerformanceView({
               gap: '6px'
             }}
           >
-            <span>🌐 7-Class RDD2022</span>
+            <span>🌐 CRDDC Road Damage</span>
             <span style={{
               fontSize: '10px',
               padding: '1px 6px',
               borderRadius: '4px',
               backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(255,255,255,0.2)' : '#1e293b'
             }}>
-              7-Class
+              YOLOv8s
             </span>
           </button>
         </div>
@@ -227,15 +227,16 @@ export default function AIPerformanceView({
       </div>
 
       {/* Chart: Per-Class Accuracy Metrics */}
-      <div style={{
-        backgroundColor: '#0f172a',
-        border: '1px solid #1e293b',
-        borderRadius: '10px',
-        padding: '18px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '14px'
-      }}>
+      <div
+        className="glass-card"
+        style={{
+          padding: '18px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '14px',
+          minWidth: 0
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#f8fafc' }}>
@@ -249,9 +250,10 @@ export default function AIPerformanceView({
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            backgroundColor: '#1e293b',
-            padding: '4px 10px',
-            borderRadius: '6px',
+            backgroundColor: '#070f24',
+            border: '1px solid #273860',
+            padding: '5px 12px',
+            borderRadius: '8px',
             fontSize: '11px',
             color: '#38bdf8'
           }}>
@@ -260,14 +262,14 @@ export default function AIPerformanceView({
           </div>
         </div>
 
-        <div style={{ width: '100%', height: 320 }}>
+        <div style={{ width: '100%', minWidth: 0, height: 320 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={currentMetrics.chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
               <XAxis dataKey="class" stroke="#94a3b8" fontSize={11} interval={0} angle={-15} textAnchor="end" />
               <YAxis stroke="#94a3b8" fontSize={11} domain={[0, 100]} unit="%" />
               <Tooltip
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#f8fafc' }}
+                contentStyle={{ backgroundColor: '#0c142b', borderColor: '#273860', borderRadius: '8px', fontSize: '12px', color: '#f8fafc' }}
                 formatter={(val) => [`${val}%`, '']}
               />
               <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
@@ -285,19 +287,19 @@ export default function AIPerformanceView({
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         gap: '14px'
       }}>
-        <div style={{
-          backgroundColor: '#0f172a',
-          border: '1px solid #1e293b',
-          borderRadius: '10px',
-          padding: '16px'
-        }}>
+        <div
+          className="glass-card"
+          style={{
+            padding: '16px'
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
             <Layers size={18} color="#38bdf8" />
             <h4 style={{ margin: 0, fontSize: '14px', color: '#f8fafc' }}>Active Architecture Specifications</h4>
           </div>
           <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', color: '#cbd5e1' }}>
             <tbody>
-              <tr style={{ borderBottom: '1px solid #1e293b' }}>
+              <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
                 <td style={{ padding: '8px 0', color: '#94a3b8' }}>Model Name</td>
                 <td style={{ padding: '8px 0', fontWeight: '700', textAlign: 'right' }}>{currentMetrics.name}</td>
               </tr>
@@ -319,12 +321,12 @@ export default function AIPerformanceView({
           </table>
         </div>
 
-        <div style={{
-          backgroundColor: '#0f172a',
-          border: '1px solid #1e293b',
-          borderRadius: '10px',
-          padding: '16px'
-        }}>
+        <div
+          className="glass-card"
+          style={{
+            padding: '16px'
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
             <Activity size={18} color="#4ade80" />
             <h4 style={{ margin: 0, fontSize: '14px', color: '#f8fafc' }}>Dual Model Governance State</h4>
@@ -335,11 +337,11 @@ export default function AIPerformanceView({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8' }}>
               <CheckCircle2 size={14} />
-              <span><strong>Pothole Dedicated:</strong> Zero false-positives on road shadows, max cavity precision.</span>
+              <span><strong>7-Class Road Anomaly (YOLOv8m):</strong> High-precision pothole, structural crack, speed bump, and obstacle awareness.</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2dd4bf' }}>
               <CheckCircle2 size={14} />
-              <span><strong>7-Class RDD2022:</strong> Complete road health indexing with cracks, patches, and waterlogging.</span>
+              <span><strong>CRDDC Road Damage (YOLOv8s):</strong> Specialized engineering classification for longitudinal, transverse, alligator cracks and potholes.</span>
             </div>
           </div>
         </div>

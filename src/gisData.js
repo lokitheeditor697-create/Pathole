@@ -238,5 +238,337 @@ export const DEFAULT_VEHICLES = [
   }
 ];
 
-export const DEFAULT_DEFECTS = [];
+export const DEFAULT_DEFECTS = [
+  {
+    id: 1,
+    detection_id: "DET-realdash-PTH01",
+    pothole_id: "PTH-#01",
+    defect_type: "Pothole",
+    class_name: "Pothole",
+    latitude: 13.0827,
+    longitude: 80.2707,
+    severity: "Critical",
+    confidence: 0.88,
+    road_id: "R001",
+    segment_id: "R001-S001",
+    exact_chainage_m: 42,
+    bus_count: 2,
+    bus_ids: ["MTC 46G", "MTC 27B"],
+    reporting_vehicles: ["MTC 46G", "MTC 27B"],
+    total_detections: 3,
+    is_multi_bus_verified: true,
+    bbox: {
+      x_min: 520,
+      y_min: 340,
+      x_max: 710,
+      y_max: 480,
+      pixel_area: 26600,
+      estimated_physical_width_cm: 45.2,
+      estimated_physical_length_cm: 32.8
+    },
+    first_detected: new Date(Date.now() - 3600000).toISOString(),
+    last_detected: new Date().toISOString(),
+    model_version: "YOLOv8m 7-Class Road Anomaly Model",
+    status: "Open",
+    source: "transit_bus"
+  },
+  {
+    id: 2,
+    detection_id: "DET-realdash-PTH02",
+    pothole_id: "PTH-#02",
+    defect_type: "Pothole",
+    class_name: "Pothole",
+    latitude: 13.0784,
+    longitude: 80.2203,
+    severity: "High",
+    confidence: 0.74,
+    road_id: "R001",
+    segment_id: "R001-S003",
+    exact_chainage_m: 431,
+    bus_count: 1,
+    bus_ids: ["MTC 46G"],
+    reporting_vehicles: ["MTC 46G"],
+    total_detections: 1,
+    is_multi_bus_verified: false,
+    bbox: {
+      x_min: 667,
+      y_min: 483,
+      x_max: 852,
+      y_max: 589,
+      pixel_area: 19610,
+      estimated_physical_width_cm: 26.0,
+      estimated_physical_length_cm: 17.7
+    },
+    first_detected: new Date(Date.now() - 7200000).toISOString(),
+    last_detected: new Date().toISOString(),
+    model_version: "YOLOv8m 7-Class Road Anomaly Model",
+    status: "Open",
+    source: "transit_bus"
+  },
+  {
+    id: 3,
+    detection_id: "DET-realdash-CRK03",
+    pothole_id: "CRK-#03",
+    defect_type: "Crack",
+    class_name: "Crack-Severe",
+    latitude: 13.1180,
+    longitude: 80.2230,
+    severity: "Medium",
+    confidence: 0.71,
+    road_id: "R002",
+    segment_id: "R002-S001",
+    exact_chainage_m: 118,
+    bus_count: 1,
+    bus_ids: ["MTC 15G"],
+    reporting_vehicles: ["MTC 15G"],
+    total_detections: 1,
+    is_multi_bus_verified: false,
+    bbox: {
+      x_min: 300,
+      y_min: 420,
+      x_max: 580,
+      y_max: 510,
+      pixel_area: 25200,
+      estimated_physical_width_cm: 38.5,
+      estimated_physical_length_cm: 12.0
+    },
+    first_detected: new Date(Date.now() - 10800000).toISOString(),
+    last_detected: new Date().toISOString(),
+    model_version: "YOLOv8m 7-Class Road Anomaly Model",
+    status: "Open",
+    source: "transit_bus"
+  },
+  {
+    id: 4,
+    detection_id: "DET-realdash-RUT04",
+    pothole_id: "RUT-#04",
+    defect_type: "Rutting",
+    class_name: "Rutting",
+    latitude: 13.0645,
+    longitude: 80.2540,
+    severity: "Low",
+    confidence: 0.65,
+    road_id: "R003",
+    segment_id: "R003-S001",
+    exact_chainage_m: 65,
+    bus_count: 1,
+    bus_ids: ["MTC 29C"],
+    reporting_vehicles: ["MTC 29C"],
+    total_detections: 1,
+    is_multi_bus_verified: false,
+    bbox: {
+      x_min: 410,
+      y_min: 390,
+      x_max: 600,
+      y_max: 460,
+      pixel_area: 13300,
+      estimated_physical_width_cm: 22.0,
+      estimated_physical_length_cm: 9.5
+    },
+    first_detected: new Date(Date.now() - 14400000).toISOString(),
+    last_detected: new Date().toISOString(),
+    model_version: "YOLOv8s CRDDC Model",
+    status: "Open",
+    source: "transit_bus"
+  }
+];
+
+export const DEFAULT_CASES = [
+  {
+    case_id: "CASE-2026-001",
+    pothole_id: "PTH-#01",
+    defect_id: 1,
+    detection_id: "DET-realdash-PTH01",
+    defect_type: "Pothole",
+    class_name: "Pothole",
+    road_id: "R001",
+    road_name: "EVR Periyar Salai (Poonamallee High Rd)",
+    segment_id: "R001-S001",
+    exact_chainage_m: 42,
+    latitude: 13.0827,
+    longitude: 80.2707,
+    severity: "Critical",
+    priority: "P1 - Emergency",
+    status: "VERIFICATION_REQUIRED",
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    reported_at: new Date(Date.now() - 86400000).toISOString(),
+    before_evidence: {
+      detected_at: new Date(Date.now() - 86400000).toISOString(),
+      bbox: {
+        x_min: 520,
+        y_min: 340,
+        x_max: 710,
+        y_max: 480,
+        pixel_area: 26600,
+        estimated_physical_width_cm: 45.2,
+        estimated_physical_length_cm: 32.8
+      },
+      confidence: 0.88,
+      model_version: "YOLOv8m 7-Class Road Anomaly Model",
+      reporting_vehicles: ["MTC 46G", "MTC 27B"]
+    },
+    events: [
+      {
+        id: "EVT-001-1",
+        timestamp: new Date(Date.now() - 86400000).toISOString(),
+        to_status: "DETECTED",
+        actor: "YOLOv8 Vision Engine",
+        action: "Defect Identified by Vision Engine",
+        notes: "Detected with 88.0% confidence."
+      },
+      {
+        id: "EVT-001-2",
+        timestamp: new Date(Date.now() - 72000000).toISOString(),
+        from_status: "DETECTED",
+        to_status: "REPORTED",
+        actor: "Municipal Ingestion Pipeline",
+        action: "Municipal Case Created",
+        notes: "Emergency P1 defect case logged to city registry."
+      },
+      {
+        id: "EVT-001-3",
+        timestamp: new Date(Date.now() - 43200000).toISOString(),
+        from_status: "REPORTED",
+        to_status: "ASSIGNED",
+        actor: "GCC Central Dispatch",
+        action: "Assigned to PWD Rapid Action Crew #4",
+        notes: "Work order dispatched for quick patch."
+      },
+      {
+        id: "EVT-001-4",
+        timestamp: new Date(Date.now() - 14400000).toISOString(),
+        from_status: "ASSIGNED",
+        to_status: "VERIFICATION_REQUIRED",
+        actor: "Contractor Portal",
+        action: "Cold-Mix Asphalt Patch Applied",
+        notes: "Repair marked complete. Awaiting Dashcam AI scan."
+      }
+    ],
+    communications: [],
+    recurrence_count: 0,
+    previous_case_ids: []
+  },
+  {
+    case_id: "CASE-2026-002",
+    pothole_id: "PTH-#02",
+    defect_id: 2,
+    detection_id: "DET-realdash-PTH02",
+    defect_type: "Pothole",
+    class_name: "Pothole",
+    road_id: "R001",
+    road_name: "EVR Periyar Salai (Poonamallee High Rd)",
+    segment_id: "R001-S003",
+    exact_chainage_m: 431,
+    latitude: 13.0784,
+    longitude: 80.2203,
+    severity: "High",
+    priority: "P2 - High Priority",
+    status: "ASSIGNED",
+    created_at: new Date(Date.now() - 172800000).toISOString(),
+    reported_at: new Date(Date.now() - 172800000).toISOString(),
+    before_evidence: {
+      detected_at: new Date(Date.now() - 172800000).toISOString(),
+      bbox: {
+        x_min: 667,
+        y_min: 483,
+        x_max: 852,
+        y_max: 589,
+        pixel_area: 19610,
+        estimated_physical_width_cm: 26.0,
+        estimated_physical_length_cm: 17.7
+      },
+      confidence: 0.74,
+      model_version: "YOLOv8m 7-Class Road Anomaly Model",
+      reporting_vehicles: ["MTC 46G"]
+    },
+    events: [
+      {
+        id: "EVT-002-1",
+        timestamp: new Date(Date.now() - 172800000).toISOString(),
+        to_status: "DETECTED",
+        actor: "YOLOv8 Vision Engine",
+        action: "Defect Identified by Vision Engine",
+        notes: "Detected with 74.0% confidence."
+      },
+      {
+        id: "EVT-002-2",
+        timestamp: new Date(Date.now() - 160000000).toISOString(),
+        from_status: "DETECTED",
+        to_status: "REPORTED",
+        actor: "Municipal Ingestion Pipeline",
+        action: "Municipal Case Created",
+        notes: "High priority defect case logged."
+      },
+      {
+        id: "EVT-002-3",
+        timestamp: new Date(Date.now() - 86400000).toISOString(),
+        from_status: "REPORTED",
+        to_status: "ASSIGNED",
+        actor: "GCC Maintenance Division",
+        action: "Work Order Assigned to Crew #2",
+        notes: "Scheduled for night maintenance."
+      }
+    ],
+    communications: [],
+    recurrence_count: 0,
+    previous_case_ids: []
+  },
+  {
+    case_id: "CASE-2026-003",
+    pothole_id: "CRK-#03",
+    defect_id: 3,
+    detection_id: "DET-realdash-CRK03",
+    defect_type: "Crack",
+    class_name: "Crack-Severe",
+    road_id: "R002",
+    road_name: "Inner Ring Road (Jawaharlal Nehru Salai)",
+    segment_id: "R002-S001",
+    exact_chainage_m: 118,
+    latitude: 13.1180,
+    longitude: 80.2230,
+    severity: "Medium",
+    priority: "P3 - Routine",
+    status: "REPORTED",
+    created_at: new Date(Date.now() - 259200000).toISOString(),
+    reported_at: new Date(Date.now() - 259200000).toISOString(),
+    before_evidence: {
+      detected_at: new Date(Date.now() - 259200000).toISOString(),
+      bbox: {
+        x_min: 300,
+        y_min: 420,
+        x_max: 580,
+        y_max: 510,
+        pixel_area: 25200,
+        estimated_physical_width_cm: 38.5,
+        estimated_physical_length_cm: 12.0
+      },
+      confidence: 0.71,
+      model_version: "YOLOv8m 7-Class Road Anomaly Model",
+      reporting_vehicles: ["MTC 15G"]
+    },
+    events: [
+      {
+        id: "EVT-003-1",
+        timestamp: new Date(Date.now() - 259200000).toISOString(),
+        to_status: "DETECTED",
+        actor: "YOLOv8 Vision Engine",
+        action: "Defect Identified by Vision Engine",
+        notes: "Severe crack logged with 71.0% confidence."
+      },
+      {
+        id: "EVT-003-2",
+        timestamp: new Date(Date.now() - 250000000).toISOString(),
+        from_status: "DETECTED",
+        to_status: "REPORTED",
+        actor: "Municipal Ingestion Pipeline",
+        action: "Municipal Case Created",
+        notes: "Routine case logged for crack sealing."
+      }
+    ],
+    communications: [],
+    recurrence_count: 0,
+    previous_case_ids: []
+  }
+];
+
 

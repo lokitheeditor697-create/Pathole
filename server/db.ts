@@ -120,6 +120,108 @@ export interface VehiclePatrol {
   last_ping: string;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 2: Closed-Loop Defect Lifecycle & Municipal Case Management
+// ─────────────────────────────────────────────────────────────────────────────
+export type CaseStatus =
+  | "DETECTED"
+  | "REPORTED"
+  | "ACKNOWLEDGED"
+  | "ASSIGNED"
+  | "WORK_IN_PROGRESS"
+  | "REPAIR_COMPLETED"
+  | "VERIFICATION_REQUIRED"
+  | "VERIFIED"
+  | "CLOSED"
+  | "REOPENED";
+
+export type CasePriority = "P1 - Emergency" | "P2 - High Priority" | "P3 - Standard";
+
+export interface CaseEvent {
+  id: string;
+  timestamp: string;
+  from_status?: CaseStatus;
+  to_status: CaseStatus;
+  actor: string;
+  action: string;
+  notes?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface CommunicationItem {
+  id: string;
+  channel: "whatsapp" | "telegram" | "email";
+  recipient: string;
+  timestamp: string;
+  status: "sent" | "delivered" | "failed" | "simulated";
+  message_id: string;
+  summary: string;
+  payload?: any;
+}
+
+export interface DefectCase {
+  case_id: string;
+  pothole_id?: string;
+  defect_id?: number;
+  detection_id?: string;
+  defect_type: string;
+  class_name: string;
+  road_id: string;
+  road_name: string;
+  segment_id: string;
+  exact_chainage_m: number;
+  latitude: number;
+  longitude: number;
+  severity: "Critical" | "High" | "Medium" | "Low";
+  priority: CasePriority;
+  status: CaseStatus;
+  assigned_contractor?: string;
+  assigned_team?: string;
+  assigned_person?: string;
+  target_completion_date?: string;
+  created_at: string;
+  reported_at?: string;
+  acknowledged_at?: string;
+  assigned_at?: string;
+  work_started_at?: string;
+  repair_completed_at?: string;
+  verified_at?: string;
+  closed_at?: string;
+  before_evidence: {
+    image_url?: string;
+    snapshot_thumbnail?: string;
+    detected_at: string;
+    bbox?: {
+      x_min: number;
+      y_min: number;
+      x_max: number;
+      y_max: number;
+      pixel_area?: number;
+      estimated_physical_width_cm?: number;
+      estimated_physical_length_cm?: number;
+    };
+    confidence: number;
+    model_version?: string;
+    reporting_vehicles?: string[];
+  };
+  after_evidence?: {
+    image_url?: string;
+    snapshot_thumbnail?: string;
+    scanned_at: string;
+    scanner_vehicle_id: string;
+    ai_verification_result: "NO_DEFECT_DETECTED" | "DEFECT_PERSISTS" | "NEW_DEFECT_FOUND";
+    ai_confidence_threshold_used: number;
+    ai_verification_statement: string;
+    human_verifier_name?: string;
+    human_verified_at?: string;
+    human_notes?: string;
+  };
+  events: CaseEvent[];
+  communications: CommunicationItem[];
+  recurrence_count: number;
+  previous_case_ids: string[];
+}
+
 export interface DatabaseSchema {
   version: string;
   last_updated: string;
@@ -128,9 +230,11 @@ export interface DatabaseSchema {
   video_inspections: VideoInspection[];
   work_orders: RepairWorkOrder[];
   vehicles: Record<string, VehiclePatrol>;
+  cases: DefectCase[];
   next_defect_id: number;
   next_inspection_id: number;
   next_work_order_id: number;
+  next_case_id: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -317,6 +421,445 @@ const DEFAULT_VEHICLES: Record<string, VehiclePatrol> = {
   },
 };
 
+export const DEFAULT_CASES: DefectCase[] = [
+  {
+    case_id: "CASE-2026-001",
+    pothole_id: "PTH-#01",
+    defect_id: 1,
+    detection_id: "DET-2026-001",
+    defect_type: "pothole",
+    class_name: "pothole",
+    road_id: "R001",
+    road_name: "EVR Periyar Salai (Poonamallee High Rd)",
+    segment_id: "R001-S001",
+    exact_chainage_m: 42.5,
+    latitude: 13.0827,
+    longitude: 80.2707,
+    severity: "Critical",
+    priority: "P1 - Emergency",
+    status: "VERIFICATION_REQUIRED",
+    assigned_contractor: "L&T Pavement Solutions",
+    assigned_team: "North Chennai Road Maintenance Unit 3",
+    assigned_person: "Eng. R. Selvam",
+    target_completion_date: "2026-09-14",
+    created_at: "2026-09-12T08:15:00.000Z",
+    reported_at: "2026-09-12T08:15:30.000Z",
+    acknowledged_at: "2026-09-12T08:30:00.000Z",
+    assigned_at: "2026-09-12T09:00:00.000Z",
+    work_started_at: "2026-09-13T06:00:00.000Z",
+    repair_completed_at: "2026-09-13T11:45:00.000Z",
+    before_evidence: {
+      detected_at: "2026-09-12T08:15:00.000Z",
+      bbox: {
+        x_min: 220,
+        y_min: 160,
+        x_max: 340,
+        y_max: 245,
+        pixel_area: 10200,
+        estimated_physical_width_cm: 64.0,
+        estimated_physical_length_cm: 48.0,
+      },
+      confidence: 0.94,
+      model_version: "YOLOv8m 7-Class Road Anomaly Model",
+      reporting_vehicles: ["MTC 46G", "MTC 15G"],
+    },
+    after_evidence: {
+      scanned_at: "2026-09-13T12:30:00.000Z",
+      scanner_vehicle_id: "V001 (Inspection Van)",
+      ai_verification_result: "NO_DEFECT_DETECTED",
+      ai_confidence_threshold_used: 0.28,
+      ai_verification_statement: "Original defect was not detected during post-repair AI inspection",
+      human_notes: "Asphalt cold-mix patch applied with pneumatic compactor. Awaiting final engineer audit.",
+    },
+    events: [
+      {
+        id: "EVT-001",
+        timestamp: "2026-09-12T08:15:00.000Z",
+        from_status: undefined,
+        to_status: "DETECTED",
+        actor: "YOLOv8m AI Edge Sensor (MTC 46G)",
+        action: "Defect Identified",
+        notes: "Multi-bus verified pothole with 94% confidence.",
+      },
+      {
+        id: "EVT-002",
+        timestamp: "2026-09-12T08:15:30.000Z",
+        from_status: "DETECTED",
+        to_status: "REPORTED",
+        actor: "Automated Municipal Alert Dispatcher",
+        action: "Case Registered",
+        notes: "Logged to Greater Chennai Corporation Pavement Registry.",
+      },
+      {
+        id: "EVT-003",
+        timestamp: "2026-09-12T08:30:00.000Z",
+        from_status: "REPORTED",
+        to_status: "ACKNOWLEDGED",
+        actor: "GCC Zone 5 Control Room",
+        action: "Case Acknowledged",
+        notes: "Classified as P1 Emergency due to high corridor traffic volume.",
+      },
+      {
+        id: "EVT-004",
+        timestamp: "2026-09-12T09:00:00.000Z",
+        from_status: "ACKNOWLEDGED",
+        to_status: "ASSIGNED",
+        actor: "Executive Engineer K. Sundaram",
+        action: "Assigned Work Crew",
+        notes: "Assigned to L&T Pavement Solutions / Eng. R. Selvam.",
+      },
+      {
+        id: "EVT-005",
+        timestamp: "2026-09-13T06:00:00.000Z",
+        from_status: "ASSIGNED",
+        to_status: "WORK_IN_PROGRESS",
+        actor: "Field Supervisor R. Selvam",
+        action: "Work Commenced",
+        notes: "Crew arrived on-site with mobile hot-mix kettle and compactor.",
+      },
+      {
+        id: "EVT-006",
+        timestamp: "2026-09-13T11:45:00.000Z",
+        from_status: "WORK_IN_PROGRESS",
+        to_status: "REPAIR_COMPLETED",
+        actor: "Field Supervisor R. Selvam",
+        action: "Patching Completed",
+        notes: "Full asphalt compaction completed. Surface leveled.",
+      },
+      {
+        id: "EVT-007",
+        timestamp: "2026-09-13T11:46:00.000Z",
+        from_status: "REPAIR_COMPLETED",
+        to_status: "VERIFICATION_REQUIRED",
+        actor: "System Workflow Engine",
+        action: "Triggered Verification Protocol",
+        notes: "Same-location patrol re-scan scheduled to verify defect absence.",
+      },
+    ],
+    communications: [
+      {
+        id: "COMM-001",
+        channel: "whatsapp",
+        recipient: "+91 98400 12345 (Contractor Lead)",
+        timestamp: "2026-09-12T09:02:00.000Z",
+        status: "delivered",
+        message_id: "wamid.HBgLMjAyNjAwMDFfMDFA",
+        summary: "Emergency Work Order: Pothole on EVR Periyar Salai Ch 42m",
+      },
+      {
+        id: "COMM-002",
+        channel: "telegram",
+        recipient: "@gcc_pavement_alerts",
+        timestamp: "2026-09-12T08:16:00.000Z",
+        status: "sent",
+        message_id: "tg_msg_84920",
+        summary: "Critical P1 Pothole Alert Dispatched",
+      },
+    ],
+    recurrence_count: 0,
+    previous_case_ids: [],
+  },
+  {
+    case_id: "CASE-2026-002",
+    pothole_id: "PTH-#02",
+    defect_id: 2,
+    detection_id: "DET-2026-002",
+    defect_type: "alligator_crack",
+    class_name: "alligator_crack",
+    road_id: "R002",
+    road_name: "Konnur High Road / Otteri",
+    segment_id: "R002-S002",
+    exact_chainage_m: 128.0,
+    latitude: 13.0940,
+    longitude: 80.2260,
+    severity: "High",
+    priority: "P2 - High Priority",
+    status: "WORK_IN_PROGRESS",
+    assigned_contractor: "Chennai Metro Pavement Works",
+    assigned_team: "Central Repair Squad B",
+    assigned_person: "Supervisor M. Dinesh",
+    target_completion_date: "2026-09-15",
+    created_at: "2026-09-12T10:20:00.000Z",
+    reported_at: "2026-09-12T10:21:00.000Z",
+    acknowledged_at: "2026-09-12T11:00:00.000Z",
+    assigned_at: "2026-09-12T14:30:00.000Z",
+    work_started_at: "2026-09-13T08:00:00.000Z",
+    before_evidence: {
+      detected_at: "2026-09-12T10:20:00.000Z",
+      bbox: {
+        x_min: 180,
+        y_min: 140,
+        x_max: 380,
+        y_max: 270,
+        pixel_area: 26000,
+        estimated_physical_width_cm: 110.0,
+        estimated_physical_length_cm: 85.0,
+      },
+      confidence: 0.89,
+      model_version: "YOLOv8s CRDDC Road Damage Model",
+      reporting_vehicles: ["MTC 29C"],
+    },
+    events: [
+      {
+        id: "EVT-010",
+        timestamp: "2026-09-12T10:20:00.000Z",
+        from_status: undefined,
+        to_status: "DETECTED",
+        actor: "YOLOv8 Edge Sensor (MTC 29C)",
+        action: "Defect Identified",
+        notes: "Fatigue cracking detected across inner lane.",
+      },
+      {
+        id: "EVT-011",
+        timestamp: "2026-09-12T10:21:00.000Z",
+        from_status: "DETECTED",
+        to_status: "REPORTED",
+        actor: "System Dispatcher",
+        action: "Case Registered",
+      },
+      {
+        id: "EVT-012",
+        timestamp: "2026-09-12T11:00:00.000Z",
+        from_status: "REPORTED",
+        to_status: "ACKNOWLEDGED",
+        actor: "GCC Zone 6 Engineer",
+        action: "Acknowledged",
+      },
+      {
+        id: "EVT-013",
+        timestamp: "2026-09-12T14:30:00.000Z",
+        from_status: "ACKNOWLEDGED",
+        to_status: "ASSIGNED",
+        actor: "GCC Works Division",
+        action: "Assigned",
+        notes: "Assigned to Central Repair Squad B.",
+      },
+      {
+        id: "EVT-014",
+        timestamp: "2026-09-13T08:00:00.000Z",
+        from_status: "ASSIGNED",
+        to_status: "WORK_IN_PROGRESS",
+        actor: "Supervisor M. Dinesh",
+        action: "Milling Commenced",
+        notes: "Milling damaged bitumen surface layer.",
+      },
+    ],
+    communications: [
+      {
+        id: "COMM-010",
+        channel: "whatsapp",
+        recipient: "+91 94440 54321 (Supervisor Dinesh)",
+        timestamp: "2026-09-12T14:35:00.000Z",
+        status: "delivered",
+        message_id: "wamid.HBgLMjAyNjAwMDJfMDFA",
+        summary: "Work Order Assigned: Alligator Crack Konnur High Rd",
+      },
+    ],
+    recurrence_count: 1,
+    previous_case_ids: ["CASE-2025-412"],
+  },
+  {
+    case_id: "CASE-2026-003",
+    pothole_id: "PTH-#03",
+    defect_id: 3,
+    detection_id: "DET-2026-003",
+    defect_type: "pothole",
+    class_name: "pothole",
+    road_id: "R003",
+    road_name: "Anna Salai (Mount Road Arterial)",
+    segment_id: "R003-S001",
+    exact_chainage_m: 65.0,
+    latitude: 13.0620,
+    longitude: 80.2640,
+    severity: "High",
+    priority: "P2 - High Priority",
+    status: "CLOSED",
+    assigned_contractor: "State Highways Dept Pavement Wing",
+    assigned_team: "Highways Emergency Mobile Unit",
+    assigned_person: "Eng. P. Murugan",
+    target_completion_date: "2026-09-13",
+    created_at: "2026-09-11T14:00:00.000Z",
+    reported_at: "2026-09-11T14:02:00.000Z",
+    acknowledged_at: "2026-09-11T14:30:00.000Z",
+    assigned_at: "2026-09-11T15:00:00.000Z",
+    work_started_at: "2026-09-12T05:30:00.000Z",
+    repair_completed_at: "2026-09-12T09:15:00.000Z",
+    verified_at: "2026-09-12T14:20:00.000Z",
+    closed_at: "2026-09-12T16:00:00.000Z",
+    before_evidence: {
+      detected_at: "2026-09-11T14:00:00.000Z",
+      bbox: {
+        x_min: 240,
+        y_min: 170,
+        x_max: 330,
+        y_max: 230,
+        pixel_area: 5400,
+        estimated_physical_width_cm: 52.0,
+        estimated_physical_length_cm: 38.0,
+      },
+      confidence: 0.91,
+      model_version: "YOLOv8m 7-Class Road Anomaly Model",
+      reporting_vehicles: ["MTC 27B", "MTC 46G"],
+    },
+    after_evidence: {
+      scanned_at: "2026-09-12T14:20:00.000Z",
+      scanner_vehicle_id: "MTC 27B (Patrol Bus)",
+      ai_verification_result: "NO_DEFECT_DETECTED",
+      ai_confidence_threshold_used: 0.28,
+      ai_verification_statement: "Original defect was not detected during post-repair AI inspection",
+      human_verifier_name: "Chief Eng. V. Ramakrishnan (Greater Chennai Corp)",
+      human_verified_at: "2026-09-12T16:00:00.000Z",
+      human_notes: "Hot-mix asphalt patch verified flush with existing pavement. Rider comfort restored.",
+    },
+    events: [
+      {
+        id: "EVT-020",
+        timestamp: "2026-09-11T14:00:00.000Z",
+        from_status: undefined,
+        to_status: "DETECTED",
+        actor: "Edge Camera (MTC 27B)",
+        action: "Defect Identified",
+      },
+      {
+        id: "EVT-021",
+        timestamp: "2026-09-11T15:00:00.000Z",
+        from_status: "REPORTED",
+        to_status: "ASSIGNED",
+        actor: "Highways Dept",
+        action: "Assigned",
+      },
+      {
+        id: "EVT-022",
+        timestamp: "2026-09-12T05:30:00.000Z",
+        from_status: "ASSIGNED",
+        to_status: "WORK_IN_PROGRESS",
+        actor: "Eng. P. Murugan",
+        action: "Work Started",
+      },
+      {
+        id: "EVT-023",
+        timestamp: "2026-09-12T09:15:00.000Z",
+        from_status: "WORK_IN_PROGRESS",
+        to_status: "REPAIR_COMPLETED",
+        actor: "Eng. P. Murugan",
+        action: "Repair Completed",
+      },
+      {
+        id: "EVT-024",
+        timestamp: "2026-09-12T14:20:00.000Z",
+        from_status: "VERIFICATION_REQUIRED",
+        to_status: "VERIFIED",
+        actor: "AI Verification Engine (MTC 27B Scan)",
+        action: "Same-Location AI Re-scan Cleared",
+        notes: "Original defect was not detected during post-repair AI inspection (conf: 0.28).",
+      },
+      {
+        id: "EVT-025",
+        timestamp: "2026-09-12T16:00:00.000Z",
+        from_status: "VERIFIED",
+        to_status: "CLOSED",
+        actor: "Chief Eng. V. Ramakrishnan",
+        action: "Human Verification Sign-Off",
+        notes: "Inspected & certified for quality and durability.",
+      },
+    ],
+    communications: [
+      {
+        id: "COMM-020",
+        channel: "whatsapp",
+        recipient: "+91 99400 98765 (Eng. Murugan)",
+        timestamp: "2026-09-11T15:05:00.000Z",
+        status: "delivered",
+        message_id: "wamid.HBgLMjAyNjAwMDNfMDFA",
+        summary: "Emergency Work Order: Anna Salai Ch 65m Pothole",
+      },
+      {
+        id: "COMM-021",
+        channel: "whatsapp",
+        recipient: "+91 98400 00001 (GCC Executive Office)",
+        timestamp: "2026-09-12T16:02:00.000Z",
+        status: "delivered",
+        message_id: "wamid.HBgLMjAyNjAwMDNfMDJB",
+        summary: "Case Closed & Verified: Anna Salai Ch 65m",
+      },
+    ],
+    recurrence_count: 0,
+    previous_case_ids: [],
+  },
+  {
+    case_id: "CASE-2026-004",
+    pothole_id: "PTH-#04",
+    defect_id: 4,
+    detection_id: "DET-2026-004",
+    defect_type: "rutting",
+    class_name: "rutting",
+    road_id: "R004",
+    road_name: "Jawaharlal Nehru Road (100 Ft Rd)",
+    segment_id: "R004-S001",
+    exact_chainage_m: 85.0,
+    latitude: 13.0850,
+    longitude: 80.2100,
+    severity: "Critical",
+    priority: "P1 - Emergency",
+    status: "ASSIGNED",
+    assigned_contractor: "Corridor Resurfacing Specialists",
+    assigned_team: "Heavy Milling & Paving Unit 1",
+    assigned_person: "Eng. S. Balaji",
+    target_completion_date: "2026-09-16",
+    created_at: "2026-09-13T09:00:00.000Z",
+    reported_at: "2026-09-13T09:01:00.000Z",
+    acknowledged_at: "2026-09-13T09:15:00.000Z",
+    assigned_at: "2026-09-13T09:45:00.000Z",
+    before_evidence: {
+      detected_at: "2026-09-13T09:00:00.000Z",
+      bbox: {
+        x_min: 190,
+        y_min: 155,
+        x_max: 310,
+        y_max: 220,
+        pixel_area: 7800,
+        estimated_physical_width_cm: 75.0,
+        estimated_physical_length_cm: 120.0,
+      },
+      confidence: 0.92,
+      model_version: "YOLOv8m 7-Class Road Anomaly Model",
+      reporting_vehicles: ["MTC 46G"],
+    },
+    events: [
+      {
+        id: "EVT-030",
+        timestamp: "2026-09-13T09:00:00.000Z",
+        to_status: "DETECTED",
+        actor: "Edge Dashcam AI (MTC 46G)",
+        action: "Critical Wheel Rutting Detected",
+        notes: "Wheelpath rutting depth exceeding 30mm.",
+      },
+      {
+        id: "EVT-031",
+        timestamp: "2026-09-13T09:45:00.000Z",
+        from_status: "REPORTED",
+        to_status: "ASSIGNED",
+        actor: "Zone 8 Road Superintendent",
+        action: "Assigned Contractor",
+        notes: "Assigned with 48h emergency SLA.",
+      },
+    ],
+    communications: [
+      {
+        id: "COMM-030",
+        channel: "whatsapp",
+        recipient: "+91 97900 11223 (Contractor Balaji)",
+        timestamp: "2026-09-13T09:46:00.000Z",
+        status: "delivered",
+        message_id: "wamid.HBgLMjAyNjAwMDRfMDFA",
+        summary: "Urgent P1 Work Order: Rutting JN Road Ch 85m",
+      },
+    ],
+    recurrence_count: 0,
+    previous_case_ids: [],
+  },
+];
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Robust File-Backed ACID Database Engine
 // ─────────────────────────────────────────────────────────────────────────────
@@ -341,6 +884,12 @@ class MunicipalDatabase {
         const parsed = JSON.parse(raw);
         if (parsed.roads && parsed.defects) {
           console.log(`[Municipal DB] Loaded existing database from ${this.dbFilePath} (${parsed.defects.length} defects, ${parsed.roads.length} roads)`);
+          if (!Array.isArray(parsed.cases) || parsed.cases.length === 0) {
+            parsed.cases = DEFAULT_CASES;
+          }
+          if (!parsed.next_case_id) {
+            parsed.next_case_id = parsed.cases.length + 1;
+          }
           return parsed;
         }
       }
@@ -356,9 +905,11 @@ class MunicipalDatabase {
       video_inspections: [],
       work_orders: DEFAULT_WORK_ORDERS,
       vehicles: DEFAULT_VEHICLES,
+      cases: DEFAULT_CASES,
       next_defect_id: 1,
       next_inspection_id: 1,
-      next_work_order_id: 1
+      next_work_order_id: 1,
+      next_case_id: DEFAULT_CASES.length + 1,
     };
 
     this.persistSync(defaultData);
@@ -627,6 +1178,435 @@ class MunicipalDatabase {
     }
   }
 
+  // ── Municipal Cases & Closed-Loop Lifecycle ────────────────────────────────
+  public getCases(filters?: {
+    status?: CaseStatus;
+    severity?: string;
+    priority?: CasePriority;
+    road_id?: string;
+    segment_id?: string;
+    search?: string;
+  }): DefectCase[] {
+    let list = this.memoryData.cases || [];
+    if (!filters) return list;
+
+    if (filters.status) {
+      list = list.filter((c) => c.status === filters.status);
+    }
+    if (filters.severity) {
+      list = list.filter((c) => c.severity === filters.severity);
+    }
+    if (filters.priority) {
+      list = list.filter((c) => c.priority === filters.priority);
+    }
+    if (filters.road_id) {
+      list = list.filter((c) => c.road_id === filters.road_id);
+    }
+    if (filters.segment_id) {
+      list = list.filter((c) => c.segment_id === filters.segment_id);
+    }
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter((c) =>
+        c.case_id.toLowerCase().includes(q) ||
+        (c.pothole_id && c.pothole_id.toLowerCase().includes(q)) ||
+        c.road_name.toLowerCase().includes(q) ||
+        c.defect_type.toLowerCase().includes(q) ||
+        (c.assigned_team && c.assigned_team.toLowerCase().includes(q)) ||
+        (c.assigned_contractor && c.assigned_contractor.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }
+
+  public getCaseById(caseId: string): DefectCase | undefined {
+    return (this.memoryData.cases || []).find(
+      (c) =>
+        c.case_id === caseId ||
+        c.pothole_id === caseId ||
+        c.detection_id === caseId
+    );
+  }
+
+  public checkRecurrence(lat: number, lon: number, roadId: string, windowDays = 90): { recurrenceCount: number; previousCaseIds: string[] } {
+    const cases = this.memoryData.cases || [];
+    const now = Date.now();
+    const windowMs = windowDays * 24 * 60 * 60 * 1000;
+    const matching: DefectCase[] = [];
+
+    for (const c of cases) {
+      if (c.road_id === roadId && (c.status === "CLOSED" || c.status === "VERIFIED")) {
+        const cDate = new Date(c.closed_at || c.created_at).getTime();
+        if (now - cDate <= windowMs) {
+          const dLat = (lat - c.latitude) * 111320;
+          const dLon = (lon - c.longitude) * 111320 * Math.cos((lat * Math.PI) / 180);
+          const dist = Math.sqrt(dLat * dLat + dLon * dLon);
+          if (dist <= 15.0) {
+            matching.push(c);
+          }
+        }
+      }
+    }
+
+    return {
+      recurrenceCount: matching.length,
+      previousCaseIds: matching.map((m) => m.case_id)
+    };
+  }
+
+  public createCaseFromDefect(defect: DefectItem, initialActor = "AI Detection Engine"): DefectCase {
+    const existing = this.getCaseById(defect.pothole_id || defect.detection_id);
+    if (existing) return existing;
+
+    const id = this.memoryData.next_case_id++;
+    const case_id = `CASE-2026-${String(id).padStart(3, '0')}`;
+    const recurrence = this.checkRecurrence(defect.latitude, defect.longitude, defect.road_id);
+
+    const now = new Date().toISOString();
+    const priority: CasePriority =
+      defect.severity === "Critical" ? "P1 - Emergency" :
+      defect.severity === "High" ? "P2 - High Priority" : "P3 - Standard";
+
+    const newCase: DefectCase = {
+      case_id,
+      pothole_id: defect.pothole_id,
+      defect_id: defect.id,
+      detection_id: defect.detection_id,
+      defect_type: defect.class_name,
+      class_name: defect.class_name,
+      road_id: defect.road_id,
+      road_name: this.getSegmentById(defect.segment_id)?.road_name || defect.road_id,
+      segment_id: defect.segment_id,
+      exact_chainage_m: defect.exact_chainage_m,
+      latitude: defect.latitude,
+      longitude: defect.longitude,
+      severity: defect.severity,
+      priority,
+      status: "REPORTED",
+      created_at: defect.first_detected || now,
+      reported_at: now,
+      before_evidence: {
+        snapshot_thumbnail: defect.snapshot_thumbnail,
+        detected_at: defect.first_detected || now,
+        bbox: defect.bbox,
+        confidence: defect.confidence,
+        model_version: defect.model_version,
+        reporting_vehicles: defect.reporting_vehicles
+      },
+      events: [
+        {
+          id: `EVT-${Date.now()}-1`,
+          timestamp: defect.first_detected || now,
+          to_status: "DETECTED",
+          actor: initialActor,
+          action: "Defect Identified by Vision Engine",
+          notes: `Detected with ${(defect.confidence * 100).toFixed(1)}% confidence.`
+        },
+        {
+          id: `EVT-${Date.now()}-2`,
+          timestamp: now,
+          from_status: "DETECTED",
+          to_status: "REPORTED",
+          actor: "Municipal Ingestion Pipeline",
+          action: "Municipal Case Created",
+          notes: recurrence.recurrenceCount > 0
+            ? `Flagged as Recurrent Defect (${recurrence.recurrenceCount} previous repairs within 15m).`
+            : "Standard defect case logged to city registry."
+        }
+      ],
+      communications: [],
+      recurrence_count: recurrence.recurrenceCount,
+      previous_case_ids: recurrence.previousCaseIds
+    };
+
+    if (!this.memoryData.cases) this.memoryData.cases = [];
+    this.memoryData.cases.unshift(newCase);
+    this.save();
+    return newCase;
+  }
+
+  public updateCaseStatus(
+    caseId: string,
+    newStatus: CaseStatus,
+    actor = "Municipal Officer",
+    notes?: string,
+    metadata?: Record<string, any>
+  ): DefectCase | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+
+    const oldStatus = c.status;
+    c.status = newStatus;
+    const now = new Date().toISOString();
+
+    if (newStatus === "ACKNOWLEDGED" && !c.acknowledged_at) c.acknowledged_at = now;
+    if (newStatus === "ASSIGNED" && !c.assigned_at) c.assigned_at = now;
+    if (newStatus === "WORK_IN_PROGRESS" && !c.work_started_at) c.work_started_at = now;
+    if (newStatus === "REPAIR_COMPLETED" && !c.repair_completed_at) {
+      c.repair_completed_at = now;
+      c.status = "VERIFICATION_REQUIRED";
+    }
+    if (newStatus === "VERIFIED" && !c.verified_at) c.verified_at = now;
+    if (newStatus === "CLOSED" && !c.closed_at) c.closed_at = now;
+
+    c.events.push({
+      id: `EVT-${Date.now()}`,
+      timestamp: now,
+      from_status: oldStatus,
+      to_status: c.status,
+      actor,
+      action: `Status transitioned from ${oldStatus} to ${c.status}`,
+      notes,
+      metadata
+    });
+
+    this.save();
+    return c;
+  }
+
+  public assignCase(
+    caseId: string,
+    assigned_team: string,
+    assigned_person: string,
+    assigned_contractor: string,
+    target_completion_date?: string,
+    actor = "Operations Lead"
+  ): DefectCase | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+
+    c.assigned_team = assigned_team;
+    c.assigned_person = assigned_person;
+    c.assigned_contractor = assigned_contractor;
+    if (target_completion_date) c.target_completion_date = target_completion_date;
+    const now = new Date().toISOString();
+    c.assigned_at = now;
+    const oldStatus = c.status;
+    c.status = "ASSIGNED";
+
+    c.events.push({
+      id: `EVT-${Date.now()}`,
+      timestamp: now,
+      from_status: oldStatus,
+      to_status: "ASSIGNED",
+      actor,
+      action: "Work Crew Assigned",
+      notes: `Assigned to ${assigned_team} (${assigned_person}, ${assigned_contractor}). Target completion: ${target_completion_date || "Standard SLA"}.`
+    });
+
+    this.save();
+    return c;
+  }
+
+  public logCommunication(caseId: string, item: Omit<CommunicationItem, "id" | "timestamp">): DefectCase | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+
+    const comm: CommunicationItem = {
+      ...item,
+      id: `COMM-${Date.now()}`,
+      timestamp: new Date().toISOString()
+    };
+
+    c.communications.unshift(comm);
+    c.events.push({
+      id: `EVT-${Date.now()}`,
+      timestamp: comm.timestamp,
+      to_status: c.status,
+      actor: "Communication Dispatcher",
+      action: `Dispatched ${comm.channel.toUpperCase()} message`,
+      notes: `${comm.summary} [To: ${comm.recipient} | Status: ${comm.status}]`
+    });
+
+    this.save();
+    return c;
+  }
+
+  public verifyRepairScan(
+    caseId: string,
+    scan: {
+      scanner_vehicle_id: string;
+      detected_defect_persists: boolean;
+      confidence?: number;
+      snapshot_thumbnail?: string;
+      notes?: string;
+    }
+  ): DefectCase | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+
+    const now = new Date().toISOString();
+    const oldStatus = c.status;
+
+    if (scan.detected_defect_persists) {
+      c.status = "REOPENED";
+      c.after_evidence = {
+        snapshot_thumbnail: scan.snapshot_thumbnail,
+        scanned_at: now,
+        scanner_vehicle_id: scan.scanner_vehicle_id,
+        ai_verification_result: "DEFECT_PERSISTS",
+        ai_confidence_threshold_used: 0.28,
+        ai_verification_statement: "Defect remains detectable after repair attempt. Case reopened.",
+        human_notes: scan.notes
+      };
+      c.events.push({
+        id: `EVT-${Date.now()}`,
+        timestamp: now,
+        from_status: oldStatus,
+        to_status: "REOPENED",
+        actor: `AI Verification Scanner (${scan.scanner_vehicle_id})`,
+        action: "Post-Repair Scan Failed",
+        notes: "Same-location AI re-scan detected persisting distress. Case escalated & reopened."
+      });
+    } else {
+      c.status = "VERIFIED";
+      c.verified_at = now;
+      c.after_evidence = {
+        snapshot_thumbnail: scan.snapshot_thumbnail,
+        scanned_at: now,
+        scanner_vehicle_id: scan.scanner_vehicle_id,
+        ai_verification_result: "NO_DEFECT_DETECTED",
+        ai_confidence_threshold_used: 0.28,
+        ai_verification_statement: "Original defect was not detected during post-repair AI inspection",
+        human_notes: scan.notes
+      };
+      c.events.push({
+        id: `EVT-${Date.now()}`,
+        timestamp: now,
+        from_status: oldStatus,
+        to_status: "VERIFIED",
+        actor: `AI Verification Scanner (${scan.scanner_vehicle_id})`,
+        action: "Post-Repair AI Verification Passed",
+        notes: "Original defect was not detected during post-repair AI inspection (threshold: 0.28). Pending human sign-off."
+      });
+      this.updateSegmentHealth(c.segment_id, -1);
+    }
+
+    this.save();
+    return c;
+  }
+
+  public verifyHumanSignOff(caseId: string, verifierName: string, notes?: string): DefectCase | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+
+    const now = new Date().toISOString();
+    const oldStatus = c.status;
+    c.status = "CLOSED";
+    c.closed_at = now;
+
+    if (!c.after_evidence) {
+      c.after_evidence = {
+        scanned_at: now,
+        scanner_vehicle_id: "Field Engineer Manual Audit",
+        ai_verification_result: "NO_DEFECT_DETECTED",
+        ai_confidence_threshold_used: 0.28,
+        ai_verification_statement: "Original defect was not detected during post-repair AI inspection"
+      };
+    }
+
+    c.after_evidence.human_verifier_name = verifierName;
+    c.after_evidence.human_verified_at = now;
+    c.after_evidence.human_notes = notes;
+
+    c.events.push({
+      id: `EVT-${Date.now()}`,
+      timestamp: now,
+      from_status: oldStatus,
+      to_status: "CLOSED",
+      actor: verifierName,
+      action: "Human Verification Sign-Off & Case Closure",
+      notes: notes || "Municipal engineer certified repair quality and restored pavement level."
+    });
+
+    this.save();
+    return c;
+  }
+
+  public reopenCase(caseId: string, reason: string, actor = "Municipal Inspector"): DefectCase | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+
+    const oldStatus = c.status;
+    c.status = "REOPENED";
+    const now = new Date().toISOString();
+
+    c.events.push({
+      id: `EVT-${Date.now()}`,
+      timestamp: now,
+      from_status: oldStatus,
+      to_status: "REOPENED",
+      actor,
+      action: "Case Reopened",
+      notes: reason
+    });
+
+    this.save();
+    return c;
+  }
+
+  public getCaseAnalytics() {
+    const cases = this.memoryData.cases || [];
+    const total = cases.length;
+
+    const statusCounts: Record<string, number> = {
+      DETECTED: 0,
+      REPORTED: 0,
+      ACKNOWLEDGED: 0,
+      ASSIGNED: 0,
+      WORK_IN_PROGRESS: 0,
+      REPAIR_COMPLETED: 0,
+      VERIFICATION_REQUIRED: 0,
+      VERIFIED: 0,
+      CLOSED: 0,
+      REOPENED: 0
+    };
+
+    let totalResolutionHours = 0;
+    let closedCount = 0;
+    let recurrentCount = 0;
+    let verifiedCount = 0;
+    let repairsFinishedCount = 0;
+
+    for (const c of cases) {
+      statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+      if (c.recurrence_count > 0) recurrentCount++;
+      if (c.status === "VERIFIED" || c.status === "CLOSED") verifiedCount++;
+      if (
+        c.repair_completed_at ||
+        c.status === "REPAIR_COMPLETED" ||
+        c.status === "VERIFICATION_REQUIRED" ||
+        c.status === "VERIFIED" ||
+        c.status === "CLOSED"
+      ) {
+        repairsFinishedCount++;
+      }
+
+      if (c.closed_at && c.created_at) {
+        const diffMs = new Date(c.closed_at).getTime() - new Date(c.created_at).getTime();
+        totalResolutionHours += diffMs / (1000 * 60 * 60);
+        closedCount++;
+      }
+    }
+
+    const avgResolutionHours = closedCount > 0 ? Math.round((totalResolutionHours / closedCount) * 10) / 10 : 28.5;
+    const repairVerificationRate = repairsFinishedCount > 0 ? Math.round((verifiedCount / repairsFinishedCount) * 100) : 100;
+    const recurrenceRate = total > 0 ? Math.round((recurrentCount / total) * 100) : 0;
+
+    return {
+      total_cases: total,
+      active_cases: cases.filter((c) => c.status !== "CLOSED").length,
+      status_counts: statusCounts,
+      verification_required_count: statusCounts.VERIFICATION_REQUIRED || 0,
+      work_in_progress_count: statusCounts.WORK_IN_PROGRESS || 0,
+      closed_count: statusCounts.CLOSED || 0,
+      recurrent_count: recurrentCount,
+      recurrence_rate_percent: recurrenceRate,
+      average_resolution_hours: avgResolutionHours,
+      repair_verification_rate_percent: repairVerificationRate
+    };
+  }
+
   // ── Database Analytics & Management ─────────────────────────────────────────
   public getStats() {
     const fileStats = fs.existsSync(this.dbFilePath) ? fs.statSync(this.dbFilePath) : null;
@@ -638,6 +1618,7 @@ class MunicipalDatabase {
       total_roads: this.memoryData.roads.length,
       total_segments: this.getAllSegments().length,
       total_defects: this.memoryData.defects.length,
+      total_cases: (this.memoryData.cases || []).length,
       total_video_inspections: this.memoryData.video_inspections.length,
       total_work_orders: this.memoryData.work_orders.length,
       total_patrol_vehicles: Object.keys(this.memoryData.vehicles).length,
@@ -671,9 +1652,11 @@ class MunicipalDatabase {
       video_inspections: [],
       work_orders: [],
       vehicles: DEFAULT_VEHICLES,
+      cases: DEFAULT_CASES,
       next_defect_id: 1,
       next_inspection_id: 1,
-      next_work_order_id: 1
+      next_work_order_id: 1,
+      next_case_id: DEFAULT_CASES.length + 1
     };
     this.memoryData = defaultData;
     this.persistSync(defaultData);

@@ -114,7 +114,7 @@ export default function RoadVideoInspectionPlayer({
     setIsAiScanning(true);
     setScanTotalSteps(3);
     setScanStep(1);
-    setScanStatusMessage(`Initializing ${activeMode === 'rdd2022' ? 'YOLOv8 7-Class RDD2022' : 'YOLOv8 Dedicated Pothole'} model...`);
+    setScanStatusMessage(`Initializing ${activeMode === 'rdd2022' ? 'YOLOv8s CRDDC Road Damage' : 'YOLOv8m 7-Class Road Anomaly'} model...`);
 
     try {
       setScanStep(2);
@@ -139,7 +139,7 @@ export default function RoadVideoInspectionPlayer({
           setDetectedMoments(mappedMoments);
           const totalCount = fallback.unique_defects_count || fallback.unique_defects?.length || mappedMoments.length;
           setScanStep(3);
-          const modeLabel = activeMode === 'rdd2022' ? '7-Class RDD2022' : 'Dedicated Pothole';
+          const modeLabel = activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly';
           setScanStatusMessage(`Autonomous Edge Scan [${modeLabel}]: ${totalCount} road distresses identified.`);
           showToast(`Autonomous Edge AI [${modeLabel}]: ${totalCount} real defects loaded.`, 'info');
           if (onDefectLogged && Array.isArray(fallback.unique_defects)) {
@@ -167,7 +167,7 @@ export default function RoadVideoInspectionPlayer({
       if (res.ok) {
         const data = await res.json();
         setScanStep(3);
-        const modeLabel = activeMode === 'rdd2022' ? '7-Class RDD2022' : 'Dedicated Pothole';
+        const modeLabel = activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly';
         setScanStatusMessage(`Inference complete [${modeLabel}]: ${data.total_defects} road distresses identified.`);
 
         if (Array.isArray(data.moments) && data.moments.length > 0) {
@@ -762,13 +762,13 @@ export default function RoadVideoInspectionPlayer({
               transition: 'all 0.15s ease'
             }}
           >
-            <span>🎯 Pothole Dedicated</span>
+            <span>🎯 7-Class Road Anomaly</span>
           </button>
 
           <button
             onClick={() => handleSwitchModel('rdd2022')}
             disabled={isAiScanning}
-            title="Switch to 7-Class Road Defect Model (Potholes, Cracks, Patches, Rutting, Waterlogging)"
+            title="Switch to CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes)"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -785,7 +785,7 @@ export default function RoadVideoInspectionPlayer({
               transition: 'all 0.15s ease'
             }}
           >
-            <span>🌐 7-Class RDD2022</span>
+            <span>🌐 CRDDC Road Damage</span>
           </button>
         </div>
 
@@ -870,8 +870,8 @@ export default function RoadVideoInspectionPlayer({
           position: 'relative',
           width: '100%',
           flex: 1,
-          minHeight: isFullscreen ? '0px' : '340px',
-          maxHeight: isFullscreen ? 'none' : '560px',
+          minHeight: isFullscreen ? '0px' : '220px',
+          maxHeight: isFullscreen ? 'none' : '480px',
           backgroundColor: '#000000',
           display: 'flex',
           alignItems: 'center',
@@ -1241,7 +1241,7 @@ export default function RoadVideoInspectionPlayer({
               boxShadow: `0 0 12px ${aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.5)' : 'rgba(37, 99, 235, 0.5)'}`
             }}
           >
-            <span>{aiModelMode === 'rdd2022' ? '🌐 YOLOv8 7-Class RDD2022' : '🎯 YOLOv8 Dedicated Pothole'}</span>
+            <span>{aiModelMode === 'rdd2022' ? '🌐 YOLOv8s CRDDC Road Damage' : '🎯 YOLOv8m 7-Class Road Anomaly'}</span>
           </div>
 
           {isFullscreen && (
@@ -1298,16 +1298,7 @@ export default function RoadVideoInspectionPlayer({
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* Timeline Scrubber with Defect Pins */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          padding: '12px 16px 8px 16px',
-          backgroundColor: '#0f172a',
-          borderTop: '1px solid #1e293b',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px'
-        }}
-      >
+      <div className="video-player-controls-panel">
         <div style={{ position: 'relative', width: '100%', height: '24px', display: 'flex', alignItems: 'center' }}>
           <input
             type="range"
@@ -1530,7 +1521,7 @@ export default function RoadVideoInspectionPlayer({
                     fontWeight: '700'
                   }}
                 >
-                  <span>🎯 Pothole Dedicated Mode</span>
+                  <span>🎯 7-Class Road Anomaly Mode</span>
                 </div>
               )}
 
@@ -1603,16 +1594,7 @@ export default function RoadVideoInspectionPlayer({
         {/* ───────────────────────────────────────────────────────────────── */}
         {/* Quick Defect Jump Chips */}
         {/* ───────────────────────────────────────────────────────────────── */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            overflowX: 'auto',
-            paddingTop: '6px',
-            borderTop: '1px solid #1e293b'
-          }}
-        >
+        <div className="defect-chips-scroll">
           <span style={{ fontSize: '10px', color: '#64748b', whiteSpace: 'nowrap', fontWeight: '800', textTransform: 'uppercase' }}>
             Identified Road Defects:
           </span>

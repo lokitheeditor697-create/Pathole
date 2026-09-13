@@ -14,7 +14,9 @@ import {
   WifiOff,
   Radio,
   Activity,
-  RotateCcw
+  RotateCcw,
+  ClipboardList,
+  HardDrive
 } from 'lucide-react';
 import { API_BASE } from '../config';
 
@@ -29,6 +31,7 @@ export default function Header({
   onResetDB,
   loading,
   lastRefreshed,
+  metrics = {},
   serverStatus = 'connected',
   latencyMs = 12,
   gpsStatus = 'locked',
@@ -54,256 +57,95 @@ export default function Header({
     { id: 'LIVE_MONITORING', label: 'Live Monitoring', icon: Video },
     { id: 'ROAD_HEALTH_MAP', label: 'Google Road Map', icon: MapPin },
     { id: 'DEFECT_INVENTORY', label: 'Defect Inventory', icon: Layers },
+    { id: 'CASES', label: 'Municipal Cases', icon: ClipboardList, badge: metrics?.pending_verifications },
     { id: 'PATROL_FLEET', label: 'Patrol Fleet', icon: Bus },
     { id: 'AI_PERFORMANCE', label: 'AI Model & Metrics', icon: BarChart3 },
   ];
 
   return (
     <header className="app-header">
-      {/* Top Banner: Logo, Status, Time, Actions */}
+      {/* ── Tier 1: Brand, Telemetry Capsule & Quick Controls (46px) ────────── */}
       <div className="header-top-row">
         {/* Brand & Identity */}
         <div className="header-brand-group">
-          <div className="header-icon-wrapper pulse-glow">
-            <Activity className="header-brand-icon" size={24} />
+          <div className="header-icon-wrapper pulse-glow" style={{ width: '30px', height: '30px', borderRadius: '8px', backgroundColor: 'rgba(56, 189, 248, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+            <Activity size={18} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h1 className="header-brand-title">
-                AI Road Intelligence &amp; Predictive Maintenance
+                AI Road Intelligence
               </h1>
               <span style={{
-                fontSize: '10px',
+                fontSize: '9px',
                 fontWeight: '800',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.04em',
                 backgroundColor: 'rgba(56, 189, 248, 0.15)',
                 color: '#38bdf8',
                 border: '1px solid rgba(56, 189, 248, 0.3)',
-                padding: '2px 8px',
+                padding: '1px 6px',
                 borderRadius: '9999px',
                 textTransform: 'uppercase'
               }}>
-                Phase 1 Active
+                Phase 1 &amp; 2
               </span>
-            </div>
-            <p className="header-brand-subtitle">
-              GIS 100m Corridor Segmentation • YOLOv8-road-v1 7-Class Inference • Multi-Bus Spatial Deduplication
               {lastRefreshed && (
-                <span style={{ marginLeft: '8px', color: '#475569' }}>
-                  • Synced: {formatTime(lastRefreshed)}
+                <span className="hide-on-mobile" style={{ fontSize: '10px', color: '#64748b' }}>
+                  • Synced {formatTime(lastRefreshed)}
                 </span>
               )}
-            </p>
+            </div>
           </div>
         </div>
 
-        {/* Operational Reliability & System Status Indicators */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          {/* Municipal Server Link Badge */}
-          <button
-            onClick={onOpenDiagnostics}
-            title={isAutonomous ? 'Autonomous Edge AI Mode Active — Local Video Inspection & Pavement Cache Online' : isServerOnline ? `Municipal Server connected (${latencyMs}ms) — Click for Redundancy Diagnostics` : 'Municipal Server disconnected! Operating in degraded offline mode — Click for Diagnostics'}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '5px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: `1px solid ${isAutonomous ? 'rgba(56, 189, 248, 0.4)' : isServerOnline ? 'rgba(34, 197, 94, 0.4)' : '#ef4444'}`,
-              backgroundColor: isAutonomous ? 'rgba(56, 189, 248, 0.12)' : isServerOnline ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.25)',
-              color: isAutonomous ? '#38bdf8' : isServerOnline ? '#4ade80' : '#fca5a5',
-              transition: 'all 0.15s ease'
-            }}
-          >
+        {/* Center: Unified System Telemetry Capsule */}
+        <div
+          className="header-telemetry-capsule"
+          onClick={onOpenDiagnostics}
+          title="Click to open Municipal Reliability & Diagnostics Center"
+        >
+          {/* Server Link Indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span
               style={{
-                width: '7px',
-                height: '7px',
+                width: '6px',
+                height: '6px',
                 borderRadius: '50%',
                 backgroundColor: isAutonomous ? '#38bdf8' : isServerOnline ? '#22c55e' : '#ef4444',
-                boxShadow: isAutonomous ? '0 0 8px #38bdf8' : isServerOnline ? '0 0 8px #22c55e' : '0 0 8px #ef4444',
-                flexShrink: 0
+                boxShadow: isAutonomous ? '0 0 6px #38bdf8' : isServerOnline ? '0 0 6px #22c55e' : '0 0 6px #ef4444'
               }}
               className={!isServerOnline ? 'animate-ping' : ''}
             />
-            {isAutonomous ? <Wifi size={13} color="#38bdf8" /> : isServerOnline ? <Wifi size={13} color="#22c55e" /> : <WifiOff size={13} color="#ef4444" />}
-            <span>{isAutonomous ? 'AI Edge Active' : isServerOnline ? 'Server Online' : 'Server Offline'}</span>
-            <span style={{ fontSize: '10px', color: isAutonomous ? '#7dd3fc' : isServerOnline ? '#86efac' : '#f87171', fontFamily: 'monospace' }}>
-              {isAutonomous ? 'EDGE' : isServerOnline ? `${latencyMs}ms` : 'FAIL'}
+            <span style={{ color: isServerOnline ? '#cbd5e1' : '#f87171' }}>
+              {isAutonomous ? 'Edge AI' : isServerOnline ? 'Server' : 'Offline'}
             </span>
-          </button>
-
-          {/* GPS Signal Status Badge */}
-          <button
-            onClick={onOpenDiagnostics}
-            title={
-              isGpsLocked
-                ? `GPS 3D RTK Fix Locked (${gpsDetails?.satellites || 12} satellites) — Click for GNSS Diagnostics`
-                : isGpsLost
-                ? 'GPS Signal Lost! Inertial Dead Reckoning active — Click for Diagnostics'
-                : 'GPS Signal Degraded — Click for Diagnostics'
-            }
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '5px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: `1px solid ${
-                isGpsLocked
-                  ? 'rgba(56, 189, 248, 0.4)'
-                  : isGpsLost
-                  ? '#ef4444'
-                  : 'rgba(245, 158, 11, 0.5)'
-              }`,
-              backgroundColor: isGpsLocked
-                ? 'rgba(56, 189, 248, 0.12)'
-                : isGpsLost
-                ? 'rgba(239, 68, 68, 0.25)'
-                : 'rgba(245, 158, 11, 0.2)',
-              color: isGpsLocked ? '#38bdf8' : isGpsLost ? '#fca5a5' : '#fbbf24',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                backgroundColor: isGpsLocked ? '#38bdf8' : isGpsLost ? '#ef4444' : '#f59e0b',
-                boxShadow: isGpsLocked ? '0 0 8px #38bdf8' : isGpsLost ? '0 0 8px #ef4444' : '0 0 8px #f59e0b',
-                flexShrink: 0
-              }}
-              className={isGpsLost ? 'animate-ping' : ''}
-            />
-            <Radio size={13} color={isGpsLocked ? '#38bdf8' : isGpsLost ? '#ef4444' : '#f59e0b'} />
-            <span>{isGpsLocked ? 'GPS 3D Fix' : isGpsLost ? 'GPS Signal Lost' : isGpsDegraded ? 'GPS Degraded' : 'GPS Fix'}</span>
-            <span style={{ fontSize: '10px', color: isGpsLocked ? '#7dd3fc' : isGpsLost ? '#f87171' : '#fde047', fontFamily: 'monospace' }}>
-              {isGpsLost ? 'DR MODE' : `${gpsDetails?.satellites || 12}S`}
+            <span style={{ fontSize: '10px', color: '#64748b', fontFamily: 'monospace' }}>
+              {isServerOnline ? `${latencyMs}ms` : 'FAIL'}
             </span>
-          </button>
-
-          {/* Secondary Subsystem Indicators */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: '#1e293b',
-            padding: '4px 8px',
-            borderRadius: '6px',
-            border: '1px solid #334155'
-          }}>
-            <StatusDot label="Camera" status={systemStatus?.camera || 'green'} />
-            <div style={{ width: '1px', height: '12px', backgroundColor: '#334155' }} />
-            <StatusDot label="YOLOv8" status={systemStatus?.ai_model || 'green'} />
-            <div style={{ width: '1px', height: '12px', backgroundColor: '#334155' }} />
-            <StatusDot label="Municipal DB" status={systemStatus?.database || 'green'} />
           </div>
 
-          {/* Diagnostics Modal Button */}
-          <button
-            onClick={onOpenDiagnostics}
-            title="Open Municipal Reliability & Redundancy Center"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              padding: '5px 9px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              backgroundColor: '#1e293b',
-              color: '#94a3b8',
-              border: '1px solid #334155'
-            }}
-          >
-            <Activity size={13} color="#38bdf8" />
-            <span>Diagnostics</span>
-          </button>
+          <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>
+
+          {/* GPS Status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Radio size={11} color={isGpsLocked ? '#38bdf8' : isGpsLost ? '#ef4444' : '#f59e0b'} />
+            <span style={{ color: isGpsLocked ? '#38bdf8' : isGpsLost ? '#f87171' : '#fde047' }}>
+              {isGpsLocked ? 'GPS 3D RTK' : isGpsLost ? 'DR Mode' : 'GPS Degraded'}
+            </span>
+          </div>
+
+          <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>
+
+          {/* Subsystems Quick Dots */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <StatusMiniDot label="Cam" status={systemStatus?.camera || 'green'} />
+            <StatusMiniDot label="YOLO" status={systemStatus?.ai_model || 'green'} />
+            <StatusMiniDot label="DB" status={systemStatus?.database || 'green'} />
+          </div>
         </div>
 
-        {/* Global Controls & Model Toggle */}
-        <div className="header-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* AI Model Switcher Button Group */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: '#020617',
-            border: '1px solid #334155',
-            borderRadius: '8px',
-            padding: '2px',
-            gap: '2px'
-          }}>
-            <button
-              onClick={() => setAiModelMode('pothole')}
-              title="Targeted Single-Class Pothole Detector (99.5% Precision)"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '5px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                border: 'none',
-                backgroundColor: aiModelMode === 'pothole' ? '#2563eb' : 'transparent',
-                color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8',
-                boxShadow: aiModelMode === 'pothole' ? '0 0 10px rgba(37,99,235,0.4)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <span>🎯 Pothole Dedicated</span>
-              <span style={{
-                fontSize: '9px',
-                backgroundColor: aiModelMode === 'pothole' ? 'rgba(255,255,255,0.25)' : 'rgba(51,65,85,0.5)',
-                color: aiModelMode === 'pothole' ? '#fff' : '#64748b',
-                padding: '1px 5px',
-                borderRadius: '4px'
-              }}>
-                Single
-              </span>
-            </button>
-
-            <button
-              onClick={() => setAiModelMode('rdd2022')}
-              title="7-Class Road Defect Model (Potholes, Cracks, Patches, Rutting, Waterlogging)"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '5px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                border: 'none',
-                backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
-                color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8',
-                boxShadow: aiModelMode === 'rdd2022' ? '0 0 10px rgba(13,148,136,0.4)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <span>🌐 7-Class RDD2022</span>
-              <span style={{
-                fontSize: '9px',
-                backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(255,255,255,0.25)' : 'rgba(51,65,85,0.5)',
-                color: aiModelMode === 'rdd2022' ? '#fff' : '#64748b',
-                padding: '1px 5px',
-                borderRadius: '4px'
-              }}>
-                7-Class
-              </span>
-            </button>
-          </div>
-
+        {/* Right: Patrol Toggle, Alerts & Utilities */}
+        <div className="header-actions-group">
           {/* Patrol Play/Pause */}
           <button
             onClick={onTogglePatrol}
@@ -313,8 +155,9 @@ export default function Header({
               color: patrolActive ? '#4ade80' : '#f87171',
               border: `1px solid ${patrolActive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
             }}
+            title={patrolActive ? 'Pause transit patrol fleet' : 'Resume transit patrol fleet'}
           >
-            {patrolActive ? <Pause size={13} /> : <Play size={13} />}
+            {patrolActive ? <Pause size={12} /> : <Play size={12} />}
             <span>{patrolActive ? 'Patrol Live' : 'Patrol Paused'}</span>
           </button>
 
@@ -322,129 +165,195 @@ export default function Header({
           <button
             onClick={onOpenAlertModal}
             className="header-action-btn"
-            title="Send test Telegram Bot & Gmail dispatch alert"
+            title="Dispatch test WhatsApp, Telegram or Email alerts"
             style={{
               backgroundColor: 'rgba(245, 158, 11, 0.15)',
               color: '#f59e0b',
               border: '1px solid rgba(245, 158, 11, 0.3)'
             }}
           >
-            <Bell size={13} />
+            <Bell size={12} />
             <span>Test Alerts</span>
           </button>
 
-          {/* Export Report CSV */}
-          <a
-            href={`${API_BASE}/api/reports/csv`}
-            download="phase1_road_defects_report.csv"
-            className="header-action-btn"
-            style={{
-              textDecoration: 'none',
-              backgroundColor: '#1e293b',
-              color: '#38bdf8',
-              border: '1px solid #334155'
-            }}
-          >
-            <Download size={13} />
-            <span>Export CSV</span>
-          </a>
-
-          {/* Backup Database */}
-          <a
-            href={`${API_BASE}/api/db/export`}
-            download="municipal_pavement_db.json"
-            className="header-action-btn"
-            title="Export complete persistent municipal database (Corridors, Defects, Work Orders, Surveys)"
-            style={{
-              textDecoration: 'none',
-              backgroundColor: '#1e293b',
-              color: '#22c55e',
-              border: '1px solid #22c55e44'
-            }}
-          >
-            <Download size={13} />
-            <span>DB Backup</span>
-          </a>
-
-          {/* Restart / Reset Database for Prototype Demo */}
-          {onResetDB && (
-            <button
-              onClick={onResetDB}
-              disabled={loading}
-              className="header-action-btn"
-              title="Reset database to clean baseline before presenting your prototype (clears previous detections & resets road health)"
-              style={{
-                cursor: loading ? 'default' : 'pointer',
-                backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                color: '#f87171',
-                border: '1px solid rgba(239, 68, 68, 0.35)',
-                fontWeight: '700',
-                transition: 'all 0.15s ease'
-              }}
+          {/* Quick Utility Icon Group */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {/* Export CSV */}
+            <a
+              href={`${API_BASE}/api/reports/csv`}
+              download="phase1_road_defects_report.csv"
+              className="header-action-icon-btn"
+              title="Export Defect Inventory CSV"
             >
-              <RotateCcw size={13} color="#f87171" />
-              <span>Reset DB (Demo Prep)</span>
-            </button>
-          )}
+              <Download size={13} />
+            </a>
 
-          {/* Refresh */}
-          <button
-            onClick={onRefresh}
-            disabled={loading}
-            className="header-action-btn"
-            style={{
-              cursor: loading ? 'default' : 'pointer',
-              backgroundColor: '#1e293b',
-              color: '#f8fafc',
-              border: '1px solid #334155',
-              padding: '6px 10px'
-            }}
-          >
-            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-          </button>
+            {/* DB Backup */}
+            <a
+              href={`${API_BASE}/api/db/export`}
+              download="municipal_pavement_db.json"
+              className="header-action-icon-btn hide-on-mobile"
+              title="Download Persistent JSON DB Backup"
+            >
+              <HardDrive size={13} />
+            </a>
+
+            {/* Reset Database */}
+            {onResetDB && (
+              <button
+                onClick={onResetDB}
+                disabled={loading}
+                className="header-action-icon-btn hide-on-mobile"
+                title="Reset Database to Clean Baseline for Demonstration"
+                style={{ color: '#f87171' }}
+              >
+                <RotateCcw size={13} />
+              </button>
+            )}
+
+            {/* Sync / Refresh */}
+            <button
+              onClick={onRefresh}
+              disabled={loading}
+              className="header-action-icon-btn"
+              title="Sync all data"
+            >
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Navigation Tabs Bar */}
-      <div className="header-nav-tabs">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className="header-nav-tab-btn"
-              style={{
-                fontWeight: isActive ? '700' : '500',
-                color: isActive ? '#38bdf8' : '#94a3b8',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderBottom: isActive ? '2px solid #38bdf8' : '2px solid transparent',
-                cursor: 'pointer',
-                transition: 'all 0.15s'
-              }}
-            >
-              <Icon size={15} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
+      {/* ── Tier 2: Navigation Tabs & Seamless AI Model Switcher (40px) ───── */}
+      <div className="header-nav-row">
+        {/* Left: Nav Tabs */}
+        <div className="header-nav-tabs">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className="header-nav-tab-btn"
+                style={{
+                  fontWeight: isActive ? '700' : '500',
+                  color: isActive ? '#38bdf8' : '#94a3b8',
+                  backgroundColor: isActive ? 'rgba(56, 189, 248, 0.1)' : 'transparent',
+                  borderBottom: isActive ? '2px solid #38bdf8' : '2px solid transparent',
+                  borderRadius: '6px 6px 0 0'
+                }}
+              >
+                <Icon size={14} color={isActive ? '#38bdf8' : '#94a3b8'} />
+                <span>{item.label}</span>
+                {item.badge > 0 && (
+                  <span
+                    style={{
+                      backgroundColor: '#ec4899',
+                      color: '#ffffff',
+                      fontSize: '9px',
+                      fontWeight: '800',
+                      padding: '1px 5px',
+                      borderRadius: '9999px',
+                      marginLeft: '2px',
+                      boxShadow: '0 0 6px rgba(236, 72, 153, 0.5)'
+                    }}
+                  >
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right: Integrated AI Model Switcher Pill */}
+        <div
+          className="hide-on-mobile"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#070f24',
+            border: '1px solid #1e293b',
+            borderRadius: '6px',
+            padding: '2px',
+            gap: '2px'
+          }}
+        >
+          <button
+            onClick={() => setAiModelMode('pothole')}
+            title="Targeted Road Anomaly & Pothole Model (YOLOv8m)"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              border: 'none',
+              backgroundColor: aiModelMode === 'pothole' ? '#0284c7' : 'transparent',
+              color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8',
+              boxShadow: aiModelMode === 'pothole' ? '0 0 8px rgba(2, 132, 199, 0.4)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>🎯 7-Class Anomaly</span>
+            <span style={{
+              fontSize: '9px',
+              backgroundColor: aiModelMode === 'pothole' ? 'rgba(255,255,255,0.2)' : 'rgba(51,65,85,0.5)',
+              padding: '1px 4px',
+              borderRadius: '3px'
+            }}>
+              YOLOv8m
+            </span>
+          </button>
+
+          <button
+            onClick={() => setAiModelMode('rdd2022')}
+            title="CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes)"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              border: 'none',
+              backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
+              color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8',
+              boxShadow: aiModelMode === 'rdd2022' ? '0 0 8px rgba(13, 148, 136, 0.4)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>🌐 CRDDC Road Damage</span>
+            <span style={{
+              fontSize: '9px',
+              backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(255,255,255,0.2)' : 'rgba(51,65,85,0.5)',
+              padding: '1px 4px',
+              borderRadius: '3px'
+            }}>
+              YOLOv8s
+            </span>
+          </button>
+        </div>
       </div>
     </header>
   );
 }
 
-function StatusDot({ label, status }) {
+function StatusMiniDot({ label, status }) {
   const isGreen = status === 'green';
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#94a3b8' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#94a3b8' }}>
       <span style={{
-        width: '7px',
-        height: '7px',
+        width: '5px',
+        height: '5px',
         borderRadius: '50%',
-        backgroundColor: isGreen ? '#22c55e' : '#ef4444',
-        boxShadow: isGreen ? '0 0 6px #22c55e' : '0 0 6px #ef4444'
+        backgroundColor: isGreen ? '#22c55e' : '#ef4444'
       }} />
       <span>{label}</span>
     </div>

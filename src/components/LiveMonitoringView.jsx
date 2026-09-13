@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Video,
   Radio,
   Camera,
   Upload,
   ShieldAlert,
+  ShieldCheck,
   MapPin,
   Send,
   CheckCircle2,
@@ -59,6 +60,32 @@ export default function LiveMonitoringView({
   };
 
   const recentDetections = defects.slice(0, 10);
+  const [verificationTargets, setVerificationTargets] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkVerificationTargets = async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/cases/verification-targets?lat=${activeVehicle.latitude}&lon=${activeVehicle.longitude}&radius=200`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setVerificationTargets(data.targets || []);
+          }
+        }
+      } catch {
+        // Ignored
+      }
+    };
+    checkVerificationTargets();
+    const timer = setInterval(checkVerificationTargets, 8000);
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, [activeVehicle.latitude, activeVehicle.longitude]);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Real Road Media Upload Handlers
@@ -370,15 +397,49 @@ export default function LiveMonitoringView({
             </div>
           </div>
 
+          {/* Post-Repair Verification Proximity Banner */}
+          {verificationTargets.length > 0 && (
+            <div
+              style={{
+                backgroundColor: 'rgba(236, 72, 153, 0.12)',
+                borderBottom: '1px solid #ec4899',
+                padding: '8px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '8px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldCheck size={16} color="#ec4899" className="animate-pulse" />
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#f472b6', textTransform: 'uppercase' }}>
+                  Post-Repair Verification Target in Proximity:
+                </span>
+                <span style={{ fontSize: '12px', color: '#f8fafc', fontWeight: '700' }}>
+                  {verificationTargets[0].case?.case_id}
+                </span>
+                <span style={{ fontSize: '11px', color: '#cbd5e1' }}>
+                  ({verificationTargets[0].case?.road_name} • Ch {verificationTargets[0].case?.exact_chainage_m}m)
+                </span>
+                <span style={{ fontSize: '11px', color: '#fbcfe8', fontWeight: '600' }}>
+                  • {verificationTargets[0].distance_m}m away
+                </span>
+              </div>
+              <span style={{ fontSize: '10px', color: '#ec4899', fontWeight: '700', backgroundColor: 'rgba(236, 72, 153, 0.2)', padding: '2px 8px', borderRadius: '4px' }}>
+                AI Verification Scanner Active
+              </span>
+            </div>
+          )}
+
           {/* Camera Frame Container */}
           <div style={{
             position: 'relative',
             flex: 1,
             backgroundColor: '#000000',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '380px',
+            flexDirection: 'column',
+            minHeight: '420px',
             overflow: 'hidden'
           }}>
             {/* MODE 1: Continuous SVG Patrol Stream */}

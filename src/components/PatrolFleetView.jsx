@@ -10,28 +10,34 @@ export default function PatrolFleetView({
   const isGpsLost = gpsStatus === 'lost';
   const isGpsDegraded = gpsStatus === 'degraded';
 
+  const fleetList = Array.isArray(vehicles)
+    ? vehicles
+    : vehicles && typeof vehicles === 'object'
+    ? Object.values(vehicles)
+    : [];
+
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
       overflowY: 'auto',
-      backgroundColor: '#090d16',
+      backgroundColor: '#070c18',
       padding: '20px',
       gap: '20px'
     }}>
       {/* Overview Header */}
-      <div style={{
-        backgroundColor: '#0f172a',
-        border: '1px solid #1e293b',
-        borderRadius: '10px',
-        padding: '16px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
+      <div
+        className="glass-card"
+        style={{
+          padding: '16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}
+      >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#f8fafc' }}>
@@ -63,10 +69,10 @@ export default function PatrolFleetView({
         <div style={{
           display: 'flex',
           gap: '12px',
-          backgroundColor: '#1e293b',
+          backgroundColor: '#070f24',
           padding: '8px 16px',
           borderRadius: '8px',
-          border: '1px solid #334155',
+          border: '1px solid #273860',
           alignItems: 'center'
         }}>
           {/* Municipal Server Link Status */}
@@ -87,7 +93,7 @@ export default function PatrolFleetView({
             </div>
           </div>
 
-          <div style={{ width: '1px', height: '24px', backgroundColor: '#334155' }} />
+          <div style={{ width: '1px', height: '24px', backgroundColor: '#273860' }} />
 
           {/* GNSS Positioning Status */}
           <div>
@@ -107,14 +113,14 @@ export default function PatrolFleetView({
             </div>
           </div>
 
-          <div style={{ width: '1px', height: '24px', backgroundColor: '#334155' }} />
+          <div style={{ width: '1px', height: '24px', backgroundColor: '#273860' }} />
 
           <div>
             <span style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', fontWeight: '700' }}>
               ONLINE UNITS
             </span>
             <div style={{ fontSize: '14px', fontWeight: '800', color: '#4ade80' }}>
-              {vehicles.filter((v) => v.status === 'Online').length} / {vehicles.length}
+              {fleetList.filter((v) => v.status === 'Online').length} / {fleetList.length}
             </div>
           </div>
         </div>
@@ -122,21 +128,18 @@ export default function PatrolFleetView({
 
       {/* Fleet Cards Grid */}
       <div className="responsive-card-grid">
-        {vehicles.map((v) => {
+        {fleetList.map((v) => {
           const isOnline = v.status === 'Online';
 
           return (
             <div
               key={v.vehicle_id}
+              className="glass-card"
               style={{
-                backgroundColor: '#0f172a',
-                border: '1px solid #1e293b',
-                borderRadius: '10px',
                 padding: '16px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '12px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                gap: '12px'
               }}
             >
               {/* Header */}
@@ -244,6 +247,11 @@ export default function PatrolFleetView({
             </div>
           );
         })}
+        {fleetList.length === 0 && (
+          <div className="glass-card" style={{ padding: '36px', textAlign: 'center', color: '#94a3b8', gridColumn: '1 / -1' }}>
+            No patrol transit vehicles currently broadcasting telemetry.
+          </div>
+        )}
       </div>
     </div>
   );
