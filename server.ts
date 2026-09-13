@@ -1419,11 +1419,13 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
       latitude,
       longitude,
       vehicle_id = "User Video Inspection",
+      model_mode = "pothole"
     } = req.body;
 
     const cleanName = path.basename(file_name);
-    if (videoScanCache.has(cleanName)) {
-      return res.status(200).json(videoScanCache.get(cleanName));
+    const cacheKey = `${cleanName}_${model_mode}`;
+    if (videoScanCache.has(cacheKey)) {
+      return res.status(200).json(videoScanCache.get(cacheKey));
     }
 
     const lat = latitude ? Number(latitude) : 13.0780;
@@ -1451,6 +1453,12 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
         break;
       }
     }
+
+    const pythonExe = fs.existsSync(path.join(process.cwd(), ".venv", "Scripts", "python.exe"))
+      ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
+      : "python";
+    const scriptPath = path.join(process.cwd(), "detector", "infer_video.py");
+    const { modelPath, modelName } = resolveModelPath(model_mode);
 
     const buildPayload = (moments: any[], uniqueDefectsList: any[]) => {
       const cleanFileId = cleanName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
@@ -1491,7 +1499,7 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
           },
           first_detected: existing ? existing.first_detected : new Date().toISOString(),
           last_detected: new Date().toISOString(),
-          model_version: "YOLOv8-road-v1",
+          model_version: modelName,
         };
 
         try {
@@ -1526,20 +1534,25 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
         defects: generatedDefects,
         moments,
         inspection,
-        model: "YOLOv8-road-v1 (Real Inference)",
+        model: modelName,
         inference_speed: "Real Edge AI Inference"
       };
-      videoScanCache.set(cleanName, scanPayload);
+      videoScanCache.set(cacheKey, scanPayload);
       return scanPayload;
     };
 
-    const pythonExe = fs.existsSync(path.join(process.cwd(), ".venv", "Scripts", "python.exe"))
-      ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
-      : "python";
-    const requestedModelMode = (req.body?.model_mode || req.query?.model_mode || "pothole") as string;
-    const { modelPath, modelName } = resolveModelPath(requestedModelMode);
+    // If precomputed scans exist and force_rescan is not requested, return instantly (<20ms)
+    const isCustomUpload = cleanName.startsWith("upload_") || cleanName.startsWith("user_") || !PRECOMPUTED_SCANS[cleanName];
+    const forceRescan = Boolean(req.body?.force_rescan);
 
-    // Check if python environment is functional
+    if (!isCustomUpload && !forceRescan && PRECOMPUTED_SCANS[cleanName]) {
+      const pre = PRECOMPUTED_SCANS[cleanName];
+      if (Array.isArray(pre.moments) && pre.moments.length > 0) {
+        return res.status(200).json(buildPayload(pre.moments, pre.unique_defects || []));
+      }
+    }
+
+    // Check if python environment is functional for real-time inference
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
       const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.35`;
       exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {

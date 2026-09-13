@@ -23,7 +23,8 @@ export default function RoadVideoInspectionPlayer({
   uploadedPreview,
   activeVehicle,
   onDefectLogged,
-  onSelectAnotherFile
+  onSelectAnotherFile,
+  aiModelMode = 'pothole'
 }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -96,7 +97,7 @@ export default function RoadVideoInspectionPlayer({
 
     try {
       setScanStep(2);
-      setScanStatusMessage(`Running real AI inference on "${targetFile}"...`);
+      setScanStatusMessage(`Running real AI inference (${aiModelMode === 'rdd2022' ? '7-Class RDD2022' : 'Dedicated Pothole'}) on "${targetFile}"...`);
 
       const res = await fetch(`${API_BASE}/api/detect/video-scan`, {
         method: 'POST',
@@ -106,7 +107,8 @@ export default function RoadVideoInspectionPlayer({
           duration_sec: dur,
           latitude: activeVehicle?.latitude || 13.0780,
           longitude: activeVehicle?.longitude || 80.2330,
-          vehicle_id: activeVehicle?.vehicle_id || 'Transit Video Inspection'
+          vehicle_id: activeVehicle?.vehicle_id || 'Transit Video Inspection',
+          model_mode: aiModelMode
         })
       });
 
