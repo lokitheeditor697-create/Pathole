@@ -9,12 +9,14 @@ import {
   Volume2,
   VolumeX,
   Maximize2,
+  Minimize2,
   Scan,
   AlertTriangle,
   RotateCcw,
   Sparkles,
   FileVideo,
-  Upload
+  Upload,
+  X
 } from 'lucide-react';
 import { API_BASE } from '../config';
 import { getDefectMeta, formatDefectId } from '../utils/defectMeta';
@@ -39,6 +41,8 @@ export default function RoadVideoInspectionPlayer({
   const [isMuted, setIsMuted] = useState(true);
   const [videoError, setVideoError] = useState(null);
   const [videoReady, setVideoReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [videoAspect, setVideoAspect] = useState(16 / 9);
 
   // Video Source Management
   const [videoSourceUrl, setVideoSourceUrl] = useState(uploadedPreview || '/videos/real_dashcam.mp4');
@@ -213,6 +217,11 @@ export default function RoadVideoInspectionPlayer({
     setVideoReady(true);
     setVideoError(null);
 
+    // Calculate exact aspect ratio to prevent any letterbox overlay shifting
+    if (videoRef.current.videoWidth && videoRef.current.videoHeight) {
+      setVideoAspect(videoRef.current.videoWidth / videoRef.current.videoHeight);
+    }
+
     // Auto-play muted video safely (browser compliant)
     videoRef.current.play().then(() => {
       setIsPlaying(true);
@@ -223,6 +232,45 @@ export default function RoadVideoInspectionPlayer({
     // Automatically trigger AI Inspection on the newly loaded video
     runAiVideoInspection(validDuration);
   };
+
+  // Fullscreen event listener sync
+  useEffect(() => {
+    const handleFsChange = () => {
+      const isFs = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      setIsFullscreen(isFs);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    document.addEventListener('mozfullscreenchange', handleFsChange);
+    document.addEventListener('MSFullscreenChange', handleFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      document.removeEventListener('mozfullscreenchange', handleFsChange);
+      document.removeEventListener('MSFullscreenChange', handleFsChange);
+    };
+  }, []);
+
+  // Keyboard shortcut listener ('F' for Fullscreen, 'Space' for Play/Pause)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target?.tagName)) return;
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === ' ' && e.target === document.body) {
+        e.preventDefault();
+        togglePlay();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen, isPlaying]);
 
   // Video playback time update - displays exactly ONE trace/box per physical defect at any time
   const handleTimeUpdate = () => {
@@ -456,11 +504,34 @@ export default function RoadVideoInspectionPlayer({
 
   // Fullscreen toggle
   const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen?.().catch(() => {});
+    const isFs = !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement ||
+      isFullscreen
+    );
+
+    if (!isFs) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen().catch(() => {
+          setIsFullscreen(true);
+        });
+      } else if (containerRef.current?.webkitRequestFullscreen) {
+        containerRef.current.webkitRequestFullscreen();
+      } else {
+        setIsFullscreen(true);
+      }
     } else {
-      document.exitFullscreen?.().catch(() => {});
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {
+          setIsFullscreen(false);
+        });
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else {
+        setIsFullscreen(false);
+      }
     }
   };
 
@@ -553,25 +624,30 @@ export default function RoadVideoInspectionPlayer({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        width: '100%',
-        height: '100%',
-        backgroundColor: '#090d16',
-        borderRadius: '10px',
+        width: isFullscreen ? '100vw' : '100%',
+        height: isFullscreen ? '100vh' : '100%',
+        maxWidth: isFullscreen ? '100vw' : '100%',
+        maxHeight: isFullscreen ? '100vh' : 'none',
+        position: isFullscreen ? 'fixed' : 'relative',
+        inset: isFullscreen ? 0 : 'auto',
+        zIndex: isFullscreen ? 99999 : 'auto',
+        backgroundColor: '#050811',
+        borderRadius: isFullscreen ? 0 : '10px',
         overflow: 'hidden',
-        border: '1px solid #1e293b',
-        position: 'relative'
+        border: isFullscreen ? 'none' : '1px solid #1e293b'
       }}
     >
       {/* Sample Video Selector Bar & Model Switcher */}
       <div className="video-player-toolbar" style={{
-        padding: '8px 12px',
+        padding: isFullscreen ? '10px 18px' : '8px 12px',
         backgroundColor: '#0f172a',
         borderBottom: '1px solid #1e293b',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '8px'
+        gap: '8px',
+        zIndex: 30
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -742,8 +818,8 @@ export default function RoadVideoInspectionPlayer({
           position: 'relative',
           width: '100%',
           flex: 1,
-          minHeight: '320px',
-          maxHeight: '440px',
+          minHeight: isFullscreen ? '0px' : '340px',
+          maxHeight: isFullscreen ? 'none' : '560px',
           backgroundColor: '#000000',
           display: 'flex',
           alignItems: 'center',
@@ -755,13 +831,15 @@ export default function RoadVideoInspectionPlayer({
         <div
           style={{
             position: 'relative',
-            display: 'inline-flex',
+            aspectRatio: `${videoAspect}`,
+            maxWidth: '100%',
+            maxHeight: isFullscreen ? 'calc(100vh - 140px)' : '100%',
+            width: 'auto',
+            height: '100%',
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            maxWidth: '100%',
-            maxHeight: '420px',
-            width: '100%',
-            height: '100%'
+            boxShadow: isFullscreen ? '0 0 50px rgba(0,0,0,0.9)' : 'none'
           }}
         >
           {/* Video Element */}
@@ -781,11 +859,12 @@ export default function RoadVideoInspectionPlayer({
             onClick={togglePlay}
             style={{
               maxWidth: '100%',
-              maxHeight: '420px',
+              maxHeight: '100%',
               objectFit: 'contain',
               width: '100%',
               height: '100%',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'block'
             }}
           />
 
@@ -1082,7 +1161,7 @@ export default function RoadVideoInspectionPlayer({
           </div>
         </div>
 
-        {/* Top-Right Active Model HUD Badge */}
+        {/* Top-Right Active Model HUD Badge & Fullscreen Exit Button */}
         <div
           style={{
             position: 'absolute',
@@ -1090,8 +1169,8 @@ export default function RoadVideoInspectionPlayer({
             right: '12px',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            zIndex: 20
+            gap: '8px',
+            zIndex: 30
           }}
         >
           <div
@@ -1112,6 +1191,30 @@ export default function RoadVideoInspectionPlayer({
           >
             <span>{aiModelMode === 'rdd2022' ? '🌐 YOLOv8 7-Class RDD2022' : '🎯 YOLOv8 Dedicated Pothole'}</span>
           </div>
+
+          {isFullscreen && (
+            <button
+              onClick={toggleFullscreen}
+              title="Exit Fullscreen (Esc or F)"
+              style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.92)',
+                color: '#ffffff',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+              }}
+            >
+              <Minimize2 size={13} />
+              <span>Exit Fullscreen</span>
+            </button>
+          )}
         </div>
 
         {/* Toast Notification Alert */}
@@ -1405,21 +1508,23 @@ export default function RoadVideoInspectionPlayer({
             {/* Fullscreen toggle */}
             <button
               onClick={toggleFullscreen}
-              title="Fullscreen"
+              title={isFullscreen ? 'Exit Fullscreen (F)' : 'Enter Fullscreen (F)'}
               style={{
-                backgroundColor: '#1e293b',
-                color: '#94a3b8',
-                border: '1px solid #334155',
+                backgroundColor: isFullscreen ? '#0284c7' : '#1e293b',
+                color: isFullscreen ? '#ffffff' : '#94a3b8',
+                border: isFullscreen ? '1px solid #38bdf8' : '1px solid #334155',
                 width: '30px',
                 height: '30px',
                 borderRadius: '6px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                boxShadow: isFullscreen ? '0 0 8px rgba(56, 189, 248, 0.5)' : 'none'
               }}
             >
-              <Maximize2 size={13} />
+              {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             </button>
 
             {/* Switch File */}

@@ -578,6 +578,8 @@ export default function LiveMonitoringView({
                     uploadedPreview={uploadedPreview}
                     activeVehicle={activeVehicle}
                     onDefectLogged={onRefreshData}
+                    aiModelMode={aiModelMode}
+                    setAiModelMode={setAiModelMode}
                     onSelectAnotherFile={() => {
                       setUploadedFile(null);
                       setUploadedPreview(null);
