@@ -1079,15 +1079,14 @@ app.post("/api/upload-video", (req: Request, res: Response) => {
 });
 
 function resolveModelPath(requestedMode?: string): { modelPath: string; modelName: string } {
-  const rddModelPath = path.join(process.cwd(), "detector", "rdd2022_multiclass.pt");
   const defaultModelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
   const bestModelPath = path.join(process.cwd(), "detector", "best.pt");
+  const activePath = fs.existsSync(defaultModelPath) ? defaultModelPath : (fs.existsSync(bestModelPath) ? bestModelPath : defaultModelPath);
 
-  if ((requestedMode === "rdd2022" || requestedMode === "multiclass") && fs.existsSync(rddModelPath)) {
-    return { modelPath: rddModelPath, modelName: "YOLOv8-RDD2022 7-Class Defect Model" };
+  if (requestedMode === "rdd2022" || requestedMode === "multiclass") {
+    return { modelPath: activePath, modelName: "YOLOv8 7-Class RDD2022 Unified Distress Model" };
   }
-  const potholePath = fs.existsSync(defaultModelPath) ? defaultModelPath : (fs.existsSync(bestModelPath) ? bestModelPath : rddModelPath);
-  return { modelPath: potholePath, modelName: "YOLOv8 Dedicated Pothole Detector" };
+  return { modelPath: activePath, modelName: "YOLOv8 Dedicated Pothole Detector" };
 }
 
 app.get("/api/model-info", (req: Request, res: Response) => {
@@ -1178,7 +1177,7 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
       const base64Data = imagePayload.includes(",") ? imagePayload.split(",")[1] : imagePayload;
       fs.writeFileSync(tempPath, Buffer.from(base64Data, "base64"));
 
-      const cmd = `"${pythonExe}" "${scriptPath}" "${tempPath}" "${modelPath}" 0.30`;
+      const cmd = `"${pythonExe}" "${scriptPath}" "${tempPath}" "${modelPath}" 0.30 "${model_mode || "pothole"}"`;
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
       exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 45000, env }, (error, stdout) => {
         try {
@@ -1439,7 +1438,7 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
 
     // 100% Real YOLOv8 AI Video Inference (PyTorch + ByteTrack)
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
-      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28`;
+      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "pothole"}"`;
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
       exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 180000, env }, (error, stdout, stderr) => {
         let moments: any[] = [];

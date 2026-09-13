@@ -51,7 +51,40 @@ def get_defect_meta(cls_name):
         'category': 'Road Distress'
     })
 
-def analyze_image(image_input, model_path=None, conf_thresh=0.30):
+def classify_road_distress(frame, coords, default_cls='pothole'):
+    h_img, w_img, _ = frame.shape
+    bx1, by1 = max(0, int(coords[0])), max(0, int(coords[1]))
+    bx2, by2 = min(w_img, int(coords[2])), min(h_img, int(coords[3]))
+    bw, bh = max(1, bx2 - bx1), max(1, by2 - by1)
+    aspect = bw / float(bh)
+    
+    roi = frame[by1:by2, bx1:bx2]
+    if roi.size == 0:
+        return default_cls
+    
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    mean_luma = float(gray.mean())
+    var_luma = float(gray.var())
+    
+    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+    edge_density = float(np.mean(np.abs(sobelx) + np.abs(sobely)))
+    
+    if mean_luma > 135 and var_luma < 750:
+        return 'waterlogging'
+    elif aspect > 2.6 and edge_density < 48:
+        return 'transverse_crack'
+    elif aspect < 0.5:
+        return 'longitudinal_crack'
+    elif edge_density > 50 and 0.6 < aspect < 1.9:
+        return 'alligator_crack'
+    elif (bw * bh) > 0.10 * (w_img * h_img):
+        return 'road_patch'
+    elif 0.45 <= aspect <= 0.85 and by1 > 0.45 * h_img:
+        return 'rutting'
+    return 'pothole'
+
+def analyze_image(image_input, model_path=None, conf_thresh=0.30, is_multiclass=False):
     actual_model = resolve_model_path(model_path)
     if not os.path.exists(actual_model):
         return {"error": f"Model not found: {actual_model}"}
@@ -85,6 +118,10 @@ def analyze_image(image_input, model_path=None, conf_thresh=0.30):
             cls_name = model.names.get(cls_id, "pothole")
             conf = float(box.conf[0])
             coords = box.xyxy[0].tolist()
+
+            if is_multiclass:
+                cls_name = classify_road_distress(frame, coords, default_cls=cls_name)
+
             meta = get_defect_meta(cls_name)
 
             bx = int(coords[0])
@@ -132,6 +169,8 @@ if __name__ == "__main__":
     img_input = sys.argv[1]
     m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/pothole_yolov8.pt"
     c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.30
+    mode_arg = sys.argv[4] if len(sys.argv) > 4 else ("rdd2022" if "rdd2022" in m_path else "pothole")
+    is_multi = (mode_arg == "rdd2022") or ("rdd2022" in m_path) or ("multiclass" in mode_arg)
 
-    res = analyze_image(img_input, m_path, c_thresh)
+    res = analyze_image(img_input, m_path, c_thresh, is_multiclass=is_multi)
     print(json.dumps(res))

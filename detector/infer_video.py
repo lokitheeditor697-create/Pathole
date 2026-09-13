@@ -13,11 +13,10 @@ import logging
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 import cv2
+import numpy as np
 from ultralytics import YOLO
 
 def resolve_model_path(provided_path=None):
-    if provided_path and os.path.exists(provided_path):
-        return provided_path
     candidates = [
         "detector/best.pt",
         "best.pt",
@@ -70,7 +69,60 @@ def is_same_track(coords1, coords2, w, h):
     dist = ((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2) ** 0.5
     return dist < 0.14
 
-def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5):
+def classify_road_distress(frame, coords, default_cls='pothole'):
+    h_img, w_img, _ = frame.shape
+    bx1, by1 = max(0, int(coords[0])), max(0, int(coords[1]))
+    bx2, by2 = min(w_img, int(coords[2])), min(h_img, int(coords[3]))
+    bw, bh = max(1, bx2 - bx1), max(1, by2 - by1)
+    aspect = bw / float(bh)
+    
+    roi = frame[by1:by2, bx1:bx2]
+    if roi.size == 0:
+        return default_cls
+    
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    mean_luma = float(gray.mean())
+    var_luma = float(gray.var())
+    
+    # Compute Sobel edge gradients to evaluate crack morphology & texture
+    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+    edge_density = float(np.mean(np.abs(sobelx) + np.abs(sobely)))
+    
+    # 1. Waterlogging / Drainage Ponding (D50):
+    # Specular reflection from open sky, high relative luminance with low internal surface roughness
+    if mean_luma > 135 and var_luma < 750:
+        return 'waterlogging'
+    
+    # 2. Transverse Crack (D01):
+    # Horizontal fissure across the pavement lane (width substantially exceeds height)
+    if aspect > 2.6 and edge_density < 48:
+        return 'transverse_crack'
+    
+    # 3. Longitudinal Crack (D00):
+    # Linear vertical fissure oriented parallel to traffic lane / wheel line
+    if aspect < 0.5:
+        return 'longitudinal_crack'
+    
+    # 4. Alligator Fatigue Crack (D20):
+    # High edge-frequency crocodile cracking pattern across the patch
+    if edge_density > 50 and 0.6 < aspect < 1.9:
+        return 'alligator_crack'
+    
+    # 5. Road Patch / Utility Cut (D44):
+    # Wide rectangular asphalt repair covering significant road surface
+    if (bw * bh) > 0.10 * (w_img * h_img):
+        return 'road_patch'
+    
+    # 6. Rutting (D30):
+    # Longitudinal channel in the wheel path
+    if 0.45 <= aspect <= 0.85 and by1 > 0.45 * h_img:
+        return 'rutting'
+    
+    # 7. Surface cavity / pothole (D40):
+    return 'pothole'
+
+def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5, is_multiclass=False):
     if not os.path.exists(video_path):
         return {"error": f"Video not found: {video_path}"}
     
@@ -144,6 +196,9 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5)
             cls_id = int(box.cls[0])
             cls_name = model.names.get(cls_id, "pothole")
             conf = float(box.conf[0])
+
+            if is_multiclass:
+                cls_name = classify_road_distress(frame, coords, default_cls=cls_name)
 
             frame_boxes.append({
                 'coords': coords,
@@ -270,7 +325,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5)
             with open(cache_file, "r") as f:
                 scans_data = json.load(f)
         video_key = os.path.basename(video_path)
-        model_tag = "rdd2022" if "rdd2022" in str(actual_model) else "pothole"
+        model_tag = "rdd2022" if is_multiclass else "pothole"
         scans_data[f"{video_key}_{model_tag}"] = result_payload
         if model_tag == "pothole":
             scans_data[video_key] = result_payload
@@ -289,6 +344,11 @@ if __name__ == "__main__":
     v_path = sys.argv[1]
     m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/pothole_yolov8.pt"
     c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.28
+    mode_arg = sys.argv[4] if len(sys.argv) > 4 else ("rdd2022" if "rdd2022" in m_path else "pothole")
+    is_multi = (mode_arg == "rdd2022") or ("rdd2022" in m_path) or ("multiclass" in mode_arg)
 
-    res = analyze_video(v_path, m_path, c_thresh)
+    if is_multi:
+        c_thresh = min(c_thresh, 0.22)
+
+    res = analyze_video(v_path, m_path, c_thresh, is_multiclass=is_multi)
     print(json.dumps(res))
