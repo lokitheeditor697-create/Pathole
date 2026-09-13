@@ -452,6 +452,7 @@ export default function LiveMonitoringView({
                 onTogglePatrol={onTogglePatrol}
                 gpsStatus={gpsStatus}
                 serverConnected={serverConnected}
+                aiModelMode={aiModelMode}
               />
             )}
 

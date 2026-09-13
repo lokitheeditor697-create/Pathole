@@ -267,22 +267,27 @@ export default function Header({
           })}
         </div>
 
-        {/* Right: Integrated AI Model Switcher Pill */}
+        {/* Right: Integrated AI Model Switcher Pill (Strict Single-Engine Pipeline) */}
         <div
           className="hide-on-mobile"
+          title="Strict Single-Model Pipeline: Exactly one neural network scans video frames at any given moment to prevent duplicate detections and overlapping instances."
           style={{
             display: 'flex',
             alignItems: 'center',
             backgroundColor: '#070f24',
             border: '1px solid #1e293b',
             borderRadius: '6px',
-            padding: '2px',
-            gap: '2px'
+            padding: '2px 4px',
+            gap: '3px'
           }}
         >
+          <span style={{ fontSize: '9px', color: '#64748b', fontWeight: '800', letterSpacing: '0.05em', padding: '0 4px', textTransform: 'uppercase' }}>
+            Active AI:
+          </span>
+
           <button
             onClick={() => setAiModelMode('pothole')}
-            title="Targeted Road Anomaly & Pothole Model (YOLOv8m)"
+            title="Targeted Road Anomaly & Pothole Model (YOLOv8m) — Only this model is active"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -292,13 +297,16 @@ export default function Header({
               fontSize: '11px',
               fontWeight: '700',
               cursor: 'pointer',
-              border: 'none',
+              border: aiModelMode === 'pothole' ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid transparent',
               backgroundColor: aiModelMode === 'pothole' ? '#0284c7' : 'transparent',
               color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8',
               boxShadow: aiModelMode === 'pothole' ? '0 0 8px rgba(2, 132, 199, 0.4)' : 'none',
               transition: 'all 0.15s ease'
             }}
           >
+            {aiModelMode === 'pothole' && (
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38bdf8', boxShadow: '0 0 6px #38bdf8' }} />
+            )}
             <span>🎯 7-Class Anomaly</span>
             <span style={{
               fontSize: '9px',
@@ -312,7 +320,7 @@ export default function Header({
 
           <button
             onClick={() => setAiModelMode('rdd2022')}
-            title="CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes)"
+            title="CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes) — Only this model is active"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -322,13 +330,16 @@ export default function Header({
               fontSize: '11px',
               fontWeight: '700',
               cursor: 'pointer',
-              border: 'none',
+              border: aiModelMode === 'rdd2022' ? '1px solid rgba(45, 212, 191, 0.5)' : '1px solid transparent',
               backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
               color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8',
               boxShadow: aiModelMode === 'rdd2022' ? '0 0 8px rgba(13, 148, 136, 0.4)' : 'none',
               transition: 'all 0.15s ease'
             }}
           >
+            {aiModelMode === 'rdd2022' && (
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2dd4bf', boxShadow: '0 0 6px #2dd4bf' }} />
+            )}
             <span>🌐 CRDDC Road Damage</span>
             <span style={{
               fontSize: '9px',
@@ -342,7 +353,7 @@ export default function Header({
 
           <button
             onClick={() => setAiModelMode('potbot')}
-            title="PotBot AI Dedicated Deep Pothole Specialist (YOLOv8m • 148.5MB)"
+            title="PotBot AI Dedicated Deep Pothole Specialist (YOLOv8m • 148.5MB) — Only this model is active"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -352,13 +363,16 @@ export default function Header({
               fontSize: '11px',
               fontWeight: '700',
               cursor: 'pointer',
-              border: 'none',
+              border: aiModelMode === 'potbot' ? '1px solid rgba(192, 132, 252, 0.5)' : '1px solid transparent',
               backgroundColor: aiModelMode === 'potbot' ? '#7c3aed' : 'transparent',
               color: aiModelMode === 'potbot' ? '#ffffff' : '#94a3b8',
               boxShadow: aiModelMode === 'potbot' ? '0 0 8px rgba(124, 58, 237, 0.4)' : 'none',
               transition: 'all 0.15s ease'
             }}
           >
+            {aiModelMode === 'potbot' && (
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#c084fc', boxShadow: '0 0 6px #c084fc' }} />
+            )}
             <span>🤖 PotBot Pothole</span>
             <span style={{
               fontSize: '9px',

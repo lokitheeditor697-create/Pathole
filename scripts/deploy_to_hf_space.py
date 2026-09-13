@@ -54,7 +54,7 @@ Real-Time AI Pavement Condition Intelligence, GIS 100m Road Segmentation & Autom
         folder_path=staging_dir,
         repo_id=repo_id,
         repo_type="space",
-        commit_message="feat(ai): add 3rd model (PotBot YOLOv8m 148MB) with tri-model switcher and efficiency matrix",
+        commit_message="fix(detection): strict single-model execution and multi-criteria spatial deduplication for pothole tracking",
         delete_patterns=["assets/*"]
     )
     print(f"Successfully uploaded! Commit: {commit_info}")

@@ -6,7 +6,8 @@ export default function PatrolHUD({
   patrolActive = true,
   onTogglePatrol,
   gpsStatus = 'locked',
-  serverConnected = true
+  serverConnected = true,
+  aiModelMode = 'pothole'
 }) {
   const [hudMode, setHudMode] = useState('video'); // 'video' (default) | 'vector'
   const [defectCycle, setDefectCycle] = useState(0);
@@ -703,8 +704,16 @@ export default function PatrolHUD({
 
           <span style={{ color: '#64748b', fontSize: '11px' }}>|</span>
 
-          <span style={{ color: '#94a3b8', fontSize: '11px', fontFamily: 'monospace' }}>
-            YOLOv8-road-v1
+          <span
+            style={{
+              color: aiModelMode === 'potbot' ? '#c084fc' : aiModelMode === 'rdd2022' ? '#2dd4bf' : '#38bdf8',
+              fontSize: '11px',
+              fontFamily: 'monospace',
+              fontWeight: '600'
+            }}
+            title={`Active Detection Neural Net: ${aiModelMode} (Single-Engine Exclusivity)`}
+          >
+            {aiModelMode === 'potbot' ? 'PotBot-AI (v8m)' : aiModelMode === 'rdd2022' ? 'RDD2022 (v8s)' : 'Anomaly-v8m'}
           </span>
         </div>
 

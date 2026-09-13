@@ -64,6 +64,7 @@ export default function RoadVideoInspectionPlayer({
   const lockedTracksRef = useRef(new Map());
   const isScanningRef = useRef(false);
   const lastScannedKeyRef = useRef('');
+  const activeScanRequestIdRef = useRef(0);
 
   // Manual logging states
   const [isCapturingManual, setIsCapturingManual] = useState(false);
@@ -103,7 +104,11 @@ export default function RoadVideoInspectionPlayer({
     const activeMode = modeOverride || aiModelMode;
 
     const scanKey = `${targetFile}_${activeMode}_${Math.round(dur)}`;
-    if (isScanningRef.current) return;
+    if (isScanningRef.current && !forceRescan) return;
+
+    // Increment request ID to immediately invalidate any older in-flight model scan
+    const reqId = ++activeScanRequestIdRef.current;
+
     if (forceRescan) {
       lastScannedKeyRef.current = '';
     } else {
@@ -119,6 +124,7 @@ export default function RoadVideoInspectionPlayer({
     try {
       setScanStep(2);
       const applyAutonomousFallback = () => {
+        if (reqId !== activeScanRequestIdRef.current) return;
         const cleanName = (targetFile || '').replace(/\\/g, '/').split('/').pop() || 'real_dashcam.mp4';
         const cacheKey = `${cleanName}_${activeMode}`;
         const fallback = precomputedScans[cacheKey] || (activeMode === 'pothole' ? precomputedScans[cleanName] : null);
@@ -142,9 +148,6 @@ export default function RoadVideoInspectionPlayer({
           const modeLabel = activeMode === 'potbot' ? 'PotBot Dedicated Pothole' : (activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly');
           setScanStatusMessage(`Autonomous Edge Scan [${modeLabel}]: ${totalCount} road distresses identified.`);
           showToast(`Autonomous Edge AI [${modeLabel}]: ${totalCount} real defects loaded.`, 'info');
-          if (onDefectLogged && Array.isArray(fallback.unique_defects)) {
-            fallback.unique_defects.forEach((d) => onDefectLogged(d));
-          }
         } else {
           setDetectedMoments([]);
         }
@@ -164,8 +167,13 @@ export default function RoadVideoInspectionPlayer({
         })
       });
 
+      // Discard response if user switched model while HTTP request was pending
+      if (reqId !== activeScanRequestIdRef.current) return;
+
       if (res.ok) {
         const data = await res.json();
+        if (reqId !== activeScanRequestIdRef.current) return;
+
         setScanStep(3);
         const modeLabel = activeMode === 'potbot' ? 'PotBot Dedicated Pothole' : (activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly');
         setScanStatusMessage(`Inference complete [${modeLabel}]: ${data.total_defects} road distresses identified.`);
@@ -217,11 +225,7 @@ export default function RoadVideoInspectionPlayer({
           setDetectedMoments([]);
         }
 
-        if (onDefectLogged && Array.isArray(data.defects)) {
-          data.defects.forEach((d) => onDefectLogged(d));
-        }
-
-        showToast(`AI Video Scan [${modeLabel}]: ${data.total_defects} real defects verified & logged.`, 'success');
+        showToast(`AI Video Scan [${modeLabel}]: ${data.total_defects} real defects verified.`, 'success');
       } else {
         applyAutonomousFallback();
       }
@@ -229,28 +233,44 @@ export default function RoadVideoInspectionPlayer({
       console.warn('Backend link offline, activating autonomous edge fallback:', err);
       applyAutonomousFallback();
     } finally {
-      setTimeout(() => {
-        setIsAiScanning(false);
-        isScanningRef.current = false;
-      }, 500);
+      if (reqId === activeScanRequestIdRef.current) {
+        setTimeout(() => {
+          setIsAiScanning(false);
+          isScanningRef.current = false;
+        }, 300);
+      }
     }
-  }, [duration, videoSourceFilename, uploadedFile, activeVehicle, onDefectLogged, aiModelMode]);
+  }, [duration, videoSourceFilename, uploadedFile, activeVehicle, aiModelMode]);
 
-  // Model Switch Handler
+  // Model Switch Handler - immediately purges prior detector state
   const handleSwitchModel = (newMode) => {
-    if (setAiModelMode) setAiModelMode(newMode);
+    if (newMode === aiModelMode) return;
+    activeScanRequestIdRef.current++;
+    isScanningRef.current = false;
     setDetectedMoments([]);
     setActiveDefectsOnScreen([]);
     setActiveDefectOnScreen(null);
     lockedTracksRef.current.clear();
     lastScannedKeyRef.current = '';
-    runAiVideoInspection(duration, videoSourceFilename, newMode);
+
+    if (setAiModelMode) {
+      setAiModelMode(newMode);
+    } else {
+      runAiVideoInspection(duration, videoSourceFilename, newMode);
+    }
   };
 
   // Re-run AI inspection whenever the user changes the active AI model mode
   useEffect(() => {
-    const scanKey = `${videoSourceFilename}_${aiModelMode}_${Math.round(duration)}`;
-    if (videoReady && duration > 0 && lastScannedKeyRef.current !== scanKey && !isScanningRef.current) {
+    activeScanRequestIdRef.current++;
+    isScanningRef.current = false;
+    setDetectedMoments([]);
+    setActiveDefectsOnScreen([]);
+    setActiveDefectOnScreen(null);
+    lockedTracksRef.current.clear();
+    lastScannedKeyRef.current = '';
+
+    if (videoReady && duration > 0) {
       runAiVideoInspection(duration, videoSourceFilename, aiModelMode);
     }
   }, [aiModelMode, videoReady, duration, videoSourceFilename, runAiVideoInspection]);
@@ -328,8 +348,8 @@ export default function RoadVideoInspectionPlayer({
     const cur = videoRef.current.currentTime;
     setCurrentTime(cur);
 
-    // Filter detections in a responsive ±0.35s window around current playhead
-    const rawMatches = detectedMoments.filter((m) => Math.abs(m.time - cur) <= 0.35);
+    // Filter detections in a responsive ±0.35s window around current playhead, requiring >= 0.40 confidence
+    const rawMatches = detectedMoments.filter((m) => Math.abs(m.time - cur) <= 0.35 && (m.conf || 0) >= 0.40);
 
     // 1. Group by track_id: keep ONLY the frame detection closest in time to current playback head
     const trackMap = new Map();
@@ -350,7 +370,7 @@ export default function RoadVideoInspectionPlayer({
     // Sort highest confidence first so best bounding box is prioritized
     candidateDefects.sort((a, b) => (b.conf || 0) - (a.conf || 0));
 
-    // 2. Spatial IoU Non-Maximum Suppression: eliminate any duplicate overlapping boxes on the same physical pothole
+    // 2. Multi-Criteria Spatial Deduplication: Eliminate any duplicate overlapping boxes on the same physical pothole
     const singleTraces = [];
     for (const cand of candidateDefects) {
       const b1 = cand.bbox;
@@ -358,14 +378,31 @@ export default function RoadVideoInspectionPlayer({
       const overlaps = singleTraces.some((kept) => {
         const b2 = kept.bbox;
         if (!b2) return false;
+
         const x1 = Math.max(b1.x, b2.x);
         const y1 = Math.max(b1.y, b2.y);
         const x2 = Math.min(b1.x + b1.w, b2.x + b2.w);
         const y2 = Math.min(b1.y + b1.h, b2.y + b2.h);
-        if (x2 <= x1 || y2 <= y1) return false;
-        const interArea = (x2 - x1) * (y2 - y1);
-        const unionArea = (b1.w * b1.h) + (b2.w * b2.h) - interArea;
-        return (interArea / unionArea) > 0.25;
+        const interArea = (x2 > x1 && y2 > y1) ? (x2 - x1) * (y2 - y1) : 0;
+        const area1 = b1.w * b1.h;
+        const area2 = b2.w * b2.h;
+        const unionArea = area1 + area2 - interArea;
+        const iou = unionArea > 0 ? (interArea / unionArea) : 0;
+        if (iou > 0.15) return true;
+
+        const minArea = Math.min(area1, area2);
+        if (minArea > 0 && (interArea / minArea) > 0.38) return true;
+
+        const vidW = b1.video_w || 1280;
+        const vidH = b1.video_h || 720;
+        const c1x = (b1.x + b1.w / 2) / vidW;
+        const c1y = (b1.y + b1.h / 2) / vidH;
+        const c2x = (b2.x + b2.w / 2) / vidW;
+        const c2y = (b2.y + b2.h / 2) / vidH;
+        const centerDist = Math.hypot(c1x - c2x, c1y - c2y);
+        if (centerDist < 0.16) return true;
+
+        return false;
       });
       if (!overlaps) {
         singleTraces.push(cand);
@@ -373,12 +410,32 @@ export default function RoadVideoInspectionPlayer({
     }
 
     // 3. User Requirement: Lock Pothole ID until out of range
-    // Prevent multiple detections on the same pothole with fluttering % values.
-    // Track continuously and store the last info before out of range as the final confirmed state.
+    // Check spatial proximity with already-locked tracks so one defect never bifurcates into multiple instances
     const lockedTraces = singleTraces.map((cand) => {
-      const trackKey = cand.track_id !== undefined && cand.track_id !== null
-        ? String(cand.track_id)
-        : cand.pothole_id || `${cand.class_name}-${Math.round((cand.bbox?.x || 0) / 40)}`;
+      let matchedTrackKey = null;
+      for (const [key, tr] of lockedTracksRef.current.entries()) {
+        if (!tr.finalized && cur - tr.lastSeen <= 0.8) {
+          const oldB = tr.lastInfoBeforeExit?.bbox;
+          if (oldB) {
+            const vidW = cand.bbox?.video_w || 1280;
+            const vidH = cand.bbox?.video_h || 720;
+            const c1x = (cand.bbox.x + cand.bbox.w / 2) / vidW;
+            const c1y = (cand.bbox.y + cand.bbox.h / 2) / vidH;
+            const c2x = (oldB.x + oldB.w / 2) / vidW;
+            const c2y = (oldB.y + oldB.h / 2) / vidH;
+            if (Math.hypot(c1x - c2x, c1y - c2y) < 0.18) {
+              matchedTrackKey = key;
+              break;
+            }
+          }
+        }
+      }
+
+      const trackKey = matchedTrackKey || (
+        cand.track_id !== undefined && cand.track_id !== null
+          ? String(cand.track_id)
+          : cand.pothole_id || `${cand.class_name}-${Math.round((cand.bbox?.x || 0) / 40)}`
+      );
 
       const potholeId = cand.pothole_id || formatDefectId(cand.track_id || 1, cand.class_name);
       const meta = getDefectMeta(cand.class_name);
@@ -396,12 +453,12 @@ export default function RoadVideoInspectionPlayer({
         lockedTracksRef.current.set(trackKey, trackRecord);
       } else {
         trackRecord.lastSeen = cur;
-        trackRecord.lastInfoBeforeExit = { ...cand, pothole_id: potholeId, display_name: meta.fullLabel, rdd_code: meta.code, color: meta.color };
+        trackRecord.lastInfoBeforeExit = { ...cand, pothole_id: trackRecord.pothole_id || potholeId, display_name: meta.fullLabel, rdd_code: meta.code, color: meta.color };
       }
 
       return {
         ...cand,
-        pothole_id: potholeId,
+        pothole_id: trackRecord.pothole_id || potholeId,
         display_name: meta.fullLabel,
         rdd_code: meta.code,
         category: meta.category,
