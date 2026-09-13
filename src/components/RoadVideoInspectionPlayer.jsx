@@ -61,6 +61,8 @@ export default function RoadVideoInspectionPlayer({
   const [autoPauseOnDefects, setAutoPauseOnDefects] = useState(false);
   const [lastAutoPausedMoment, setLastAutoPausedMoment] = useState(null);
   const lockedTracksRef = useRef(new Map());
+  const isScanningRef = useRef(false);
+  const lastScannedKeyRef = useRef('');
 
   // Manual logging states
   const [isCapturingManual, setIsCapturingManual] = useState(false);
@@ -81,6 +83,7 @@ export default function RoadVideoInspectionPlayer({
     if (uploadedPreview) {
       setVideoSourceUrl(uploadedPreview);
       setVideoSourceFilename(uploadedFile?.name || 'uploaded_video.mp4');
+      lastScannedKeyRef.current = '';
     }
   }, [uploadedPreview, uploadedFile]);
 
@@ -97,6 +100,12 @@ export default function RoadVideoInspectionPlayer({
     const dur = Math.max(4, videoDurationSec || duration || 10);
     const targetFile = fileOverride || videoSourceFilename || uploadedFile?.name || 'real_dashcam.mp4';
     const activeMode = modeOverride || aiModelMode;
+
+    const scanKey = `${targetFile}_${activeMode}_${Math.round(dur)}`;
+    if (isScanningRef.current) return;
+    isScanningRef.current = true;
+    lastScannedKeyRef.current = scanKey;
+
     setIsAiScanning(true);
     setScanTotalSteps(3);
     setScanStep(1);
@@ -187,6 +196,7 @@ export default function RoadVideoInspectionPlayer({
     } finally {
       setTimeout(() => {
         setIsAiScanning(false);
+        isScanningRef.current = false;
       }, 500);
     }
   }, [duration, videoSourceFilename, uploadedFile, activeVehicle, onDefectLogged, aiModelMode]);
@@ -198,15 +208,17 @@ export default function RoadVideoInspectionPlayer({
     setActiveDefectsOnScreen([]);
     setActiveDefectOnScreen(null);
     lockedTracksRef.current.clear();
+    lastScannedKeyRef.current = '';
     runAiVideoInspection(duration, videoSourceFilename, newMode);
   };
 
   // Re-run AI inspection whenever the user changes the active AI model mode
   useEffect(() => {
-    if (videoReady && duration > 0) {
-      runAiVideoInspection(duration);
+    const scanKey = `${videoSourceFilename}_${aiModelMode}_${Math.round(duration)}`;
+    if (videoReady && duration > 0 && lastScannedKeyRef.current !== scanKey && !isScanningRef.current) {
+      runAiVideoInspection(duration, videoSourceFilename, aiModelMode);
     }
-  }, [aiModelMode, videoReady, duration, runAiVideoInspection]);
+  }, [aiModelMode, videoReady, duration, videoSourceFilename, runAiVideoInspection]);
 
   // Video metadata loaded handler
   const handleLoadedMetadata = () => {
@@ -229,8 +241,11 @@ export default function RoadVideoInspectionPlayer({
       setIsPlaying(false);
     });
 
-    // Automatically trigger AI Inspection on the newly loaded video
-    runAiVideoInspection(validDuration);
+    // Automatically trigger AI Inspection on the newly loaded video if not already scanned
+    const scanKey = `${videoSourceFilename}_${aiModelMode}_${Math.round(validDuration)}`;
+    if (lastScannedKeyRef.current !== scanKey && !isScanningRef.current) {
+      runAiVideoInspection(validDuration, videoSourceFilename, aiModelMode);
+    }
   };
 
   // Fullscreen event listener sync
@@ -412,6 +427,7 @@ export default function RoadVideoInspectionPlayer({
   const handleSelectSampleVideo = (item) => {
     setVideoSourceUrl(item.url);
     setVideoSourceFilename(item.file_name);
+    lastScannedKeyRef.current = '';
     setDetectedMoments([]);
     setActiveDefectsOnScreen([]);
     setActiveDefectOnScreen(null);
@@ -444,6 +460,7 @@ export default function RoadVideoInspectionPlayer({
           const data = await res.json();
           setVideoSourceUrl(data.video_url);
           setVideoSourceFilename(data.file_name);
+          lastScannedKeyRef.current = '';
           setDetectedMoments([]);
           setActiveDefectsOnScreen([]);
           setActiveDefectOnScreen(null);

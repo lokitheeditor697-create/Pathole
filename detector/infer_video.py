@@ -3,9 +3,15 @@ Real-time Video Inference Service
 Runs fine-tuned YOLOv8 on actual video frames and outputs real detections as JSON.
 """
 
-import sys
 import os
+os.environ["YOLO_OFFLINE"] = "True"
+os.environ["ULTRALYTICS_AUTOINSTALL"] = "0"
+
+import sys
 import json
+import logging
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
+
 import cv2
 from ultralytics import YOLO
 
@@ -53,7 +59,18 @@ def compute_iou(boxA, boxB):
     areaB = (boxB[2] - boxB[0]) * (boxB[3] - boxB[1])
     return inter / float(areaA + areaB - inter + 1e-6)
 
-def analyze_video(video_path, model_path=None, conf_thresh=0.20, sample_fps=2.0):
+def is_same_track(coords1, coords2, w, h):
+    iou = compute_iou(coords1, coords2)
+    if iou > 0.15:
+        return True
+    cx1 = (coords1[0] + coords1[2]) / 2.0 / w
+    cy1 = (coords1[1] + coords1[3]) / 2.0 / h
+    cx2 = (coords2[0] + coords2[2]) / 2.0 / w
+    cy2 = (coords2[1] + coords2[3]) / 2.0 / h
+    dist = ((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2) ** 0.5
+    return dist < 0.14
+
+def analyze_video(video_path, model_path=None, conf_thresh=0.28, sample_fps=2.5):
     if not os.path.exists(video_path):
         return {"error": f"Video not found: {video_path}"}
     
@@ -119,21 +136,14 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.20, sample_fps=2.0)
         for box in r.boxes:
             coords = box.xyxy[0].tolist() # [x1, y1, x2, y2]
             
-            # Refined road surface filter: Exclude only extreme top sky (above 20% height)
-            if coords[3] < 0.20 * h or coords[1] < 0.10 * h:
+            # Refined road surface filter: Exclude only extreme top sky (center above 18% height)
+            center_y = (coords[1] + coords[3]) / 2.0
+            if center_y < 0.18 * h:
                 continue
 
             cls_id = int(box.cls[0])
             cls_name = model.names.get(cls_id, "pothole")
             conf = float(box.conf[0])
-
-            # Auto-recognize waterlogging on wet puddles
-            # If defect is wide and on road surface with high reflection or class is waterlogging
-            if cls_id == 3 and 'water' in model.names.get(cls_id, '').lower():
-                cls_name = 'waterlogging'
-            elif cls_name == 'pothole' and coords[0] > 0.45 * w and coords[1] > 0.40 * h and (coords[2] - coords[0]) > 0.15 * w:
-                # Water puddle detection on right shoulder/track
-                cls_name = 'waterlogging'
 
             frame_boxes.append({
                 'coords': coords,
@@ -165,7 +175,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.20, sample_fps=2.0)
                 matched = None
                 for existing_id, item in tracked_unique_defects.items():
                     if current_time - item['last_seen'] <= 1.8:
-                        if compute_iou(coords, item['last_coords']) > 0.18:
+                        if is_same_track(coords, item['last_coords'], w, h):
                             matched = existing_id
                             break
                 if matched is not None:
@@ -275,7 +285,7 @@ if __name__ == "__main__":
 
     v_path = sys.argv[1]
     m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/pothole_yolov8.pt"
-    c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.20
+    c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.28
 
     res = analyze_video(v_path, m_path, c_thresh)
     print(json.dumps(res))

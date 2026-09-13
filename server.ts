@@ -1130,6 +1130,21 @@ app.get("/api/model-info", (req: Request, res: Response) => {
   });
 });
 
+function extractJsonFromOutput(output: string): any {
+  const trimmed = output.trim();
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const start = trimmed.indexOf('{');
+    const end = trimmed.lastIndexOf('}');
+    if (start !== -1 && end !== -1 && end > start) {
+      const candidate = trimmed.substring(start, end + 1);
+      return JSON.parse(candidate);
+    }
+    throw new Error('No valid JSON object found in output');
+  }
+}
+
 // Real Image / Snapshot Frame Inference with Dynamic YOLOv8 Model Selection
 app.post("/api/detect/upload", (req: Request, res: Response) => {
   try {
@@ -1164,7 +1179,8 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
       fs.writeFileSync(tempPath, Buffer.from(base64Data, "base64"));
 
       const cmd = `"${pythonExe}" "${scriptPath}" "${tempPath}" "${modelPath}" 0.30`;
-      exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
+      const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
+      exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 45000, env }, (error, stdout) => {
         try {
           if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
         } catch {}
@@ -1172,7 +1188,7 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
         let detections: any[] = [];
         if (!error && stdout) {
           try {
-            const parsed = JSON.parse(stdout.trim());
+            const parsed = extractJsonFromOutput(stdout);
             if (Array.isArray(parsed.detections)) {
               detections = parsed.detections;
             }
@@ -1309,11 +1325,23 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
     const scriptPath = path.join(process.cwd(), "detector", "infer_video.py");
     const { modelPath, modelName } = resolveModelPath(model_mode);
 
+    const CLASS_PREFIXES: Record<string, string> = {
+      pothole: "PTH",
+      longitudinal_crack: "LCRK",
+      transverse_crack: "TCRK",
+      alligator_crack: "ACRK",
+      crack: "CRK",
+      road_patch: "PTCH",
+      rutting: "RUT",
+      waterlogging: "WLOG",
+    };
+
     const buildPayload = (moments: any[], uniqueDefectsList: any[]) => {
       const cleanFileId = cleanName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
       const generatedDefects = uniqueDefectsList.map((m: any, idx: number) => {
         const trackNum = m.track_id !== undefined && m.track_id !== null ? m.track_id : idx + 1;
-        const potholeId = m.pothole_id || `PTH-#${String(trackNum).padStart(2, '0')}`;
+        const prefix = CLASS_PREFIXES[m.class_name] || "DST";
+        const potholeId = m.pothole_id || `${prefix}-#${String(trackNum).padStart(2, '0')}`;
         const detectionId = `DET-${cleanFileId}-${potholeId.replace(/[^a-zA-Z0-9]/g, "")}`;
 
         const existing = municipalDB.getDefects().find((d) => d.detection_id === detectionId);
@@ -1393,24 +1421,26 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
 
     // 100% Real YOLOv8 AI Video Inference (PyTorch + ByteTrack)
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
-      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.35`;
-      exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
+      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28`;
+      const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
+      exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 180000, env }, (error, stdout, stderr) => {
         let moments: any[] = [];
         let uniqueDefectsList: any[] = [];
         if (!error && stdout) {
           try {
-            const parsed = JSON.parse(stdout.trim());
+            const parsed = extractJsonFromOutput(stdout);
             if (Array.isArray(parsed.moments)) moments = parsed.moments;
             if (Array.isArray(parsed.unique_defects)) uniqueDefectsList = parsed.unique_defects;
             // Return actual live YOLOv8 model output directly (clean road -> 0 defects, damaged road -> exact defects)
             return res.status(200).json(buildPayload(moments, uniqueDefectsList));
           } catch (e) {
             console.error("Failed to parse YOLO output:", e);
+            if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
           }
         }
 
         // Only in case of Python execution failure, check exact file cache
-        if (PRECOMPUTED_SCANS[cleanName]?.moments) {
+        if (PRECOMPUTED_SCANS[cleanName]?.moments && PRECOMPUTED_SCANS[cleanName].moments.length > 0) {
           const pre = PRECOMPUTED_SCANS[cleanName];
           return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
         }

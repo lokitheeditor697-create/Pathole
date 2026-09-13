@@ -3,9 +3,15 @@ Real-time Image & Frame Inference Service
 Runs fine-tuned YOLOv8 on image files or base64 frames and returns real detections.
 """
 
-import sys
 import os
+os.environ["YOLO_OFFLINE"] = "True"
+os.environ["ULTRALYTICS_AUTOINSTALL"] = "0"
+
+import sys
 import json
+import logging
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
+
 import base64
 import cv2
 import numpy as np
