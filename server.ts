@@ -1089,6 +1089,14 @@ function resolveModelPath(requestedMode?: string): { modelPath: string; modelNam
   return { modelPath: activePath, modelName: "YOLOv8 Dedicated Pothole Detector" };
 }
 
+function getPythonExe(): string {
+  const winVenv = path.join(process.cwd(), ".venv", "Scripts", "python.exe");
+  const linuxVenv = path.join(process.cwd(), ".venv", "bin", "python");
+  if (fs.existsSync(winVenv)) return winVenv;
+  if (fs.existsSync(linuxVenv)) return linuxVenv;
+  return process.platform === "win32" ? "python" : "python3";
+}
+
 app.get("/api/model-info", (req: Request, res: Response) => {
   const potholePath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
   const rddPath = path.join(process.cwd(), "detector", "rdd2022_multiclass.pt");
@@ -1166,9 +1174,7 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
 
     const imagePayload = snapshot_thumbnail || image_base64;
 
-    const pythonExe = fs.existsSync(path.join(process.cwd(), ".venv", "Scripts", "python.exe"))
-      ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
-      : "python";
+    const pythonExe = getPythonExe();
     const scriptPath = path.join(process.cwd(), "detector", "infer_image.py");
     const { modelPath, modelName } = resolveModelPath(model_mode);
 
@@ -1329,9 +1335,7 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
       }
     }
 
-    const pythonExe = fs.existsSync(path.join(process.cwd(), ".venv", "Scripts", "python.exe"))
-      ? path.join(process.cwd(), ".venv", "Scripts", "python.exe")
-      : "python";
+    const pythonExe = getPythonExe();
     const scriptPath = path.join(process.cwd(), "detector", "infer_video.py");
     const { modelPath, modelName } = resolveModelPath(model_mode);
 

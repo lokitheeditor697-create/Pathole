@@ -1,3 +1,13 @@
+---
+title: Road Defect AI Intelligence Platform
+emoji: 🛣️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Smart City Road-Defect & Traffic Detection Prototype
 
 An end-to-end prototype designed for smart city hackathons. Autonomous transit buses equipped with dashcams and GPS run real-time YOLOv8 road-defect detection at the edge. A FastAPI backend performs spatial-temporal deduplication (15-meter radius and 10-minute window) to merge multiple bus observations into verified road defects. A modern React + Leaflet frontend provides a live situational map with severity pins, side panel list, and analytical defect charts.
