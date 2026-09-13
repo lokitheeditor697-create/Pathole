@@ -1384,6 +1384,7 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
         moments,
         inspection,
         model: modelName,
+        model_mode,
         inference_speed: "Real Edge AI Inference"
       };
       videoScanCache.set(cacheKey, scanPayload);

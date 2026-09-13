@@ -1,0 +1,14 @@
+# YOLOv8 Dataset Spec for RDD2022 Road Defect Training
+path: E:/Pathole detection/ml/datasets/rdd2022_yolo
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: pothole
+  1: longitudinal_crack
+  2: transverse_crack
+  3: alligator_crack
+  4: road_patch
+  5: rutting
+  6: waterlogging
