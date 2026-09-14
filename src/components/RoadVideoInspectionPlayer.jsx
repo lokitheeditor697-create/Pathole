@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   Play,
   Pause,
@@ -59,11 +59,33 @@ export default function RoadVideoInspectionPlayer({
   const [activeDefectOnScreen, setActiveDefectOnScreen] = useState(null);
   const [activeDefectsOnScreen, setActiveDefectsOnScreen] = useState([]);
   const [autoPauseOnDefects, setAutoPauseOnDefects] = useState(false);
-  const [lastAutoPausedMoment, setLastAutoPausedMoment] = useState(null);
   const lockedTracksRef = useRef(new Map());
   const isScanningRef = useRef(false);
   const lastScannedKeyRef = useRef('');
   const activeScanRequestIdRef = useRef(0);
+
+  // Unique physical defect tracks (deduplicated across consecutive frames for clean HUD display)
+  const uniqueDefectsList = useMemo(() => {
+    if (!detectedMoments || detectedMoments.length === 0) return [];
+    const trackMap = new Map();
+    const untracked = [];
+    for (const m of detectedMoments) {
+      const key = m.pothole_id || (m.track_id !== undefined && m.track_id !== null ? `TRK-${m.track_id}` : null);
+      if (key) {
+        const existing = trackMap.get(key);
+        if (!existing || (m.conf || 0) > (existing.conf || 0)) {
+          trackMap.set(key, m);
+        }
+      } else {
+        untracked.push(m);
+      }
+    }
+    const list = [...Array.from(trackMap.values()), ...untracked];
+    list.sort((a, b) => a.time - b.time);
+    return list;
+  }, [detectedMoments]);
+
+  const uniqueDefectsCount = uniqueDefectsList.length;
 
   // Manual logging states
   const [isCapturingManual, setIsCapturingManual] = useState(false);
@@ -1265,12 +1287,12 @@ export default function RoadVideoInspectionPlayer({
           <div
             style={{
               backgroundColor: 'rgba(15, 23, 42, 0.90)',
-              color: isAiScanning ? '#38bdf8' : (detectedMoments.length > 0 ? '#ef4444' : '#22c55e'),
+              color: isAiScanning ? '#38bdf8' : (uniqueDefectsCount > 0 ? '#ef4444' : '#22c55e'),
               fontSize: '11px',
               fontWeight: '700',
               padding: '4px 10px',
               borderRadius: '6px',
-              border: `1px solid ${isAiScanning ? '#0284c7' : (detectedMoments.length > 0 ? '#ef4444' : '#1e293b')}`,
+              border: `1px solid ${isAiScanning ? '#0284c7' : (uniqueDefectsCount > 0 ? '#ef4444' : '#1e293b')}`,
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -1281,7 +1303,7 @@ export default function RoadVideoInspectionPlayer({
             <span>
               {isAiScanning
                 ? 'AI Analyzing Road Frames...'
-                : `${detectedMoments.length > 0 ? `${detectedMoments.length} Defects Found` : '0 Defects Found'}`}
+                : `${uniqueDefectsCount > 0 ? `${uniqueDefectsCount} Defect${uniqueDefectsCount === 1 ? '' : 's'} Found` : '0 Defects Found'}`}
             </span>
           </div>
         </div>
@@ -1389,7 +1411,7 @@ export default function RoadVideoInspectionPlayer({
           />
 
           {/* Color-Coded Defect Keyframe Pin Markers on Progress Bar */}
-          {duration > 0 && detectedMoments.map((m, idx) => {
+          {duration > 0 && uniqueDefectsList.map((m, idx) => {
             const pct = Math.min(99, Math.max(1, (m.time / duration) * 100));
             const isNear = Math.abs(currentTime - m.time) < 0.95;
             return (
@@ -1691,12 +1713,12 @@ export default function RoadVideoInspectionPlayer({
             Identified Road Defects:
           </span>
 
-          {detectedMoments.length === 0 ? (
+          {uniqueDefectsList.length === 0 ? (
             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
               {isAiScanning ? 'Scanning video frames with YOLOv8...' : 'No road distress identified in this clip.'}
             </span>
           ) : (
-            detectedMoments.map((m, idx) => {
+            uniqueDefectsList.map((m, idx) => {
               const meta = getDefectMeta(m.class_name);
               const isMatch = Math.abs(currentTime - m.time) < 0.95;
               const chipColor = meta.color || getSeverityColor(m.severity);
