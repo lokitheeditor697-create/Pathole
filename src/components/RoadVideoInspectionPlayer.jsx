@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { API_BASE } from '../config';
 import { getDefectMeta, formatDefectId } from '../utils/defectMeta';
-import precomputedScans from '../../data/precomputed_scans.json';
 
 export default function RoadVideoInspectionPlayer({
   uploadedFile,
@@ -118,40 +117,6 @@ export default function RoadVideoInspectionPlayer({
     setScanStep(1);
     setScanStatusMessage(`Initializing ${activeMode === 'potbot' ? 'PotBot YOLOv8m Dedicated Pothole' : (activeMode === 'rdd2022' ? 'YOLOv8s CRDDC Road Damage' : 'YOLOv8m 7-Class Road Anomaly')} model...`);
 
-    const applyAutonomousFallback = () => {
-      if (reqId !== activeScanRequestIdRef.current) return;
-      const cleanName = (targetFile || '').replace(/\\/g, '/').split('/').pop() || 'real_dashcam.mp4';
-      const cacheKey = `${cleanName}_${activeMode}`;
-      const fallback = precomputedScans[cacheKey] 
-        || precomputedScans[cleanName] 
-        || (cleanName === 'real_dashcam.mp4' ? (precomputedScans[`real_dashcam.mp4_${activeMode}`] || precomputedScans['real_dashcam.mp4']) : null)
-        || precomputedScans[`real_dashcam.mp4_${activeMode}`]
-        || precomputedScans['real_dashcam.mp4'];
-      
-      if (fallback && Array.isArray(fallback.moments) && fallback.moments.length > 0) {
-        const mappedMoments = fallback.moments.map((m, idx) => {
-          const meta = getDefectMeta(m.class_name);
-          const formattedId = m.pothole_id || formatDefectId(m.track_id || idx + 1, m.class_name);
-          return {
-            ...m,
-            pothole_id: formattedId,
-            display_name: m.display_name || meta.fullLabel,
-            rdd_code: m.rdd_code || meta.code,
-            category: m.category || meta.category,
-            color: meta.color
-          };
-        });
-        setDetectedMoments(mappedMoments);
-        const totalCount = fallback.unique_defects_count || fallback.unique_defects?.length || mappedMoments.length;
-        setScanStep(3);
-        const modeLabel = activeMode === 'potbot' ? 'PotBot Dedicated Pothole' : (activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly');
-        setScanStatusMessage(`Autonomous Edge Scan [${modeLabel}]: ${totalCount} road distresses identified.`);
-        showToast(`Autonomous Edge AI [${modeLabel}]: ${totalCount} real defects loaded.`, 'info');
-      } else {
-        setDetectedMoments([]);
-      }
-    };
-
     try {
       setScanStep(2);
       const res = await fetch(`${API_BASE}/api/detect/video-scan`, {
@@ -166,21 +131,21 @@ export default function RoadVideoInspectionPlayer({
           vehicle_id: activeVehicle?.vehicle_id || 'Transit Video Inspection',
           bus_id: activeVehicle?.vehicle_id || null,
           model_mode: activeMode,
-          force_rescan: forceRescan,
-          // Wall-clock start: now minus the video duration so backend maps each frame second to real time
-          video_start_timestamp: new Date(Date.now() - Math.round(dur * 1000)).toISOString(),
+          force_rescan: true
         })
       });
 
+      if (!res.ok) {
+        throw new Error(`Video scan request failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
       if (reqId !== activeScanRequestIdRef.current) return;
 
-      if (res.ok) {
-        const data = await res.json();
-        if (reqId !== activeScanRequestIdRef.current) return;
-
-        setScanStep(3);
+      if (data && data.status === 'success') {
         const modeLabel = activeMode === 'potbot' ? 'PotBot Dedicated Pothole' : (activeMode === 'rdd2022' ? 'CRDDC Road Damage' : '7-Class Road Anomaly');
-        setScanStatusMessage(`Inference complete [${modeLabel}]: ${data.total_defects} road distresses identified.`);
+        setScanStep(3);
+        setScanStatusMessage(`Live Edge AI Scan [${modeLabel}]: ${data.total_defects} road distresses identified.`);
 
         if (Array.isArray(data.moments) && data.moments.length > 0) {
           const mappedMoments = data.moments.map((m, idx) => {
@@ -201,14 +166,13 @@ export default function RoadVideoInspectionPlayer({
             const meta = getDefectMeta(d.class_name);
             const formattedId = d.pothole_id || formatDefectId(idx + 1, d.class_name);
             return {
-              time: d.video_timestamp_sec || 1.5,
-              pothole_id: formattedId,
-              track_id: idx + 1,
+              time: d.video_timestamp_sec !== undefined ? d.video_timestamp_sec : (d.time || 0),
               class_name: d.class_name,
               display_name: meta.fullLabel,
               rdd_code: meta.code,
               category: meta.category,
               color: meta.color,
+              pothole_id: formattedId,
               conf: d.confidence,
               severity: d.severity,
               wCm: d.bbox?.estimated_physical_width_cm || 50,
@@ -229,13 +193,17 @@ export default function RoadVideoInspectionPlayer({
           setDetectedMoments([]);
         }
 
-        showToast(`AI Video Scan [${modeLabel}]: ${data.total_defects} real defects verified.`, 'success');
+        showToast(`AI Video Scan [${modeLabel}]: ${data.total_defects} real defects verified.`, data.total_defects > 0 ? 'success' : 'info');
       } else {
-        applyAutonomousFallback();
+        setDetectedMoments([]);
       }
     } catch (err) {
-      console.warn('Backend link offline, activating autonomous edge fallback:', err);
-      applyAutonomousFallback();
+      console.error('Live AI scan error:', err);
+      if (reqId === activeScanRequestIdRef.current) {
+        setDetectedMoments([]);
+        setScanStatusMessage('Live model inference failed or returned no response.');
+        showToast('AI inference error or server unreachable', 'error');
+      }
     } finally {
       if (reqId === activeScanRequestIdRef.current) {
         setTimeout(() => {
@@ -385,10 +353,10 @@ export default function RoadVideoInspectionPlayer({
         const area2 = b2.w * b2.h;
         const unionArea = area1 + area2 - interArea;
         const iou = unionArea > 0 ? (interArea / unionArea) : 0;
-        if (iou > 0.18) return true;
+        if (iou > 0.15) return true;
 
         const minArea = Math.min(area1, area2);
-        if (minArea > 0 && (interArea / minArea) > 0.40) return true;
+        if (minArea > 0 && (interArea / minArea) > 0.28) return true;
 
         const vidW = b1.video_w || 1280;
         const vidH = b1.video_h || 720;
@@ -396,8 +364,13 @@ export default function RoadVideoInspectionPlayer({
         const c1y = (b1.y + b1.h / 2) / vidH;
         const c2x = (b2.x + b2.w / 2) / vidW;
         const c2y = (b2.y + b2.h / 2) / vidH;
+
+        const inside1 = (b2.x <= b1.x + b1.w / 2 && b1.x + b1.w / 2 <= b2.x + b2.w && b2.y <= b1.y + b1.h / 2 && b1.y + b1.h / 2 <= b2.y + b2.h);
+        const inside2 = (b1.x <= b2.x + b2.w / 2 && b2.x + b2.w / 2 <= b1.x + b1.w && b1.y <= b2.y + b2.h / 2 && b2.y + b2.h / 2 <= b1.y + b1.h);
+        if (inside1 || inside2) return true;
+
         const centerDist = Math.hypot(c1x - c2x, c1y - c2y);
-        if (centerDist < 0.14) return true;
+        if (centerDist < 0.18) return true;
 
         return false;
       });
@@ -410,7 +383,7 @@ export default function RoadVideoInspectionPlayer({
     const lockedTraces = singleTraces.map((cand) => {
       let matchedTrackKey = null;
       for (const [key, tr] of lockedTracksRef.current.entries()) {
-        if (!tr.finalized && cur - tr.lastSeen <= 0.9) {
+        if (!tr.finalized && cur - tr.lastSeen <= 1.2) {
           const oldB = tr.lastInfoBeforeExit?.bbox;
           if (oldB) {
             const vidW = cand.bbox?.video_w || 1280;
@@ -419,7 +392,9 @@ export default function RoadVideoInspectionPlayer({
             const c1y = (cand.bbox.y + cand.bbox.h / 2) / vidH;
             const c2x = (oldB.x + oldB.w / 2) / vidW;
             const c2y = (oldB.y + oldB.h / 2) / vidH;
-            if (Math.hypot(c1x - c2x, c1y - c2y) < 0.16) {
+            const dx = Math.abs(c1x - c2x);
+            const dy = c1y - c2y;
+            if ((dx < 0.16 && dy >= -0.06 && dy <= 0.35) || Math.hypot(c1x - c2x, c1y - c2y) < 0.22) {
               matchedTrackKey = key;
               break;
             }

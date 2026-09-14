@@ -33,6 +33,15 @@ def resolve_model_path(provided_path=None):
     return provided_path or "detector/pothole_yolov8.pt"
 
 CLASS_METADATA = {
+    'minor_pothole': {'code': 'D40-MIN', 'display_name': 'Minor Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void'},
+    'moderate_pothole': {'code': 'D40-MOD', 'display_name': 'Moderate Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void'},
+    'major_pothole': {'code': 'D40-MAJ', 'display_name': 'Major Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void'},
+    'low_cracking': {'code': 'D00-L', 'display_name': 'Low Surface Cracking', 'prefix': 'CRK', 'category': 'Surface Crack'},
+    'medium_cracking': {'code': 'D00-M', 'display_name': 'Medium Surface Cracking', 'prefix': 'CRK', 'category': 'Surface Crack'},
+    'high_cracking': {'code': 'D00-H', 'display_name': 'High Surface Cracking', 'prefix': 'CRK', 'category': 'Surface Crack'},
+    'minor_edge_break': {'code': 'D42-MIN', 'display_name': 'Minor Edge Break', 'prefix': 'EDG', 'category': 'Pavement Edge Defect'},
+    'modrate_edge_break': {'code': 'D42-MOD', 'display_name': 'Moderate Edge Break', 'prefix': 'EDG', 'category': 'Pavement Edge Defect'},
+    'major_edge_break': {'code': 'D42-MAJ', 'display_name': 'Major Edge Break', 'prefix': 'EDG', 'category': 'Pavement Edge Defect'},
     'pothole': {'code': 'D40', 'display_name': 'Pothole (D40)', 'prefix': 'PTH', 'category': 'Surface Void'},
     'speed-bump': {'code': 'D60', 'display_name': 'Speed Bump / Hump (D60)', 'prefix': 'BMP', 'category': 'Traffic Calming'},
     'speed_bump': {'code': 'D60', 'display_name': 'Speed Bump / Hump (D60)', 'prefix': 'BMP', 'category': 'Traffic Calming'},
@@ -60,6 +69,8 @@ def get_defect_meta(cls_name):
         'prefix': 'DST',
         'category': 'Road Distress'
     })
+
+
 
 def classify_road_distress(frame, coords, default_cls='pothole'):
     h_img, w_img, _ = frame.shape
@@ -94,6 +105,25 @@ def classify_road_distress(frame, coords, default_cls='pothole'):
         return 'rutting'
     return 'pothole'
 
+def compute_iou(boxA, boxB):
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+    inter = max(0, xB - xA) * max(0, yB - yA)
+    areaA = (boxA[2] - boxA[0]) * (boxA[3] - boxA[1])
+    areaB = (boxB[2] - boxB[0]) * (boxB[3] - boxB[1])
+    return inter / float(areaA + areaB - inter + 1e-6)
+
+def compute_iomin(boxA, boxB):
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+    inter = max(0, xB - xA) * max(0, yB - yA)
+    minArea = min((boxA[2] - boxA[0]) * (boxA[3] - boxA[1]), (boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
+    return inter / float(minArea + 1e-6)
+
 def analyze_image(image_input, model_path=None, conf_thresh=0.30, is_multiclass=False):
     actual_model = resolve_model_path(model_path)
     if not os.path.exists(actual_model):
@@ -120,7 +150,7 @@ def analyze_image(image_input, model_path=None, conf_thresh=0.30, is_multiclass=
 
     h, w, _ = frame.shape
     results = model(frame, conf=conf_thresh, verbose=False)
-    detections = []
+    raw_candidates = []
 
     for r in results:
         for idx, box in enumerate(r.boxes):
@@ -132,37 +162,84 @@ def analyze_image(image_input, model_path=None, conf_thresh=0.30, is_multiclass=
             if is_multiclass:
                 cls_name = classify_road_distress(frame, coords, default_cls=cls_name)
 
-            meta = get_defect_meta(cls_name)
-
-            bx = int(coords[0])
-            by = int(coords[1])
-            bw = int(coords[2] - coords[0])
-            bh = int(coords[3] - coords[1])
-
-            est_w_cm = round((bw / w) * 180, 1)
-            est_l_cm = round((bh / h) * 120, 1)
-            severity = "Critical" if conf >= 0.75 else "High" if conf >= 0.55 else "Medium"
-
-            detections.append({
-                "pothole_id": f"{meta['prefix']}-#{idx + 1:02d}",
-                "class_name": cls_name,
-                "display_name": meta['display_name'],
-                "rdd_code": meta['code'],
-                "category": meta['category'],
-                "confidence": round(conf, 2),
-                "conf": round(conf, 2),
-                "severity": severity,
-                "wCm": est_w_cm,
-                "lCm": est_l_cm,
-                "bbox": {
-                    "x": bx,
-                    "y": by,
-                    "w": bw,
-                    "h": bh,
-                    "video_w": w,
-                    "video_h": h
-                }
+            raw_candidates.append({
+                'coords': coords,
+                'cls_name': cls_name,
+                'conf': conf
             })
+
+    # Intra-image NMS and large pothole box containment merging
+    raw_candidates.sort(key=lambda x: x['conf'], reverse=True)
+    deduped_boxes = []
+    SEVERITY_ORDER = {'Low': 1, 'Medium': 2, 'High': 3, 'Critical': 4}
+
+    for cand in raw_candidates:
+        c1 = cand['coords']
+        merged = False
+        for kept in deduped_boxes:
+            c2 = kept['coords']
+            iou = compute_iou(c1, c2)
+            iomin = compute_iomin(c1, c2)
+            cx1, cy1 = (c1[0] + c1[2]) / 2.0 / w, (c1[1] + c1[3]) / 2.0 / h
+            cx2, cy2 = (c2[0] + c2[2]) / 2.0 / w, (c2[1] + c2[3]) / 2.0 / h
+            dist = ((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2) ** 0.5
+
+            inside1 = (c2[0] <= cx1 * w <= c2[2]) and (c2[1] <= cy1 * h <= c2[3])
+            inside2 = (c1[0] <= cx2 * w <= c1[2]) and (c1[1] <= cy2 * h <= c1[3])
+
+            if iou > 0.15 or iomin > 0.28 or dist < 0.18 or inside1 or inside2:
+                kept['coords'] = [
+                    min(c1[0], c2[0]),
+                    min(c1[1], c2[1]),
+                    max(c1[2], c2[2]),
+                    max(c1[3], c2[3])
+                ]
+                kept['conf'] = max(kept['conf'], cand['conf'])
+                meta_k = get_defect_meta(kept['cls_name'])
+                meta_c = get_defect_meta(cand['cls_name'])
+                if SEVERITY_ORDER.get(meta_c.get('severity', 'Medium'), 2) > SEVERITY_ORDER.get(meta_k.get('severity', 'Medium'), 2):
+                    kept['cls_name'] = cand['cls_name']
+                merged = True
+                break
+        if not merged:
+            deduped_boxes.append(cand)
+
+    detections = []
+    for idx, item in enumerate(deduped_boxes):
+        coords = item['coords']
+        cls_name = item['cls_name']
+        conf = item['conf']
+        meta = get_defect_meta(cls_name)
+
+        bx = int(coords[0])
+        by = int(coords[1])
+        bw = int(coords[2] - coords[0])
+        bh = int(coords[3] - coords[1])
+
+        est_w_cm = round((bw / w) * 180, 1)
+        est_l_cm = round((bh / h) * 120, 1)
+        severity = "Critical" if conf >= 0.75 else "High" if conf >= 0.55 else "Medium"
+
+        detections.append({
+            "pothole_id": f"{meta['prefix']}-#{idx + 1:02d}",
+            "class_name": cls_name,
+            "display_name": meta['display_name'],
+            "rdd_code": meta['code'],
+            "category": meta['category'],
+            "confidence": round(conf, 2),
+            "conf": round(conf, 2),
+            "severity": severity,
+            "wCm": est_w_cm,
+            "lCm": est_l_cm,
+            "bbox": {
+                "x": bx,
+                "y": by,
+                "w": bw,
+                "h": bh,
+                "video_w": w,
+                "video_h": h
+            }
+        })
 
     return {
         "width": w,

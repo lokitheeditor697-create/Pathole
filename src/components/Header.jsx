@@ -322,7 +322,7 @@ export default function Header({
             onClick={() => setAiModelMode('pothole')}
             title="Targeted Road Anomaly & Pothole Model (YOLOv8m) — Only this model is active"
             style={{
-              display: 'flex',
+              display: 'none',
               alignItems: 'center',
               gap: '4px',
               padding: '4px 8px',
@@ -355,7 +355,7 @@ export default function Header({
             onClick={() => setAiModelMode('rdd2022')}
             title="CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes) — Only this model is active"
             style={{
-              display: 'flex',
+              display: 'none',
               alignItems: 'center',
               gap: '4px',
               padding: '4px 8px',
@@ -388,7 +388,7 @@ export default function Header({
             onClick={() => setAiModelMode('potbot')}
             title="PotBot AI Dedicated Deep Pothole Specialist (YOLOv8m • 148.5MB) — Only this model is active"
             style={{
-              display: 'flex',
+              display: 'none',
               alignItems: 'center',
               gap: '4px',
               padding: '4px 8px',

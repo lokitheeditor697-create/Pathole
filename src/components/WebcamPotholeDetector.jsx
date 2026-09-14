@@ -59,6 +59,8 @@ export default function WebcamPotholeDetector({
 
   const [toastMessage, setToastMessage] = useState(null);
   const lastReportedTimeRef = useRef(0);
+  const liveInferenceInFlightRef = useRef(false);
+  const liveTrackIdRef = useRef(null);
 
   // Play subtle feedback beep when a road defect is confirmed
   const playDetectionChime = useCallback(() => {
@@ -379,6 +381,87 @@ export default function WebcamPotholeDetector({
     }
   }, [sensitivity, targetClass, autoReport, playDetectionChime]);
 
+  // Live detection uses the same RoadGuard service as uploaded videos.  The old
+  // browser brightness heuristic remains available for UI diagnostics only and is
+  // deliberately not used for alerts or reporting.
+  const runLiveRoadGuardInference = useCallback(async () => {
+    if (liveInferenceInFlightRef.current || !videoRef.current || videoRef.current.readyState < 2) return;
+
+    liveInferenceInFlightRef.current = true;
+    try {
+      const video = videoRef.current;
+      const frameCanvas = document.createElement('canvas');
+      frameCanvas.width = 640;
+      frameCanvas.height = 360;
+      const frameContext = frameCanvas.getContext('2d');
+      if (!frameContext) return;
+      frameContext.drawImage(video, 0, 0, frameCanvas.width, frameCanvas.height);
+
+      const response = await fetch(`${API_BASE}/api/detect/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file_name: 'live_roadguard_frame.jpg',
+          media_type: 'live_mobile_camera',
+          snapshot_thumbnail: frameCanvas.toDataURL('image/jpeg', 0.82),
+          latitude: deviceLocation.latitude,
+          longitude: deviceLocation.longitude,
+          vehicle_id: `${activeVehicle?.vehicle_id || 'Mobile Patrol'} (Live Camera)`,
+          model_mode: 'roadguard'
+        })
+      });
+      const data = response.ok ? await response.json() : null;
+      const detection = data?.detections?.[0];
+      const trackedDefect = data?.detected_defect;
+
+      if (!detection || !trackedDefect) {
+        liveTrackIdRef.current = null;
+        setDetectionState((previous) => ({
+          ...previous,
+          hasDefect: false,
+          confidence: 0,
+          bbox: null,
+          statusText: 'Road surface clear · RoadGuard scan complete'
+        }));
+        return;
+      }
+
+      const meta = getDefectMeta(detection.class_name);
+      const bbox = detection.bbox;
+      const trackId = trackedDefect.detection_id;
+      const isNewTrack = liveTrackIdRef.current !== trackId;
+      liveTrackIdRef.current = trackId;
+      setDetectionState({
+        hasDefect: true,
+        class_name: detection.class_name,
+        display_name: detection.display_name || meta.fullLabel,
+        rdd_code: detection.rdd_code || meta.code,
+        category: detection.category || meta.category,
+        color: meta.color,
+        confidence: detection.conf,
+        bbox: {
+          xPct: Math.round((bbox.x / bbox.video_w) * 100),
+          yPct: Math.round((bbox.y / bbox.video_h) * 100),
+          wPct: Math.round((bbox.w / bbox.video_w) * 100),
+          hPct: Math.round((bbox.h / bbox.video_h) * 100)
+        },
+        dimensions: { width_cm: detection.wCm, length_cm: detection.lCm },
+        severity: detection.severity,
+        statusText: `${detection.display_name || meta.fullLabel} · Track ${trackId} · ${(detection.conf * 100).toFixed(0)}%`,
+        roadLuminance: 0,
+        anomalyScore: 0
+      });
+      if (isNewTrack) {
+        playDetectionChime();
+        if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+      }
+    } catch (error) {
+      console.warn('RoadGuard live inference failed:', error);
+    } finally {
+      liveInferenceInFlightRef.current = false;
+    }
+  }, [activeVehicle, deviceLocation.latitude, deviceLocation.longitude, playDetectionChime]);
+
   // Automated frame dispatch to Municipal DB & Alert Engine
   const handleAutoDispatchFrame = async (cls, conf, wCm, lCm, _sev) => {
     try {
@@ -416,16 +499,15 @@ export default function WebcamPotholeDetector({
   useEffect(() => {
     if (!isCameraActive || !continuousScan) return;
     const interval = setInterval(() => {
-      analyzeCurrentFrame();
-    }, 450);
+      runLiveRoadGuardInference();
+    }, 1200);
     return () => clearInterval(interval);
-  }, [isCameraActive, continuousScan, analyzeCurrentFrame]);
+  }, [isCameraActive, continuousScan, runLiveRoadGuardInference]);
 
   // Manual one-frame scan
   const handleManualScan = () => {
     setIsScanning(true);
-    analyzeCurrentFrame();
-    setTimeout(() => setIsScanning(false), 250);
+    runLiveRoadGuardInference().finally(() => setIsScanning(false));
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -839,7 +921,7 @@ export default function WebcamPotholeDetector({
         {/* Left: Camera Switch, Torch, Audio & Sensitivity */}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
           {/* AI Model Switcher Toggle */}
-          {setAiModelMode && (
+          {false && setAiModelMode && (
             <div style={{
               display: 'flex',
               alignItems: 'center',

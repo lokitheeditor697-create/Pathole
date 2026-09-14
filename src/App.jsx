@@ -27,8 +27,8 @@ export default function App() {
   const [vehicles, setVehicles] = useState(DEFAULT_VEHICLES);
   const [systemStatus, setSystemStatus] = useState(null);
 
-  // AI Model Mode: 'pothole' (7-Class Anomaly) | 'rdd2022' (CRDDC Multi-Damage) | 'potbot' (PotBot Dedicated Pothole 148MB)
-  const [aiModelMode, setAiModelMode] = useState('pothole');
+  // Production scans use one RoadGuard model. Other weights remain offline only.
+  const [aiModelMode, setAiModelMode] = useState('roadguard');
 
   // Connection & GPS Operational Reliability States
   const [serverStatus, setServerStatus] = useState('connected'); // 'connected' | 'reconnecting' | 'disconnected'

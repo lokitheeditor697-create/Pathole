@@ -399,6 +399,30 @@ function getDynamicDedupThresholds(speedKmh: number): { radiusM: number; windowS
   return { radiusM: Math.round(radiusM * 10) / 10, windowSec: Math.round(windowSec) };
 }
 
+function isMatchingDefectClass(classA: string, classB: string): boolean {
+  if (!classA || !classB) return false;
+  const normA = String(classA).toLowerCase().replace(/[- ]/g, '_');
+  const normB = String(classB).toLowerCase().replace(/[- ]/g, '_');
+  if (normA === normB) return true;
+
+  const isPotholeA = normA.includes('pothole') || normA === 'd40' || normA.startsWith('d40');
+  const isPotholeB = normB.includes('pothole') || normB === 'd40' || normB.startsWith('d40');
+  if (isPotholeA && isPotholeB) return true;
+
+  const isCrackA = normA.includes('crack') || normA === 'd00' || normA === 'd01' || normA === 'd20' || normA === 'd02';
+  const isCrackB = normB.includes('crack') || normB === 'd00' || normB === 'd01' || normB === 'd20' || normB === 'd02';
+  if (isCrackA && isCrackB) {
+    if (normA.includes('alligator') || normB.includes('alligator')) return normA === normB;
+    return true;
+  }
+
+  const isEdgeA = normA.includes('edge');
+  const isEdgeB = normB.includes('edge');
+  if (isEdgeA && isEdgeB) return true;
+
+  return false;
+}
+
 function processSpatialDeduplication(eventData: {
   class_name: DefectClass;
   confidence: number;
@@ -429,7 +453,7 @@ function processSpatialDeduplication(eventData: {
   let minDist = Infinity;
 
   for (const item of verifiedDefects) {
-    if (item.class_name === cName) {
+    if (isMatchingDefectClass(item.class_name, cName)) {
       const d = haversineDistanceM(lat, lon, item.latitude, item.longitude);
       if (d <= radiusM) {
         const itemEpoch = new Date(item.last_detected).getTime();
@@ -1621,30 +1645,7 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
 
 const videoScanCache = new Map<string, any>();
 
-// Load precomputed AI scans (YOLOv8 ByteTrack) so cloud instances (Render) without PyTorch runtime have 100% full defect detection accuracy
-let PRECOMPUTED_SCANS: Record<string, { total_defects: number; unique_defects: any[]; moments: any[] }> = {};
-function getPrecomputedScans(): Record<string, any> {
-  try {
-    const cachePath = path.join(process.cwd(), "data", "precomputed_scans.json");
-    if (fs.existsSync(cachePath)) {
-      const parsed = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
-      PRECOMPUTED_SCANS = parsed;
-      return parsed;
-    }
-  } catch (e) {
-    console.warn("Could not reload precomputed scans:", e);
-  }
-  return PRECOMPUTED_SCANS;
-}
-
-try {
-  PRECOMPUTED_SCANS = getPrecomputedScans();
-  console.log(`[Video AI Engine] Loaded precomputed YOLOv8 ByteTrack scans for ${Object.keys(PRECOMPUTED_SCANS).length} videos.`);
-} catch (e) {
-  console.warn("Could not load precomputed scans:", e);
-}
-
-// Automated Video Inspection AI Keyframe Scanner (YOLOv8-road-v1 with real Python inference & precomputed model fallback)
+// Automated Video Inspection AI Keyframe Scanner (100% Real YOLOv8 AI Inference)
 app.post("/api/detect/video-scan", (req: Request, res: Response) => {
   try {
     const {
@@ -1846,14 +1847,7 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
       return scanPayload;
     };
 
-    // If precomputed scans exist and not forcing a re-scan, serve immediately for instantaneous load
-    const currentPrecomputed = getPrecomputedScans();
-    const precomputedMatch = currentPrecomputed[cacheKey] || (model_mode === 'pothole' ? currentPrecomputed[cleanName] : null);
-    if (!forceRescan && precomputedMatch) {
-      return res.status(200).json(buildPayload(precomputedMatch.moments || [], precomputedMatch.unique_defects || []));
-    }
-
-    // 100% Real YOLOv8 AI Video Inference (PyTorch + ByteTrack)
+    // 100% Real YOLOv8 AI Video Inference (PyTorch + Directional Spatial Tracking)
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
       const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "pothole"}"`;
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
@@ -1865,29 +1859,21 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
             const parsed = extractJsonFromOutput(stdout);
             if (Array.isArray(parsed.moments)) moments = parsed.moments;
             if (Array.isArray(parsed.unique_defects)) uniqueDefectsList = parsed.unique_defects;
-            // Return actual live YOLOv8 model output directly (clean road -> 0 defects, damaged road -> exact defects)
+            // Return actual live YOLOv8 model output directly
             return res.status(200).json(buildPayload(moments, uniqueDefectsList));
           } catch (e) {
             console.error("Failed to parse YOLO output:", e);
             if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
           }
-        }
-
-        // Only in case of Python execution failure, check exact file cache
-        if (PRECOMPUTED_SCANS[cleanName]?.moments && PRECOMPUTED_SCANS[cleanName].moments.length > 0) {
-          const pre = PRECOMPUTED_SCANS[cleanName];
-          return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
+        } else if (error) {
+          console.error("Python inference process error:", error);
+          if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
         }
 
         return res.status(200).json(buildPayload([], []));
       });
     } else {
-      // Cloud environment without PyTorch runtime: check if exact file was pre-indexed
-      if (PRECOMPUTED_SCANS[cleanName]?.moments) {
-        const pre = PRECOMPUTED_SCANS[cleanName];
-        return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
-      }
-
+      console.warn(`Video file or model not found: videoFilePath=${videoFilePath}, scriptPath=${scriptPath}, modelPath=${modelPath}`);
       res.status(200).json(buildPayload([], []));
     }
   } catch (err: any) {

@@ -86,6 +86,9 @@ export interface VideoInspection {
   processed_at: string;
   fps: number;
   status: "Completed" | "Processing" | "Flagged";
+  // A clean scan is evidence about this inspection only; it never deletes prior cases.
+  scan_outcome?: "defects_confirmed" | "no_defects_confirmed";
+  officer_note?: string;
 }
 
 export interface RepairWorkOrder {
