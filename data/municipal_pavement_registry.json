@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "last_updated": "2026-09-14T06:54:06.048Z",
+  "last_updated": "2026-09-14T06:59:10.741Z",
   "roads": [
     {
       "road_id": "R001",
@@ -76,7 +76,7 @@
           "health_grade": "Excellent",
           "active_defect_count": 0,
           "traffic_volume_vpd": 52000,
-          "last_scanned_at": "2026-09-14T06:51:00.047Z"
+          "last_scanned_at": "2026-09-14T06:59:10.585Z"
         }
       ]
     },
@@ -126,6 +126,111 @@
     }
   ],
   "defects": [
+    {
+      "id": 8,
+      "detection_id": "DET-realdash-PTH05",
+      "defect_type": "Longitudinal Crack",
+      "class_name": "Longitudinal Crack",
+      "latitude": 13.074485,
+      "longitude": 80.214449,
+      "severity": "Medium",
+      "confidence": 0.76,
+      "road_id": "R001",
+      "segment_id": "R001-S004",
+      "exact_chainage_m": 365.5,
+      "bus_count": 1,
+      "bus_ids": "MTC 46G",
+      "reporting_vehicles": [
+        "MTC 46G"
+      ],
+      "total_detections": 1,
+      "is_multi_bus_verified": false,
+      "bbox": {
+        "x_min": 332,
+        "y_min": 144,
+        "x_max": 527,
+        "y_max": 296,
+        "pixel_area": 29640,
+        "estimated_physical_width_cm": 24.4,
+        "estimated_physical_length_cm": 23.2
+      },
+      "first_detected": "2026-09-14T06:58:40.726Z",
+      "last_detected": "2026-09-14T06:58:40.726Z",
+      "model_version": "YOLOv8s CRDDC Road Damage Model",
+      "status": "Open",
+      "source": "transit_bus",
+      "pothole_id": "LCRK-#08"
+    },
+    {
+      "id": 7,
+      "detection_id": "DET-realdash-PTH04",
+      "defect_type": "Alligator Crack",
+      "class_name": "Alligator Crack",
+      "latitude": 13.074596,
+      "longitude": 80.214353,
+      "severity": "High",
+      "confidence": 0.81,
+      "road_id": "R001",
+      "segment_id": "R001-S004",
+      "exact_chainage_m": 366.2,
+      "bus_count": 1,
+      "bus_ids": "MTC 46G",
+      "reporting_vehicles": [
+        "MTC 46G"
+      ],
+      "total_detections": 1,
+      "is_multi_bus_verified": false,
+      "bbox": {
+        "x_min": 45,
+        "y_min": 146,
+        "x_max": 783,
+        "y_max": 715,
+        "pixel_area": 419922,
+        "estimated_physical_width_cm": 92.2,
+        "estimated_physical_length_cm": 86.9
+      },
+      "first_detected": "2026-09-14T06:58:38.726Z",
+      "last_detected": "2026-09-14T06:58:38.726Z",
+      "model_version": "YOLOv8s CRDDC Road Damage Model",
+      "status": "Open",
+      "source": "transit_bus",
+      "pothole_id": "ACRK-#01"
+    },
+    {
+      "id": 211,
+      "detection_id": "DET-WhatsApp-PTH02",
+      "defect_type": "Potholes",
+      "class_name": "Potholes",
+      "latitude": 13.074762,
+      "longitude": 80.21421,
+      "severity": "High",
+      "confidence": 0.92,
+      "road_id": "R001",
+      "segment_id": "R001-S004",
+      "exact_chainage_m": 367.1,
+      "bus_count": 1,
+      "bus_ids": "MTC 46G",
+      "reporting_vehicles": [
+        "MTC 46G"
+      ],
+      "total_detections": 1,
+      "is_multi_bus_verified": false,
+      "bbox": {
+        "x_min": 11,
+        "y_min": 116,
+        "x_max": 1002,
+        "y_max": 719,
+        "pixel_area": 597573,
+        "estimated_physical_width_cm": 123.9,
+        "estimated_physical_length_cm": 92.1
+      },
+      "first_detected": "2026-09-13T17:18:42.908Z",
+      "last_detected": "2026-09-14T06:58:35.726Z",
+      "model_version": "YOLOv8s CRDDC Road Damage Model",
+      "status": "Open",
+      "source": "transit_bus",
+      "pothole_id": "PTH-#02"
+    },
     {
       "id": 213,
       "detection_id": "DET-WhatsApp-PTH04",
@@ -300,41 +405,6 @@
       "status": "Open",
       "source": "transit_bus",
       "pothole_id": "ACRK-#01"
-    },
-    {
-      "id": 211,
-      "detection_id": "DET-WhatsApp-PTH02",
-      "defect_type": "Potholes",
-      "class_name": "Potholes",
-      "latitude": 13.074782,
-      "longitude": 80.214193,
-      "severity": "High",
-      "confidence": 0.92,
-      "road_id": "R001",
-      "segment_id": "R001-S004",
-      "exact_chainage_m": 367.3,
-      "bus_count": 1,
-      "bus_ids": "MTC 46G",
-      "reporting_vehicles": [
-        "MTC 46G"
-      ],
-      "total_detections": 1,
-      "is_multi_bus_verified": false,
-      "bbox": {
-        "x_min": 11,
-        "y_min": 116,
-        "x_max": 1002,
-        "y_max": 719,
-        "pixel_area": 597573,
-        "estimated_physical_width_cm": 123.9,
-        "estimated_physical_length_cm": 92.1
-      },
-      "first_detected": "2026-09-13T17:18:42.908Z",
-      "last_detected": "2026-09-14T06:50:29.875Z",
-      "model_version": "YOLOv8s CRDDC Road Damage Model",
-      "status": "Open",
-      "source": "transit_bus",
-      "pothole_id": "PTH-#02"
     },
     {
       "id": 227,
@@ -1597,41 +1667,6 @@
       "pothole_id": "PTH-#07"
     },
     {
-      "id": 7,
-      "detection_id": "DET-realdash-PTH04",
-      "defect_type": "Pothole",
-      "class_name": "Pothole",
-      "latitude": 13.074865,
-      "longitude": 80.21666,
-      "severity": "High",
-      "confidence": 0.79,
-      "road_id": "R001",
-      "segment_id": "R001-S004",
-      "exact_chainage_m": 344,
-      "bus_count": 1,
-      "bus_ids": "MTC 46G",
-      "reporting_vehicles": [
-        "MTC 46G"
-      ],
-      "total_detections": 1,
-      "is_multi_bus_verified": false,
-      "bbox": {
-        "x_min": 895,
-        "y_min": 207,
-        "x_max": 1215,
-        "y_max": 336,
-        "pixel_area": 41280,
-        "estimated_physical_width_cm": 40,
-        "estimated_physical_length_cm": 19.7
-      },
-      "first_detected": "2026-09-13T17:17:48.128Z",
-      "last_detected": "2026-09-14T06:46:06.914Z",
-      "model_version": "YOLOv8m 7-Class Road Anomaly Model",
-      "status": "Open",
-      "source": "transit_bus",
-      "pothole_id": "PTH-#04"
-    },
-    {
       "id": 9,
       "detection_id": "DET-realdash-PTH06",
       "defect_type": "Pothole",
@@ -2015,41 +2050,6 @@
       "status": "Open",
       "source": "transit_bus",
       "pothole_id": "PTH-#16"
-    },
-    {
-      "id": 8,
-      "detection_id": "DET-realdash-PTH05",
-      "defect_type": "moderate_pothole",
-      "class_name": "moderate_pothole",
-      "latitude": 13.075892,
-      "longitude": 80.220853,
-      "severity": "High",
-      "confidence": 0.77,
-      "road_id": "R001",
-      "segment_id": "R001-S004",
-      "exact_chainage_m": 302.7,
-      "bus_count": 1,
-      "bus_ids": "MTC 46G",
-      "reporting_vehicles": [
-        "MTC 46G"
-      ],
-      "total_detections": 1,
-      "is_multi_bus_verified": false,
-      "bbox": {
-        "x_min": 200,
-        "y_min": 385,
-        "x_max": 822,
-        "y_max": 548,
-        "pixel_area": 101386,
-        "estimated_physical_width_cm": 77.8,
-        "estimated_physical_length_cm": 24.9
-      },
-      "first_detected": "2026-09-13T17:17:48.129Z",
-      "last_detected": "2026-09-14T05:26:35.532Z",
-      "model_version": "RoadGuard YOLOv8 Pavement Model",
-      "status": "Open",
-      "source": "transit_bus",
-      "pothole_id": "PTH-#05"
     },
     {
       "id": 50,
@@ -9714,6 +9714,505 @@
     }
   ],
   "video_inspections": [
+    {
+      "filename": "WhatsApp_Video_2026-09-13_at_3.51.21_PM.mp4",
+      "file_size_mb": 14.5,
+      "duration_seconds": 10,
+      "vehicle_id": "MTC 46G",
+      "road_id": "R001",
+      "segment_id": "R001-S004",
+      "total_defects_found": 3,
+      "detected_defects_list": [
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 0.67,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.48,
+          "severity": "High",
+          "wCm": 88.9,
+          "lCm": 43.4,
+          "bbox": {
+            "x": 2,
+            "y": 182,
+            "w": 711,
+            "h": 284,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "PTH-#02",
+          "track_id": 2,
+          "time": 0.67,
+          "class_name": "Potholes",
+          "display_name": "Potholes (D40)",
+          "rdd_code": "D40",
+          "category": "Surface Void",
+          "conf": 0.4,
+          "severity": "High",
+          "wCm": 18,
+          "lCm": 6.9,
+          "bbox": {
+            "x": 627,
+            "y": 146,
+            "w": 144,
+            "h": 45,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "PTH-#02",
+          "track_id": 2,
+          "time": 1,
+          "class_name": "Potholes",
+          "display_name": "Potholes (D40)",
+          "rdd_code": "D40",
+          "category": "Surface Void",
+          "conf": 0.77,
+          "severity": "High",
+          "wCm": 21.8,
+          "lCm": 28.1,
+          "bbox": {
+            "x": 633,
+            "y": 177,
+            "w": 174,
+            "h": 184,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "PTH-#02",
+          "track_id": 2,
+          "time": 1.33,
+          "class_name": "Potholes",
+          "display_name": "Potholes (D40)",
+          "rdd_code": "D40",
+          "category": "Surface Void",
+          "conf": 0.67,
+          "severity": "High",
+          "wCm": 30.4,
+          "lCm": 13,
+          "bbox": {
+            "x": 625,
+            "y": 229,
+            "w": 243,
+            "h": 85,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "PTH-#02",
+          "track_id": 2,
+          "time": 1.67,
+          "class_name": "Potholes",
+          "display_name": "Potholes (D40)",
+          "rdd_code": "D40",
+          "category": "Surface Void",
+          "conf": 0.92,
+          "severity": "High",
+          "wCm": 123.9,
+          "lCm": 92.1,
+          "bbox": {
+            "x": 11,
+            "y": 116,
+            "w": 991,
+            "h": 603,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 2,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.72,
+          "severity": "High",
+          "wCm": 86.8,
+          "lCm": 85.4,
+          "bbox": {
+            "x": 237,
+            "y": 160,
+            "w": 694,
+            "h": 559,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 2.33,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.73,
+          "severity": "High",
+          "wCm": 93.8,
+          "lCm": 92.6,
+          "bbox": {
+            "x": 22,
+            "y": 107,
+            "w": 750,
+            "h": 606,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 2.67,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.75,
+          "severity": "High",
+          "wCm": 86.6,
+          "lCm": 89.5,
+          "bbox": {
+            "x": 0,
+            "y": 112,
+            "w": 693,
+            "h": 586,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 3,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.46,
+          "severity": "High",
+          "wCm": 79.6,
+          "lCm": 85.6,
+          "bbox": {
+            "x": 0,
+            "y": 147,
+            "w": 637,
+            "h": 560,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 3.33,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.57,
+          "severity": "High",
+          "wCm": 79.9,
+          "lCm": 85.2,
+          "bbox": {
+            "x": 0,
+            "y": 147,
+            "w": 639,
+            "h": 558,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 3.67,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.69,
+          "severity": "High",
+          "wCm": 80.6,
+          "lCm": 83.1,
+          "bbox": {
+            "x": 0,
+            "y": 161,
+            "w": 645,
+            "h": 544,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 4,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.76,
+          "severity": "High",
+          "wCm": 85.9,
+          "lCm": 84.9,
+          "bbox": {
+            "x": 1,
+            "y": 149,
+            "w": 687,
+            "h": 556,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 4.33,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.58,
+          "severity": "High",
+          "wCm": 89.4,
+          "lCm": 83.9,
+          "bbox": {
+            "x": 176,
+            "y": 166,
+            "w": 715,
+            "h": 549,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 4.67,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.81,
+          "severity": "High",
+          "wCm": 92.2,
+          "lCm": 86.9,
+          "bbox": {
+            "x": 45,
+            "y": 146,
+            "w": 738,
+            "h": 569,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 5,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.8,
+          "severity": "High",
+          "wCm": 94.2,
+          "lCm": 88.9,
+          "bbox": {
+            "x": 9,
+            "y": 136,
+            "w": 754,
+            "h": 582,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 5.33,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.31,
+          "severity": "High",
+          "wCm": 153.6,
+          "lCm": 45.7,
+          "bbox": {
+            "x": 21,
+            "y": 126,
+            "w": 1229,
+            "h": 299,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 5.67,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.55,
+          "severity": "High",
+          "wCm": 93.6,
+          "lCm": 84,
+          "bbox": {
+            "x": 223,
+            "y": 160,
+            "w": 749,
+            "h": 550,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 6,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.46,
+          "severity": "High",
+          "wCm": 81.2,
+          "lCm": 75,
+          "bbox": {
+            "x": 185,
+            "y": 225,
+            "w": 650,
+            "h": 491,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "LCRK-#08",
+          "track_id": 8,
+          "time": 6.33,
+          "class_name": "Longitudinal Crack",
+          "display_name": "Longitudinal Crack (D00)",
+          "rdd_code": "D00",
+          "category": "Structural Crack",
+          "conf": 0.47,
+          "severity": "Medium",
+          "wCm": 16.6,
+          "lCm": 16.3,
+          "bbox": {
+            "x": 412,
+            "y": 125,
+            "w": 133,
+            "h": 107,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "LCRK-#08",
+          "track_id": 8,
+          "time": 6.67,
+          "class_name": "Longitudinal Crack",
+          "display_name": "Longitudinal Crack (D00)",
+          "rdd_code": "D00",
+          "category": "Structural Crack",
+          "conf": 0.76,
+          "severity": "Medium",
+          "wCm": 24.4,
+          "lCm": 23.2,
+          "bbox": {
+            "x": 332,
+            "y": 144,
+            "w": 195,
+            "h": 152,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "ACRK-#01",
+          "track_id": 1,
+          "time": 7,
+          "class_name": "Alligator Crack",
+          "display_name": "Alligator Fatigue Crack (D20)",
+          "rdd_code": "D20",
+          "category": "Structural Fatigue",
+          "conf": 0.38,
+          "severity": "High",
+          "wCm": 65.9,
+          "lCm": 74.7,
+          "bbox": {
+            "x": 0,
+            "y": 104,
+            "w": 527,
+            "h": 489,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "LCRK-#08",
+          "track_id": 8,
+          "time": 7.33,
+          "class_name": "Longitudinal Crack",
+          "display_name": "Longitudinal Crack (D00)",
+          "rdd_code": "D00",
+          "category": "Structural Crack",
+          "conf": 0.63,
+          "severity": "Medium",
+          "wCm": 62,
+          "lCm": 70.4,
+          "bbox": {
+            "x": 1,
+            "y": 140,
+            "w": 496,
+            "h": 461,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        },
+        {
+          "pothole_id": "LCRK-#08",
+          "track_id": 8,
+          "time": 8,
+          "class_name": "Longitudinal Crack",
+          "display_name": "Longitudinal Crack (D00)",
+          "rdd_code": "D00",
+          "category": "Structural Crack",
+          "conf": 0.45,
+          "severity": "Medium",
+          "wCm": 46.9,
+          "lCm": 59.7,
+          "bbox": {
+            "x": 3,
+            "y": 319,
+            "w": 375,
+            "h": 391,
+            "video_w": 1280,
+            "video_h": 720
+          }
+        }
+      ],
+      "processed_at": "2026-09-14T06:59:10.585Z",
+      "fps": 29.8,
+      "status": "Completed",
+      "id": 311,
+      "inspection_id": "VID-INSP-0311"
+    },
     {
       "filename": "WhatsApp_Video_2026-09-13_at_3.51.21_PM.mp4",
       "file_size_mb": 14.5,
@@ -466513,7 +467012,7 @@
     }
   },
   "next_defect_id": 275,
-  "next_inspection_id": 311,
+  "next_inspection_id": 312,
   "next_work_order_id": 1,
   "cases": [
     {

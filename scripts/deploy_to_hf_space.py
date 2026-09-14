@@ -19,50 +19,44 @@ title: Road Defect AI Intelligence Platform
 emoji: 🛣️
 colorFrom: blue
 colorTo: indigo
-sdk: docker
-app_port: 7860
+sdk: static
+app_file: index.html
 pinned: false
 ---
 
 # Road Defect & Pothole AI Intelligence Platform
-Real-Time AI Pavement Condition Intelligence, GIS 100m Road Segmentation & Automated Distress Analysis powered by PyTorch YOLOv8.
+Real-Time AI Pavement Condition Intelligence, GIS 100m Road Segmentation & Automated Distress Analysis.
 """
     with open(os.path.join(staging_dir, "README.md"), "w", encoding="utf-8") as f:
         f.write(space_readme)
 
-    gitattributes = """*.pt filter=lfs diff=lfs merge=lfs -text
-*.onnx filter=lfs diff=lfs merge=lfs -text
-*.mp4 filter=lfs diff=lfs merge=lfs -text
+    gitattributes = """*.mp4 filter=lfs diff=lfs merge=lfs -text
 *.webm filter=lfs diff=lfs merge=lfs -text
 *.mov filter=lfs diff=lfs merge=lfs -text
 """
     with open(os.path.join(staging_dir, ".gitattributes"), "w", encoding="utf-8") as f:
         f.write(gitattributes)
 
-    # Copy core root files
-    root_files = ["Dockerfile", ".dockerignore", "package.json", "package-lock.json", "server.ts", "vite.config.js", "index.html"]
-    for rf in root_files:
-        src_path = os.path.abspath(rf)
-        if os.path.exists(src_path):
-            shutil.copy2(src_path, os.path.join(staging_dir, rf))
+    dist_dir = os.path.abspath("dist")
+    for item in os.listdir(dist_dir):
+        if item.startswith("server.cjs"):
+            continue
+        s = os.path.join(dist_dir, item)
+        d = os.path.join(staging_dir, item)
+        if os.path.isdir(s):
+            shutil.copytree(s, d)
+        else:
+            shutil.copy2(s, d)
 
-    # Copy directories
-    dirs_to_copy = ["src", "server", "public", "detector", "data"]
-    for d in dirs_to_copy:
-        src_d = os.path.abspath(d)
-        if os.path.exists(src_d):
-            dest_d = os.path.join(staging_dir, d)
-            shutil.copytree(src_d, dest_d, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "potbot_yolov8m.pt", "*_backup.pt"))
+    print("Staged items:", os.listdir(staging_dir))
 
-    print("Staged root items:", os.listdir(staging_dir))
-
-    print(f"\nUploading to Hugging Face Docker Space: {repo_id}...")
+    print(f"\nUploading to Hugging Face Static Space: {repo_id}...")
     commit_info = api.upload_folder(
         folder_path=staging_dir,
         repo_id=repo_id,
         repo_type="space",
-        commit_message="feat(deploy): deploy full Node.js + Python YOLOv8 backend on Hugging Face Docker Space",
-        delete_patterns=["assets/*", "dist/*", "style.css"]
+        commit_message="feat(deploy): deploy 100% free static space with zero CPU quota consumption",
+        delete_patterns=["assets/*", "style.css", "detector/*", "server/*"]
     )
     print(f"Successfully uploaded! Commit: {commit_info}")
 
@@ -71,7 +65,7 @@ Real-Time AI Pavement Condition Intelligence, GIS 100m Road Segmentation & Autom
     runtime = api.get_space_runtime(repo_id)
     print(f"\nSpace Runtime Stage: {runtime.stage}")
     print(f"Live Space URL: https://huggingface.co/spaces/{repo_id}")
-    print(f"Direct App URL: https://logesshhh-road-defect-ai.hf.space")
+    print(f"Direct App URL: https://logesshhh-road-defect-ai.static.hf.space")
 
 if __name__ == "__main__":
     deploy()
