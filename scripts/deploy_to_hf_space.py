@@ -20,6 +20,7 @@ emoji: 🛣️
 colorFrom: blue
 colorTo: indigo
 sdk: static
+app_file: index.html
 pinned: false
 ---
 
@@ -54,8 +55,8 @@ Real-Time AI Pavement Condition Intelligence, GIS 100m Road Segmentation & Autom
         folder_path=staging_dir,
         repo_id=repo_id,
         repo_type="space",
-        commit_message="fix(detection): strict single-model execution and multi-criteria spatial deduplication for pothole tracking",
-        delete_patterns=["assets/*"]
+        commit_message="fix(detection): update static space bundle with app_file and relative base assets",
+        delete_patterns=["assets/*", "style.css"]
     )
     print(f"Successfully uploaded! Commit: {commit_info}")
 
@@ -64,7 +65,7 @@ Real-Time AI Pavement Condition Intelligence, GIS 100m Road Segmentation & Autom
     runtime = api.get_space_runtime(repo_id)
     print(f"\nSpace Runtime Stage: {runtime.stage}")
     print(f"Live Space URL: https://huggingface.co/spaces/{repo_id}")
-    print(f"Direct App URL: https://logesshhh-road-defect-ai.hf.space")
+    print(f"Direct App URL: https://logesshhh-road-defect-ai.static.hf.space")
 
 if __name__ == "__main__":
     deploy()
