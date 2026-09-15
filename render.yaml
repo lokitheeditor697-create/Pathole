@@ -3,11 +3,13 @@ services:
     name: road-pothole-intelligence
     runtime: node
     plan: free
-    buildCommand: npm install --legacy-peer-deps && npm run build
+    buildCommand: npm install && pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install --no-cache-dir ultralytics opencv-python-headless numpy && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: ALERT_TRIGGER_CRITERIA
-        value: MULTI_BUS_VERIFIED
+      - key: YOLO_OFFLINE
+        value: "True"
+      - key: ULTRALYTICS_AUTOINSTALL
+        value: "0"
