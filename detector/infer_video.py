@@ -165,58 +165,36 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.55, sample_fps=2.0,
     duration = total_frames / fps
 
     frame_interval = max(1, int(fps / sample_fps))
-    
-    # 1. Sample Video Frames
-    sampled_frames = []
-    sampled_times = []
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 1280
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 720
+
+    raw_moments = []
+    tracked_unique_defects = {}
+    next_track_id = 1
+    SEVERITY_ORDER = {'Low': 1, 'Medium': 2, 'High': 3, 'Critical': 4}
+
     frame_idx = 0
-    
+    sampled_count = 0
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
         if frame_idx % frame_interval == 0:
             current_time = round(frame_idx / fps, 2)
-            sampled_frames.append(frame)
-            sampled_times.append(current_time)
-        frame_idx += 1
-    cap.release()
+            sampled_count += 1
 
-    if not sampled_frames:
-        return {
-            "video_path": video_path,
-            "duration": round(duration, 2),
-            "total_frames": frame_idx,
-            "unique_defects_count": 0,
-            "unique_defects": [],
-            "detected_count": 0,
-            "moments": []
-        }
+            r = model.track(
+                frame,
+                persist=True,
+                tracker="bytetrack.yaml",
+                imgsz=640,
+                conf=conf_thresh,
+                iou=0.40,
+                verbose=False,
+            )[0]
 
-    # 2. Persistent ByteTrack inference
-    all_results = []
-    for frame in sampled_frames:
-        result = model.track(
-            frame,
-            persist=True,
-            tracker="bytetrack.yaml",
-            imgsz=640,
-            conf=conf_thresh,
-            iou=0.40,
-            verbose=False,
-        )[0]
-        all_results.append(result)
-
-    # 3. Post-Process with Spatial Deduplication and Track Continuity
-    raw_moments = []
-    tracked_unique_defects = {}
-    next_track_id = 1
-
-    SEVERITY_ORDER = {'Low': 1, 'Medium': 2, 'High': 3, 'Critical': 4}
-
-    for frame, current_time, r in zip(sampled_frames, sampled_times, all_results):
-        h, w, _ = frame.shape
-        frame_boxes = []
+            frame_boxes = []
 
         if r.boxes is not None:
             for box_index, box in enumerate(r.boxes):
@@ -381,6 +359,19 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.55, sample_fps=2.0,
                     'best_moment': moment_obj,
                     'last_moment': moment_obj
                 }
+        frame_idx += 1
+    cap.release()
+
+    if sampled_count == 0:
+        return {
+            "video_path": video_path,
+            "duration": round(duration, 2),
+            "total_frames": frame_idx,
+            "unique_defects_count": 0,
+            "unique_defects": [],
+            "detected_count": 0,
+            "moments": []
+        }
 
     # Retain all genuine neural detections with confidence above threshold
     valid_track_ids = {
