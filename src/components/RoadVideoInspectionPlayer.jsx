@@ -280,12 +280,13 @@ export default function RoadVideoInspectionPlayer({
     const vid = videoRef.current;
     setVideoReady(false);
     setVideoError(null);
-    vid.load();
+
+    // Do not call vid.load() here! React's key={effectiveVideoUrl} creates a fresh element
+    // which automatically starts loading. Calling load() manually can interrupt Mobile Safari blob reads.
     vid.play().then(() => {
       setIsPlaying(true);
-    }).catch((err) => {
-      console.warn('Auto-playback notice (awaiting user click):', err);
-      setIsPlaying(false);
+    }).catch(err => {
+      console.warn("Autoplay notice:", err);
     });
   }, [effectiveVideoUrl]);
 
@@ -739,6 +740,9 @@ export default function RoadVideoInspectionPlayer({
 
     // 2. High-performance streaming upload to server for YOLOv8 AI model inference
     try {
+      // Delay upload slightly to allow the browser's native video decoder to parse the blob's metadata (moov atom) first.
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       let uploadRes = await fetch(`${API_BASE}/api/upload-video?file_name=${encodeURIComponent(file.name)}`, {
         method: 'POST',
         headers: {
