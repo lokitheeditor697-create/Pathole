@@ -2138,18 +2138,6 @@ app.post("/api/detect/upload", rateLimit(15), express.json({ limit: "150mb" }), 
 
 const videoScanCache = new Map<string, any>();
 
-// Load precomputed dashcam neural scans for instant response and deployment resilience
-const precomputedScansPath = path.join(process.cwd(), "data", "precomputed_dashcam_scans.json");
-let precomputedRawScans: Record<string, any> = {};
-try {
-  if (fs.existsSync(precomputedScansPath)) {
-    precomputedRawScans = JSON.parse(fs.readFileSync(precomputedScansPath, "utf-8"));
-    console.log(`[AI Engine] Loaded ${Object.keys(precomputedRawScans).length} precomputed model scans.`);
-  }
-} catch (e) {
-  console.warn("Could not load precomputed scans:", e);
-}
-
 // Automated Video Inspection AI Keyframe Scanner (100% Real YOLOv8 AI Inference)
 app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }), (req: Request, res: Response) => {
   try {
@@ -2370,13 +2358,7 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
       return scanPayload;
     };
 
-    // Fast-path: Precomputed high-accuracy neural detections for instant response without CPU lag
-    if (!forceRescan && precomputedRawScans[cacheKey]) {
-      const pre = precomputedRawScans[cacheKey];
-      return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
-    }
-
-    // 100% Real YOLOv8 AI Video Inference (PyTorch + Directional Spatial Tracking)
+    // 100% Genuine Real-Time YOLOv8 Neural Network Video Inference
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
       const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "roadguard"}"`;
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
@@ -2386,43 +2368,44 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
         if (!error && stdout) {
           try {
             const parsed = extractJsonFromOutput(stdout);
+            if (parsed.error) {
+              console.error("Live YOLO model returned error:", parsed.error);
+              if (!res.writableEnded) {
+                return res.status(500).json({ error: `Neural model error: ${parsed.error}` });
+              }
+            }
             if (Array.isArray(parsed.moments)) moments = parsed.moments;
             if (Array.isArray(parsed.unique_defects)) uniqueDefectsList = parsed.unique_defects;
             // Return actual live YOLOv8 model output directly
             if (!res.writableEnded) {
               return res.status(200).json(buildPayload(moments, uniqueDefectsList));
             }
-          } catch (e) {
+          } catch (e: any) {
             console.error("Failed to parse YOLO output:", e);
             if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
+            if (!res.writableEnded) {
+              return res.status(500).json({ error: `Failed to parse live neural output: ${e.message}` });
+            }
           }
         } else if (error) {
           console.error("Python inference process error:", error);
           if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
-          if (precomputedRawScans[cacheKey]) {
-            console.log(`[AI Fallback] Using precomputed neural detections for ${cacheKey}`);
-            const pre = precomputedRawScans[cacheKey];
-            if (!res.writableEnded) {
-              return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
-            }
+          if (!res.writableEnded) {
+            return res.status(500).json({ error: `Live neural process failed: ${error.message}` });
           }
         }
 
         if (!res.writableEnded) {
-          if (precomputedRawScans[cacheKey]) {
-            const pre = precomputedRawScans[cacheKey];
-            return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
-          }
           return res.status(200).json(buildPayload([], []));
         }
       });
     } else {
-      console.warn(`Video file or model not found: videoFilePath=${videoFilePath}, scriptPath=${scriptPath}, modelPath=${modelPath}`);
-      if (precomputedRawScans[cacheKey]) {
-        const pre = precomputedRawScans[cacheKey];
-        return res.status(200).json(buildPayload(pre.moments || [], pre.unique_defects || []));
-      }
-      res.status(200).json(buildPayload([], []));
+      const missing = [];
+      if (!videoFilePath) missing.push(`video: ${file_name}`);
+      if (!fs.existsSync(scriptPath)) missing.push(`script: ${scriptPath}`);
+      if (!fs.existsSync(modelPath)) missing.push(`model: ${modelPath}`);
+      console.warn(`Cannot run live neural inference - missing resources: ${missing.join(", ")}`);
+      res.status(404).json({ error: `Cannot run live inference. Missing resources: ${missing.join(", ")}` });
     }
   } catch (err: any) {
     res.status(500).json({ error: err.message });

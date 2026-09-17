@@ -280,7 +280,8 @@ export default function RoadVideoInspectionPlayer({
       });
 
       if (!res.ok) {
-        throw new Error(`Video scan request failed with status ${res.status}`);
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Video scan request failed with status ${res.status}`);
       }
 
       const data = await res.json();
@@ -348,8 +349,8 @@ export default function RoadVideoInspectionPlayer({
       console.error('Live AI scan error:', err);
       if (reqId === activeScanRequestIdRef.current) {
         setDetectedMoments([]);
-        setScanStatusMessage('Live model inference failed or returned no response.');
-        showToast('AI inference error or server unreachable', 'error');
+        setScanStatusMessage(err.message || 'Live model inference failed.');
+        showToast(err.message || 'AI inference error or server unreachable', 'error');
       }
     } finally {
       if (reqId === activeScanRequestIdRef.current) {
