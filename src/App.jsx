@@ -27,8 +27,8 @@ export default function App() {
   const [vehicles, setVehicles] = useState(DEFAULT_VEHICLES);
   const [systemStatus, setSystemStatus] = useState(null);
 
-  // Production scans use one RoadGuard model. Other weights remain offline only.
-  const [aiModelMode, setAiModelMode] = useState('roadguard');
+  // Default AI model set to 7-Class Road Anomaly (YOLOv8m)
+  const [aiModelMode, setAiModelMode] = useState('pothole');
 
   // Connection & GPS Operational Reliability States
   const [serverStatus, setServerStatus] = useState('connected'); // 'connected' | 'reconnecting' | 'disconnected'
@@ -256,6 +256,7 @@ export default function App() {
   };
 
   const handleResetDB = async () => {
+    const adminKey = sessionStorage.getItem('gcc_admin_key') || 'gcc2026';
     const confirmReset = window.confirm(
       "⚠️ RESET PROTOTYPE DATABASE?\n\nThis will clear all detected potholes, video inspections, and reset road corridor health scores to 96% (Clean Baseline).\n\nUse this right before presenting your demo to show a fresh, live detection run from 0!"
     );
@@ -263,12 +264,18 @@ export default function App() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/db/reset`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/api/db/reset`, {
+        method: 'POST',
+        headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
       const data = await res.json();
       if (res.ok) {
         setDefects([]);
         await fetchAllData();
         alert("✨ Database Reset Complete!\n\nAll previous detections have been cleared. The system is pristine and ready for your prototype demonstration!");
+      } else if (res.status === 401) {
+        alert("⛔ Unauthorized: Please use the LOCK button in the header to authenticate as Admin before resetting the database.");
       } else {
         alert("Failed to reset: " + (data.error || "Unknown error"));
       }

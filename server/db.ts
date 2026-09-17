@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { postgresDB } from './postgres_db';
 
 export interface RoadSegment {
   segment_id: string;
@@ -160,6 +161,26 @@ export interface CommunicationItem {
   message_id: string;
   summary: string;
   payload?: any;
+}
+
+export interface DefectObservation {
+  observation_id: string;
+  case_id: string;
+  pothole_id?: string;
+  observation_number: number;
+  vehicle_id: string;
+  timestamp: string;
+  latitude: number;
+  longitude: number;
+  exact_chainage_m: number;
+  severity: "Critical" | "High" | "Medium" | "Low";
+  confidence: number;
+  dimensions: {
+    width_cm: number;
+    length_cm: number;
+  };
+  snapshot_thumbnail?: string;
+  deterioration_notes?: string;
 }
 
 export interface DefectCase {
@@ -1347,6 +1368,303 @@ class MunicipalDatabase {
 
     this.save();
     return c;
+  }
+
+
+  public addObservation(
+    caseId: string,
+    obs: {
+      vehicle_id: string;
+      latitude?: number;
+      longitude?: number;
+      exact_chainage_m?: number;
+      dimensions?: { width_cm: number; length_cm: number };
+      severity?: "Critical" | "High" | "Medium" | "Low";
+      confidence?: number;
+      snapshot_thumbnail?: string;
+      notes?: string;
+    }
+  ): { case: DefectCase; deteriorated: boolean; newlyEscalated: boolean } | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+
+    if (!c.observations) {
+      c.observations = [];
+      c.observations.push({
+        observation_id: `OBS-${c.case_id}-1`,
+        case_id: c.case_id,
+        pothole_id: c.pothole_id,
+        observation_number: 1,
+        vehicle_id: (c.before_evidence.reporting_vehicles && c.before_evidence.reporting_vehicles[0]) || "Bus #101",
+        timestamp: c.created_at,
+        latitude: c.latitude,
+        longitude: c.longitude,
+        exact_chainage_m: c.exact_chainage_m,
+        severity: c.severity,
+        confidence: c.before_evidence.confidence || 0.91,
+        dimensions: {
+          width_cm: c.before_evidence.bbox?.estimated_physical_width_cm || 42,
+          length_cm: c.before_evidence.bbox?.estimated_physical_length_cm || 32
+        },
+        snapshot_thumbnail: c.before_evidence.snapshot_thumbnail,
+        deterioration_notes: "Initial edge detection and registration."
+      });
+    }
+
+    const obsNum = c.observations.length + 1;
+    const now = new Date().toISOString();
+    const baseW = c.before_evidence.bbox?.estimated_physical_width_cm || 42;
+    const baseL = c.before_evidence.bbox?.estimated_physical_length_cm || 32;
+    const w = obs.dimensions?.width_cm || Math.round(baseW + (obsNum - 1) * 8);
+    const l = obs.dimensions?.length_cm || Math.round(baseL + (obsNum - 1) * 6);
+
+    const newObs: DefectObservation = {
+      observation_id: `OBS-${c.case_id}-${obsNum}`,
+      case_id: c.case_id,
+      pothole_id: c.pothole_id,
+      observation_number: obsNum,
+      vehicle_id: obs.vehicle_id || (obsNum === 2 ? "Bus #205" : `Bus #${300 + obsNum * 12}`),
+      timestamp: now,
+      latitude: obs.latitude ?? c.latitude,
+      longitude: obs.longitude ?? c.longitude,
+      exact_chainage_m: obs.exact_chainage_m ?? c.exact_chainage_m,
+      severity: obs.severity ?? (obsNum >= 3 ? "Critical" : "High"),
+      confidence: obs.confidence ?? 0.93,
+      dimensions: { width_cm: w, length_cm: l },
+      snapshot_thumbnail: obs.snapshot_thumbnail || c.before_evidence.snapshot_thumbnail,
+      deterioration_notes: obs.notes || (obsNum >= 3 
+        ? `Defect deterioration detected: surface distress expanded to ${w}cm x ${l}cm (+38% area growth). Auto-escalated to HIGH/CRITICAL PRIORITY.` 
+        : `Secondary fleet confirmation from ${obs.vehicle_id || "Bus #205"}. Exact coordinates re-verified.`)
+    };
+
+    c.observations.push(newObs);
+
+    let deteriorated = false;
+    let newlyEscalated = false;
+
+    if (obsNum === 2) {
+      c.events.push({
+        id: `EVT-${Date.now()}`,
+        timestamp: now,
+        to_status: c.status,
+        actor: `Patrol Fleet (${newObs.vehicle_id})`,
+        action: "Multi-Bus Spatial Re-identification",
+        notes: `AI recognized SAME location/defect (${c.pothole_id || c.case_id}) at GPS (${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)}) Chainage ${c.exact_chainage_m}m. Multi-bus spatial verification confirmed.`
+      });
+    } else if (obsNum >= 3) {
+      deteriorated = true;
+      if (!c.deterioration_detected || c.priority !== "P1 - Emergency") {
+        newlyEscalated = true;
+      }
+      c.deterioration_detected = true;
+      c.severity = "Critical";
+      c.priority = "P1 - Emergency";
+      c.events.push({
+        id: `EVT-${Date.now()}`,
+        timestamp: now,
+        to_status: c.status,
+        actor: "Edge AI Deterioration Engine",
+        action: "Defect Deterioration Detected - Escalated to High Priority",
+        notes: `3rd observation by ${newObs.vehicle_id}: Defect dimensions expanded to ${w}cm x ${l}cm. Auto-escalated to P1 - Emergency for immediate municipal intervention.`
+      });
+    }
+
+    this.save();
+    postgresDB.syncCase(c);
+    postgresDB.syncObservation(newObs);
+
+    return { case: c, deteriorated, newlyEscalated };
+  }
+
+  public simulateLifecycleStep(
+    caseId: string,
+    step: "BUS_101_DETECT" | "BUS_205_MATCH" | "3RD_OBS_DETERIORATION" | "MUNICIPAL_REPAIR" | "NEXT_BUS_RESCAN_CLEAN" | "OFFICER_SIGNOFF",
+    payload?: any
+  ): { case: DefectCase; step: string; message: string; alertDispatched?: boolean } | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+    const now = new Date().toISOString();
+
+    if (step === "BUS_101_DETECT") {
+      c.status = "REPORTED";
+      c.severity = "High";
+      c.priority = "P2 - High Priority";
+      c.deterioration_detected = false;
+      c.verified_at = undefined;
+      c.closed_at = undefined;
+      c.after_evidence = undefined;
+      c.observations = [
+        {
+          observation_id: `OBS-${c.case_id}-1`,
+          case_id: c.case_id,
+          pothole_id: c.pothole_id,
+          observation_number: 1,
+          vehicle_id: "Bus #101",
+          timestamp: now,
+          latitude: c.latitude,
+          longitude: c.longitude,
+          exact_chainage_m: c.exact_chainage_m,
+          severity: "High",
+          confidence: 0.93,
+          dimensions: { width_cm: 42.0, length_cm: 32.0 },
+          deterioration_notes: "Initial detection by Bus #101 at GPS. Registered as PTH-042."
+        }
+      ];
+      c.events.push({
+        id: `EVT-${Date.now()}`,
+        timestamp: now,
+        to_status: "REPORTED",
+        actor: "Bus #101 Edge AI",
+        action: "Initial Defect Identification",
+        notes: `Bus #101 detected ${c.pothole_id || "PTH-042"} at GPS (${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)}).`
+      });
+      this.save();
+      postgresDB.syncCase(c);
+      return { case: c, step, message: "Step 1 Completed: Bus #101 detected PTH-042 at GPS coordinates." };
+    }
+
+    if (step === "BUS_205_MATCH") {
+      const res = this.addObservation(c.case_id, {
+        vehicle_id: "Bus #205",
+        dimensions: { width_cm: 44.0, length_cm: 34.0 },
+        notes: "Bus #205 passes later. AI recognizes SAME location/defect via sub-meter RTK spatial deduplication. Updated PTH-042."
+      });
+      return {
+        case: res?.case || c,
+        step,
+        message: "Step 2 Completed: Bus #205 passed later, AI recognized SAME location/defect and updated PTH-042."
+      };
+    }
+
+    if (step === "3RD_OBS_DETERIORATION") {
+      const res = this.addObservation(c.case_id, {
+        vehicle_id: "Bus #310",
+        dimensions: { width_cm: 58.0, length_cm: 44.0 },
+        severity: "Critical",
+        notes: "3rd observation: defect expanded to 58cm x 44cm. Auto-escalated to HIGH/CRITICAL PRIORITY & alert auto-dispatched to Municipal Officers."
+      });
+      return {
+        case: res?.case || c,
+        step,
+        alertDispatched: true,
+        message: "Step 3 Completed: 3rd observation recorded, defect getting worse, auto-escalated to HIGH PRIORITY, officer alert dispatched."
+      };
+    }
+
+    if (step === "MUNICIPAL_REPAIR") {
+      c.status = "VERIFICATION_REQUIRED";
+      c.repair_completed_at = now;
+      c.assigned_contractor = "GCC Rapid Asphalt Maintenance Unit";
+      c.assigned_team = "Central Zone Pavement Crew 3";
+      c.assigned_person = payload?.contractor_lead || "Eng. K. Ramanathan";
+      c.events.push({
+        id: `EVT-${Date.now()}`,
+        timestamp: now,
+        to_status: "VERIFICATION_REQUIRED",
+        actor: c.assigned_contractor,
+        action: "Pavement Restoration Complete",
+        notes: "Hot-mix asphalt patch laid and compacted flush. Status transitioned to VERIFICATION_REQUIRED pending bus patrol re-scan."
+      });
+      this.save();
+      postgresDB.syncCase(c);
+      return {
+        case: c,
+        step,
+        message: "Step 4 Completed: Municipality repaired defect. Work order moved to VERIFICATION_REQUIRED."
+      };
+    }
+
+    if (step === "NEXT_BUS_RESCAN_CLEAN") {
+      c.status = "VERIFIED";
+      c.verified_at = now;
+      c.verified_repaired_at = now;
+      c.after_evidence = {
+        scanned_at: now,
+        scanner_vehicle_id: payload?.vehicle_id || "Bus #402 (Patrol Re-Scan)",
+        ai_verification_result: "NO_DEFECT_DETECTED",
+        ai_confidence_threshold_used: 0.28,
+        ai_verification_statement: "Original defect PTH-042 was not detected during post-repair transit bus patrol scan. Pavement restored flush.",
+        snapshot_thumbnail: c.before_evidence.snapshot_thumbnail
+      };
+      c.events.push({
+        id: `EVT-${Date.now()}`,
+        timestamp: now,
+        to_status: "VERIFIED",
+        actor: `Transit AI (${payload?.vehicle_id || "Bus #402"})`,
+        action: "Post-Repair Inspection Passed - Clean Road Surface",
+        notes: "Next bus passed exact GPS coordinates. Zero defect detected. PTH-042 = VERIFIED REPAIRED."
+      });
+      this.save();
+      postgresDB.syncCase(c);
+      return {
+        case: c,
+        step,
+        message: "Step 5 Completed: Next bus passed, no defect detected -> PTH-042 = VERIFIED REPAIRED."
+      };
+    }
+
+    if (step === "OFFICER_SIGNOFF") {
+      const verifierName = payload?.verifier_name || "Er. K. Ramanathan (Executive Engineer GCC)";
+      const badgeId = payload?.badge_id || "GCC-ENG-9942";
+      const notes = payload?.notes || "Municipal engineer signed off on verified restored pavement. Anti-fraud closed-loop verification certified.";
+      return {
+        case: this.verifyHumanSignOff(c.case_id, `${verifierName} [Badge: ${badgeId}]`, notes) || c,
+        step,
+        message: "Step 6 Completed: Municipal Officer signed off. Anti-fraud closed loop certified and case closed."
+      };
+    }
+
+    return null;
+  }
+
+
+  public attachSnapshotToCase(caseId: string, snapshot_thumbnail: string): DefectCase | null {
+    const c = this.getCaseById(caseId);
+    if (!c) return null;
+    if (!c.before_evidence) {
+      c.before_evidence = { detected_at: new Date().toISOString(), confidence: 0.92 };
+    }
+    c.before_evidence.snapshot_thumbnail = snapshot_thumbnail;
+
+    if (c.defect_id) {
+      const d = this.getDefectById(c.defect_id);
+      if (d) d.snapshot_thumbnail = snapshot_thumbnail;
+    }
+
+    this.save();
+    postgresDB.syncCase(c);
+    return c;
+  }
+
+  public purgeExpiredClosedCases(retentionDays = 30): { purged_count: number; purged_case_ids: string[]; remaining_cases: number } {
+    const cases = this.memoryData.cases || [];
+    const now = Date.now();
+    const retentionMs = retentionDays * 24 * 60 * 60 * 1000;
+    const kept: DefectCase[] = [];
+    const purgedIds: string[] = [];
+
+    for (const c of cases) {
+      if (c.status === "CLOSED" && (c.closed_at || c.created_at)) {
+        const refTime = new Date(c.closed_at || c.created_at).getTime();
+        if (now - refTime > retentionMs) {
+          purgedIds.push(c.case_id);
+          continue;
+        }
+      }
+      kept.push(c);
+    }
+
+    if (purgedIds.length > 0) {
+      this.memoryData.cases = kept;
+      this.save();
+      console.log(`[Municipal DB] Purged ${purgedIds.length} closed cases exceeding ${retentionDays}-day retention policy:`, purgedIds);
+    }
+
+    return {
+      purged_count: purgedIds.length,
+      purged_case_ids: purgedIds,
+      remaining_cases: kept.length
+    };
   }
 
   public reopenCase(caseId: string, reason: string, actor = "Municipal Inspector"): DefectCase | null {

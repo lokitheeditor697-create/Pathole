@@ -1,13 +1,28 @@
-.git
-.github
-node_modules
-.venv
-__pycache__
+# Dependencies (will be installed in Docker)
+node_modules/
+.venv/
+__pycache__/
 *.pyc
-*.pyo
-.DS_Store
-dist
+
+# Large model files (>100MB)
+detector/potbot_yolov8m.pt
+detector/*.onnx
+
+# Local secrets
+.env
+.env.local
+
+# Dev artifacts
+dist/
 *.log
-scratch
-tmp
-runs
+*.map
+
+# Git & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Patch scripts & temp files
+scripts/
+runs/

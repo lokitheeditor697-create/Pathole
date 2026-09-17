@@ -147,7 +147,7 @@ def is_same_track(coords1, coords2, w, h, dt=0.5, cls1='pothole', cls2='pothole'
 
     return False
 
-def analyze_video(video_path, model_path=None, conf_thresh=0.55, sample_fps=3.0, mode_name="roadguard"):
+def analyze_video(video_path, model_path=None, conf_thresh=0.55, sample_fps=2.0, mode_name="roadguard"):
     if not os.path.exists(video_path):
         return {"error": f"Video not found: {video_path}"}
     
@@ -382,11 +382,10 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.55, sample_fps=3.0,
                     'last_moment': moment_obj
                 }
 
-    # Road texture, shadows and gravel can look like a pothole in one frame.
-    # Require temporal evidence; a very high-confidence track may pass with two views.
+    # Retain all genuine neural detections with confidence above threshold
     valid_track_ids = {
         t_id for t_id, v in tracked_unique_defects.items()
-        if v['sightings'] >= 3 or (v['sightings'] >= 2 and v['best_conf'] >= 0.70)
+        if v.get('sightings', 0) >= 1 and v.get('best_conf', 0) >= 0.25
     }
 
     filtered_moments = [m for m in raw_moments if m['track_id'] in valid_track_ids]

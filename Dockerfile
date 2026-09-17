@@ -1,6 +1,24 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 1 — Node: build Vite frontend + esbuild server bundle
+# Using official Node image guarantees npm is on PATH (fixes exit 127 on Render)
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+# Install ALL dependencies (including devDeps like vite, esbuild needed for build)
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+
+# Copy all source and build
+COPY . .
+RUN npm run build
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 2 — Python + Node runtime: run the server
+# ─────────────────────────────────────────────────────────────────────────────
 FROM python:3.11-slim
 
-# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PORT=10000 \
@@ -9,37 +27,39 @@ ENV DEBIAN_FRONTEND=noninteractive \
     ULTRALYTICS_AUTOINSTALL=0 \
     PIP_ROOT_USER_ACTION=ignore
 
-# Install system dependencies including Node.js 20 & OpenCV / FFmpeg libraries
+# Install system deps: Node.js 20 (to run dist/server.cjs) + OpenCV/FFmpeg
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     gnupg \
-    build-essential \
     ffmpeg \
     libgl1 \
     libglib2.0-0 \
-    git \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
+    && apt-get install -y --no-install-recommends nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Upgrade pip and install pre-built CPU PyTorch and Ultralytics
+# Install Python AI dependencies (CPU-only PyTorch to keep image small)
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --no-cache-dir "numpy<2" "opencv-python-headless" ultralytics huggingface_hub
+    && pip install --no-cache-dir "numpy<2" "opencv-python-headless" ultralytics huggingface_hub requests
 
-# Copy package files and install npm dependencies
-COPY package*.json ./
-RUN npm install
 
-# Copy application source code
-COPY . .
+# Copy pre-built JS artifacts from the Node builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# Build Vite frontend and server bundle
-RUN npm run build
+# Copy runtime files needed by the server at startup
+COPY detector/ ./detector/
+COPY server/ ./server/
+COPY data/ ./data/
+COPY public/ ./public/
+COPY .env.example ./.env.example
 
-EXPOSE 10000 7860 3000
+EXPOSE 10000
 
 CMD ["node", "dist/server.cjs"]

@@ -78,10 +78,11 @@ export default function AlertTestModal({ isOpen, onClose }) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const adminKey = sessionStorage.getItem('gcc_admin_key') || '';
     try {
       const res = await fetch(`${API_BASE}/api/alerts/config`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({
           telegram_target: editForm.telegram_target,
           telegram_chat_id: editForm.telegram_chat_id,
@@ -101,6 +102,8 @@ export default function AlertTestModal({ isOpen, onClose }) {
         setSaveSuccess(true);
         setIsEditing(false);
         setTimeout(() => setSaveSuccess(false), 3000);
+      } else if (res.status === 401) {
+        setError('⛔ Unauthorized: Please authenticate as Admin (LOCK button in header) before changing alert configuration.');
       } else {
         const errData = await res.json();
         setError(errData.error || 'Failed to save environment variables');
@@ -116,10 +119,11 @@ export default function AlertTestModal({ isOpen, onClose }) {
     setLoading(true);
     setError(null);
     setResult(null);
+    const adminKey = sessionStorage.getItem('gcc_admin_key') || '';
     try {
       const res = await fetch(`${API_BASE}/api/alerts/test`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({
           target: config.telegram_target,
           email: config.dispatch_email,
@@ -127,7 +131,11 @@ export default function AlertTestModal({ isOpen, onClose }) {
         })
       });
       const data = await res.json();
-      setResult(data);
+      if (res.status === 401) {
+        setError('⛔ Unauthorized: Admin authentication required to send test alerts. Use the LOCK button in the header.');
+      } else {
+        setResult(data);
+      }
     } catch (err) {
       setError(err.message || 'Failed to dispatch alert test');
     } finally {

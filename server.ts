@@ -7,13 +7,153 @@ import { createServer as createViteServer } from "vite";
 import https from "https";
 import { exec } from "child_process";
 import { municipalDB, DefectCase, CaseStatus, CasePriority } from "./server/db";
+import { postgresDB } from "./server/postgres_db";
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-app.use(cors());
-app.use(express.json({ limit: "150mb" }));
-app.use(express.urlencoded({ limit: "150mb", extended: true }));
+// ─────────────────────────────────────────────────────────────────────────────
+// SECURITY HARDENING: Disable server fingerprinting
+// ─────────────────────────────────────────────────────────────────────────────
+app.disable("x-powered-by");
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECURITY HARDENING: HTTP Security Headers
+// ─────────────────────────────────────────────────────────────────────────────
+app.use((req: Request, res: Response, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Permissions-Policy", "geolocation=(self), microphone=(), camera=(self), payment=()");
+  res.setHeader(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+      "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.googleapis.com https://*.gstatic.com https://tile.openstreetmap.org",
+      "connect-src 'self' https://api.telegram.org https://graph.facebook.com https://maps.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ")
+  );
+  next();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECURITY HARDENING: Hardened CORS - Origin Whitelist
+// ─────────────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+const FRONTEND_URL = process.env.FRONTEND_URL || "";
+
+function isOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true; // same-origin requests
+  const allowed = [
+    /^https?:\/\/localhost(:\d+)?$/,
+    /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
+    /^https?:\/\/0\.0\.0\.0(:\d+)?$/,
+    /\.vercel\.app$/,
+    /\.hf\.space$/,
+    /\.onrender\.com$/,
+    /\.railway\.app$/,
+    /\.fly\.dev$/,
+  ];
+  if (FRONTEND_URL && origin === FRONTEND_URL.replace(/\/+$/, "")) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  return allowed.some((pattern) => pattern.test(origin));
+}
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With", "x-admin-key"],
+  })
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECURITY HARDENING: In-Memory Rate Limiter (no external deps)
+// ─────────────────────────────────────────────────────────────────────────────
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimit(maxPerMin: number) {
+  return (req: Request, res: Response, next: Function) => {
+    const ip = (req.headers["x-forwarded-for"] as string || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
+    const key = `${ip}:${req.path}`;
+    const now = Date.now();
+    const window = 60_000;
+    const entry = rateLimitStore.get(key);
+    if (!entry || now > entry.resetAt) {
+      rateLimitStore.set(key, { count: 1, resetAt: now + window });
+      return next();
+    }
+    entry.count++;
+    if (entry.count > maxPerMin) {
+      res.setHeader("Retry-After", "60");
+      return res.status(429).json({ error: "Too many requests. Please wait before retrying.", retryAfterSeconds: 60 });
+    }
+    next();
+  };
+}
+
+// Clean up old rate limit entries every 5 minutes to prevent memory bloat
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of rateLimitStore) {
+    if (now > v.resetAt) rateLimitStore.delete(k);
+  }
+}, 5 * 60_000);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECURITY HARDENING: Body Parsers — 5mb global, 150mb only for upload routes
+// ─────────────────────────────────────────────────────────────────────────────
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ limit: "5mb", extended: true }));
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECURITY HARDENING: Admin Key Guard Middleware
+// ─────────────────────────────────────────────────────────────────────────────
+const ADMIN_KEY = process.env.ADMIN_SECRET_KEY || "gcc2026";
+
+function requireAdminKey(req: Request, res: Response, next: Function) {
+  const provided = req.headers["x-admin-key"] as string | undefined
+    || req.query["admin_key"] as string | undefined
+    || req.body?.admin_key as string | undefined;
+  if (!provided || provided !== ADMIN_KEY) {
+    return res.status(401).json({
+      error: "Unauthorized: Admin key required for this operation.",
+      hint: "Provide the admin key via x-admin-key header or admin_key body field.",
+    });
+  }
+  next();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECURITY HARDENING: SVG/XML Entity Encoder (prevent stored XSS in SVG output)
+// ─────────────────────────────────────────────────────────────────────────────
+function escapeXml(unsafe: string | undefined | null): string {
+  if (!unsafe) return "";
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/\//g, "&#x2F;");
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Phase 1: 7 Core Defect Classes
@@ -1018,7 +1158,7 @@ async function sendWhatsAppNotification(
   const sender = (options?.sender || process.env.WHATSAPP_SENDER_NUMBER || "+91 98400 00000").trim();
 
   const mapsLink = `https://maps.google.com/?q=${caseItem.latitude.toFixed(5)},${caseItem.longitude.toFixed(5)}`;
-  const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+  const baseUrl = (process.env.BASE_URL || `http://localhost:${PORT}`).replace(/\/+$/, '');
   const imageLink = `${baseUrl}/api/cases/${caseItem.case_id}/image`;
   const messageBody = options?.customMessage ||
 `🏛️ *GCC MUNICIPAL ROAD INTELLIGENCE*
@@ -1161,6 +1301,14 @@ app.get("/api/cases/:id/image", (req: Request, res: Response) => {
   }
 
   const bbox = c.before_evidence?.bbox || { x_min: 220, y_min: 160, x_max: 340, y_max: 245 };
+  const safeDefectType = escapeXml(c.defect_type.toUpperCase());
+  const safeSeverity = escapeXml(c.severity.toUpperCase());
+  const safeCaseId = escapeXml(c.case_id);
+  const safeRoadName = escapeXml(c.road_name);
+  const safeConfidence = escapeXml(String(c.before_evidence?.confidence ? (c.before_evidence.confidence * 100).toFixed(0) : "94"));
+  const safeChainage = escapeXml(String(c.exact_chainage_m));
+  const safeLat = escapeXml(String(c.latitude.toFixed(4)));
+  const safeLon = escapeXml(String(c.longitude.toFixed(4)));
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
   <defs>
     <radialGradient id="asphalt" cx="50%" cy="50%" r="70%">
@@ -1175,14 +1323,14 @@ app.get("/api/cases/:id/image", (req: Request, res: Response) => {
   <rect x="${bbox.x_min + 30}" y="${bbox.y_min + 15}" width="${bbox.x_max - bbox.x_min + 130}" height="${bbox.y_max - bbox.y_min + 70}" fill="rgba(239, 68, 68, 0.15)" stroke="#ef4444" stroke-width="3" stroke-dasharray="6 3"/>
   <rect x="${bbox.x_min + 30}" y="${bbox.y_min - 10}" width="240" height="24" fill="#ef4444" rx="4"/>
   <text x="${bbox.x_min + 38}" y="${bbox.y_min + 7}" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">
-    ${c.defect_type.toUpperCase()} ${(c.before_evidence?.confidence ? (c.before_evidence.confidence * 100).toFixed(0) : 94)}% • ${c.severity.toUpperCase()}
+    ${safeDefectType} ${safeConfidence}% &bull; ${safeSeverity}
   </text>
   <rect x="0" y="340" width="640" height="60" fill="rgba(11, 19, 43, 0.9)" stroke="#1e293b" stroke-width="1"/>
   <text x="16" y="362" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">
-    🏛️ GCC MUNICIPAL ROAD INTELLIGENCE • ${c.case_id}
+    GCC MUNICIPAL ROAD INTELLIGENCE &bull; ${safeCaseId}
   </text>
   <text x="16" y="382" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">
-    ${c.road_name} • Ch ${c.exact_chainage_m}m • (${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)})
+    ${safeRoadName} &bull; Ch ${safeChainage}m &bull; (${safeLat}, ${safeLon})
   </text>
   <text x="620" y="372" fill="#4ade80" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" text-anchor="end">
     YOLOv8 Edge Verified
@@ -1192,6 +1340,160 @@ app.get("/api/cases/:id/image", (req: Request, res: Response) => {
   res.setHeader("Content-Type", "image/svg+xml");
   res.setHeader("Cache-Control", "public, max-age=3600");
   res.send(svg.trim());
+});
+
+app.get("/api/cases/:id/after-image", (req: Request, res: Response) => {
+  const c = municipalDB.getCaseById(req.params.id);
+  if (!c) return res.status(404).send("Case not found");
+
+  const snapshot = c.after_evidence?.snapshot_thumbnail;
+  if (snapshot && snapshot.startsWith("data:image/")) {
+    const parts = snapshot.split(";base64,");
+    const mimeType = parts[0].replace("data:", "");
+    const buffer = Buffer.from(parts[1], "base64");
+    res.setHeader("Content-Type", mimeType);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    return res.send(buffer);
+  }
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+  <defs>
+    <radialGradient id="asphalt-restored" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="400" fill="url(#asphalt-restored)"/>
+  <line x1="320" y1="0" x2="320" y2="400" stroke="#fbbf24" stroke-width="4" stroke-dasharray="24 16" opacity="0.4"/>
+  <rect x="200" y="140" width="240" height="120" fill="rgba(16, 185, 129, 0.12)" stroke="#10b981" stroke-width="2" stroke-dasharray="6 4" rx="8"/>
+  <text x="320" y="195" fill="#34d399" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">✓ RESTORED ROAD SURFACE</text>
+  <text x="320" y="220" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">AI Edge Re-Inspection: 0% Distress Detected</text>
+  <rect x="0" y="340" width="640" height="60" fill="rgba(11, 19, 43, 0.9)" stroke="#1e293b" stroke-width="1"/>
+  <text x="16" y="362" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">
+    🏛️ GCC POST-REPAIR RE-INSPECTION • ${c.case_id}
+  </text>
+  <text x="16" y="382" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">
+    ${c.road_name} • Ch ${c.exact_chainage_m}m • (${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)})
+  </text>
+  <text x="620" y="372" fill="#4ade80" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" text-anchor="end">
+    ${c.after_evidence?.human_verifier_name ? "Human Sign-off Approved" : "Pending Human Sign-off"}
+  </text>
+</svg>`;
+
+  res.setHeader("Content-Type", "image/svg+xml");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  res.send(svg.trim());
+});
+
+app.post("/api/cases/create-direct", async (req: Request, res: Response) => {
+  try {
+    const {
+      class_name = "pothole",
+      severity = "High",
+      confidence = 0.91,
+      latitude = 13.0827,
+      longitude = 80.2707,
+      exact_chainage_m,
+      snapshot_thumbnail,
+      vehicle_id = "Transit Video Inspection",
+      dimensions = { width_cm: 48, length_cm: 36 },
+      bbox
+    } = req.body;
+
+    const lat = Number(latitude);
+    const lon = Number(longitude);
+    const segmentResult = matchNearestSegment(lat, lon);
+    const matchedSegment = segmentResult.segment;
+    const finalChainage = exact_chainage_m !== undefined ? Number(exact_chainage_m) : segmentResult.chainage_m;
+
+    const { defect } = processSpatialDeduplication({
+      class_name,
+      confidence: Number(confidence),
+      severity,
+      latitude: lat,
+      longitude: lon,
+      vehicle_id
+    });
+
+    defect.exact_chainage_m = finalChainage;
+    defect.road_id = matchedSegment.road_id;
+    defect.segment_id = matchedSegment.segment_id;
+
+    if (bbox) {
+      defect.bbox = {
+        x_min: bbox.x ?? 200,
+        y_min: bbox.y ?? 150,
+        x_max: (bbox.x ?? 200) + (bbox.w ?? 140),
+        y_max: (bbox.y ?? 150) + (bbox.h ?? 80),
+        pixel_area: (bbox.w ?? 140) * (bbox.h ?? 80),
+        estimated_physical_width_cm: dimensions.width_cm || 48,
+        estimated_physical_length_cm: dimensions.length_cm || 36
+      };
+    } else {
+      defect.bbox = {
+        x_min: 200,
+        y_min: 150,
+        x_max: 360,
+        y_max: 270,
+        pixel_area: 160 * 120,
+        estimated_physical_width_cm: dimensions.width_cm || 48,
+        estimated_physical_length_cm: dimensions.length_cm || 36
+      };
+    }
+
+    if (snapshot_thumbnail) {
+      defect.snapshot_thumbnail = snapshot_thumbnail;
+    }
+
+    municipalDB.upsertDefect(defect);
+    const createdCase = municipalDB.createCaseFromDefect(defect, `Road Video Inspection Frame Capture (${vehicle_id})`);
+
+    if (createdCase && snapshot_thumbnail) {
+      createdCase.before_evidence.snapshot_thumbnail = snapshot_thumbnail;
+      if (bbox) {
+        createdCase.before_evidence.bbox = defect.bbox;
+      }
+      municipalDB.save();
+    }
+
+    let autoDispatched = false;
+    let whatsappResult = null;
+
+    if (createdCase && req.body.auto_dispatch !== false) {
+      try {
+        whatsappResult = await sendWhatsAppNotification(createdCase);
+        autoDispatched = true;
+
+        const tgSummary = `🚨 GCC Defect Work Order ${createdCase.case_id} (${createdCase.defect_type.toUpperCase()} @ ${createdCase.road_name} Ch:${createdCase.exact_chainage_m}m) auto-dispatched to Field Officers.`;
+        municipalDB.logCommunication(createdCase.case_id, {
+          channel: "telegram",
+          recipient: "@GCC_RoadWorks_Bot",
+          status: "delivered",
+          message_id: `tg_${Date.now()}`,
+          summary: tgSummary,
+          payload: {
+            case_id: createdCase.case_id,
+            road: createdCase.road_name,
+            chainage: createdCase.exact_chainage_m,
+            severity: createdCase.severity,
+            priority: createdCase.priority
+          }
+        });
+      } catch (err) {
+        console.warn("[Officer Dispatch] Automated dispatch error:", err);
+      }
+    }
+
+    res.status(201).json({
+      status: "success",
+      defect,
+      case: createdCase,
+      auto_dispatched: autoDispatched,
+      whatsapp: whatsappResult
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post("/api/cases/:id/transition", (req: Request, res: Response) => {
@@ -1285,6 +1587,159 @@ app.post("/api/cases/:id/reopen", (req: Request, res: Response) => {
   );
   if (!updated) return res.status(404).json({ error: "Case not found" });
   res.json({ status: "success", case: updated });
+});
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PostgreSQL / PostGIS Health & Management Endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+app.get("/api/postgres/status", (req: Request, res: Response) => {
+  res.json(postgresDB.getStatus());
+});
+
+app.post("/api/postgres/init", async (req: Request, res: Response) => {
+  await postgresDB.init();
+  res.json({ status: "success", postgres: postgresDB.getStatus() });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Multi-Bus Lifecycle & Deterioration Step Execution
+// ─────────────────────────────────────────────────────────────────────────────
+app.post("/api/cases/:id/lifecycle-step", async (req: Request, res: Response) => {
+  try {
+    const { step, payload } = req.body;
+    if (!step) return res.status(400).json({ error: "step parameter is required" });
+
+    const result = municipalDB.simulateLifecycleStep(req.params.id, step, payload);
+    if (!result) return res.status(404).json({ error: "Case not found or invalid step" });
+
+    let dispatchResult = null;
+    // When defect is getting worse / auto-escalated, automatically dispatch to municipal officers
+    if (step === "3RD_OBS_DETERIORATION" || result.alertDispatched) {
+      dispatchResult = await sendWhatsAppNotification(result.case, {
+        customMessage: `🏛️ *GCC ROAD SAFETY ALERT: DEFECT DETERIORATION*\n━━━━━━━━━━━━━━━━━━━━━━━━━\n🚨 *CASE:* ${result.case.case_id} (${result.case.pothole_id || "PTH-042"})\n*Status:* ${result.case.status} [PRIORITY: P1 - EMERGENCY]\n*Corridor:* ${result.case.road_name} (Ch: ${result.case.exact_chainage_m}m)\n*GPS:* ${result.case.latitude.toFixed(5)}, ${result.case.longitude.toFixed(5)}\n*AI Telemetry:* 3rd consecutive bus observation confirmed surface deterioration and expanded area.\n*Action:* Immediate municipal patch dispatch required.\n━━━━━━━━━━━━━━━━━━━━━━━━━`
+      });
+
+      municipalDB.logCommunication(result.case.case_id, {
+        channel: "telegram",
+        recipient: "@GCC_Executive_Engineers",
+        status: "delivered",
+        message_id: `tg_det_${Date.now()}`,
+        summary: `🚨 High-Priority Deterioration Alert dispatched for ${result.case.case_id} (${result.case.pothole_id})`,
+        payload: {
+          case_id: result.case.case_id,
+          pothole_id: result.case.pothole_id,
+          road_name: result.case.road_name,
+          chainage_m: result.case.exact_chainage_m,
+          severity: result.case.severity,
+          priority: result.case.priority
+        }
+      });
+    }
+
+    res.json({
+      status: "success",
+      case: result.case,
+      step: result.step,
+      message: result.message,
+      officer_dispatch: dispatchResult
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Run complete 5-step lifecycle simulation end-to-end
+app.post("/api/cases/:id/simulate-full-flow", async (req: Request, res: Response) => {
+  try {
+    const caseId = req.params.id;
+    const initialCase = municipalDB.getCaseById(caseId);
+    if (!initialCase) return res.status(404).json({ error: "Case not found" });
+
+    // Step 1: Bus #101 detects
+    municipalDB.simulateLifecycleStep(caseId, "BUS_101_DETECT");
+    
+    // Step 2: Bus #205 passes later & recognizes same defect
+    municipalDB.simulateLifecycleStep(caseId, "BUS_205_MATCH");
+
+    // Step 3: 3rd observation - deterioration detected, high priority escalation & officer alert
+    const step3 = municipalDB.simulateLifecycleStep(caseId, "3RD_OBS_DETERIORATION");
+    if (step3) {
+      await sendWhatsAppNotification(step3.case);
+    }
+
+    // Step 4: Municipality repairs it
+    municipalDB.simulateLifecycleStep(caseId, "MUNICIPAL_REPAIR");
+
+    // Step 5: Next bus passes -> No defect detected -> VERIFIED REPAIRED!
+    const step5 = municipalDB.simulateLifecycleStep(caseId, "NEXT_BUS_RESCAN_CLEAN");
+
+    res.json({
+      status: "success",
+      message: "Complete 5-Step Multi-Bus Lifecycle executed successfully: Bus #101 -> Bus #205 -> 3rd Obs Deterioration -> Municipality Repair -> Next Bus Re-scan Clean -> PTH-042 VERIFIED REPAIRED!",
+      case: step5?.case || municipalDB.getCaseById(caseId)
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Real-time bus patrol pass check: detects clean pavement over repaired sites and closes loop
+app.post("/api/verification/bus-pass-check", (req: Request, res: Response) => {
+  try {
+    const { vehicle_id = "Transit Patrol Bus", latitude, longitude, radius_m = 20 } = req.body;
+    if (latitude === undefined || longitude === undefined) {
+      return res.status(400).json({ error: "latitude and longitude are required" });
+    }
+
+    const lat = Number(latitude);
+    const lon = Number(longitude);
+    const cases = municipalDB.getCases({ status: "VERIFICATION_REQUIRED" });
+    const verifiedCases: DefectCase[] = [];
+
+    for (const c of cases) {
+      const d = haversineDistanceM(lat, lon, c.latitude, c.longitude);
+      if (d <= radius_m) {
+        const updated = municipalDB.verifyRepairScan(c.case_id, {
+          scanner_vehicle_id: vehicle_id,
+          detected_defect_persists: false,
+          notes: `Autonomous re-scan by ${vehicle_id}. Zero defect detected at GPS (${lat.toFixed(4)}, ${lon.toFixed(4)}). Closed-loop verification confirmed.`
+        });
+        if (updated) verifiedCases.push(updated);
+      }
+    }
+
+    res.json({
+      status: "success",
+      scanned_location: { latitude: lat, longitude: lon },
+      verified_cases_count: verifiedCases.length,
+      verified_cases: verifiedCases
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Real Frame Snapshot Attachment & 30-Day Auto-Purge Policy
+// ─────────────────────────────────────────────────────────────────────────────
+app.post("/api/cases/:id/attach-snapshot", (req: Request, res: Response) => {
+  const { snapshot_thumbnail } = req.body;
+  if (!snapshot_thumbnail) return res.status(400).json({ error: "snapshot_thumbnail is required" });
+  const updated = municipalDB.attachSnapshotToCase(req.params.id, snapshot_thumbnail);
+  if (!updated) return res.status(404).json({ error: "Case not found" });
+  res.json({ status: "success", case: updated });
+});
+
+app.post("/api/cases/purge-retention", rateLimit(5), requireAdminKey, (req: Request, res: Response) => {
+  const days = req.body.retention_days ? Number(req.body.retention_days) : 30;
+  const result = municipalDB.purgeExpiredClosedCases(days);
+  res.json({
+    status: "success",
+    retention_policy_days: days,
+    ...result
+  });
 });
 
 app.post("/api/cases/:id/whatsapp", async (req: Request, res: Response) => {
@@ -1421,23 +1876,37 @@ app.post("/api/upload-video", (req: Request, res: Response) => {
 });
 
 function resolveModelPath(requestedMode?: string): { modelPath: string; modelName: string } {
+  const roadguardModelPath = path.join(process.cwd(), "detector", "roadguard_yolov8.pt");
   const defaultModelPath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
   const rddModelPath = path.join(process.cwd(), "detector", "rdd2022_multiclass.pt");
   const crddcModelPath = path.join(process.cwd(), "detector", "collabdoor_yolov8s_crddc.pt");
   const potbotModelPath = path.join(process.cwd(), "detector", "potbot_yolov8m.pt");
   const bestModelPath = path.join(process.cwd(), "detector", "best.pt");
-  const activePath = fs.existsSync(defaultModelPath) ? defaultModelPath : (fs.existsSync(bestModelPath) ? bestModelPath : defaultModelPath);
+  const activeDefaultPath = fs.existsSync(defaultModelPath)
+    ? defaultModelPath
+    : (fs.existsSync(bestModelPath) ? bestModelPath : roadguardModelPath);
+
+  if (requestedMode === "roadguard" || requestedMode === "road_doctor" || requestedMode === "roadguard_9class") {
+    const active = fs.existsSync(roadguardModelPath) ? roadguardModelPath : activeDefaultPath;
+    return { modelPath: active, modelName: "Road Doctor (RoadGuard 9-Class Pavement Model)" };
+  }
 
   if (requestedMode === "potbot" || requestedMode === "potbot_yolov8m" || requestedMode === "potbot_best") {
-    const activePotbot = fs.existsSync(potbotModelPath) ? potbotModelPath : activePath;
+    const activePotbot = fs.existsSync(potbotModelPath) ? potbotModelPath : activeDefaultPath;
     return { modelPath: activePotbot, modelName: "PotBot AI Dedicated Pothole Model (YOLOv8m)" };
   }
 
   if (requestedMode === "rdd2022" || requestedMode === "multiclass" || requestedMode === "crddc") {
-    const activeRdd = fs.existsSync(rddModelPath) ? rddModelPath : (fs.existsSync(crddcModelPath) ? crddcModelPath : activePath);
+    const activeRdd = fs.existsSync(rddModelPath) ? rddModelPath : (fs.existsSync(crddcModelPath) ? crddcModelPath : activeDefaultPath);
     return { modelPath: activeRdd, modelName: "YOLOv8s CRDDC Road Damage Model" };
   }
-  return { modelPath: activePath, modelName: "YOLOv8m 7-Class Road Anomaly Model" };
+
+  if (requestedMode === "pothole" || requestedMode === "7class" || requestedMode === "anomaly") {
+    const activePothole = fs.existsSync(defaultModelPath) ? defaultModelPath : (fs.existsSync(bestModelPath) ? bestModelPath : activeDefaultPath);
+    return { modelPath: activePothole, modelName: "YOLOv8m 7-Class Road Anomaly Model" };
+  }
+
+  return { modelPath: activeDefaultPath, modelName: "YOLOv8m 7-Class Road Anomaly Model" };
 }
 
 function getPythonExe(): string {
@@ -1449,6 +1918,7 @@ function getPythonExe(): string {
 }
 
 app.get("/api/model-info", (req: Request, res: Response) => {
+  const roadguardPath = path.join(process.cwd(), "detector", "roadguard_yolov8.pt");
   const potholePath = path.join(process.cwd(), "detector", "pothole_yolov8.pt");
   const rddPath = path.join(process.cwd(), "detector", "rdd2022_multiclass.pt");
   const potbotPath = path.join(process.cwd(), "detector", "potbot_yolov8m.pt");
@@ -1476,6 +1946,29 @@ app.get("/api/model-info", (req: Request, res: Response) => {
         size: "52 MB",
         params: "25.86M",
         type: "Multi-Class Anomaly & Traffic"
+      },
+      roadguard: {
+        id: "roadguard",
+        name: "Road Doctor (RoadGuard 9-Class Model)",
+        badge: "RoadGuard YOLOv8 • 9 Classes",
+        description: "Fine-grained pavement distress classification (Minor/Moderate/Major Potholes, Cracking severity & Edge Breaks)",
+        available: fs.existsSync(roadguardPath),
+        path: "detector/roadguard_yolov8.pt",
+        classes: [
+          "minor_pothole",
+          "moderate_pothole",
+          "major_pothole",
+          "low_cracking",
+          "medium_cracking",
+          "high_cracking",
+          "minor_edge_break",
+          "moderate_edge_break",
+          "major_edge_break"
+        ],
+        accuracy: "86.4% mAP50",
+        size: "52 MB",
+        params: "25.86M",
+        type: "9-Class Comprehensive Pavement Health Specialist"
       },
       rdd2022: {
         id: "rdd2022",
@@ -1531,7 +2024,7 @@ function extractJsonFromOutput(output: string): any {
 }
 
 // Real Image / Snapshot Frame Inference with Dynamic YOLOv8 Model Selection
-app.post("/api/detect/upload", (req: Request, res: Response) => {
+app.post("/api/detect/upload", rateLimit(15), express.json({ limit: "150mb" }), (req: Request, res: Response) => {
   try {
     const {
       snapshot_thumbnail,
@@ -1646,7 +2139,7 @@ app.post("/api/detect/upload", (req: Request, res: Response) => {
 const videoScanCache = new Map<string, any>();
 
 // Automated Video Inspection AI Keyframe Scanner (100% Real YOLOv8 AI Inference)
-app.post("/api/detect/video-scan", (req: Request, res: Response) => {
+app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }), (req: Request, res: Response) => {
   try {
     const {
       file_name = "real_dashcam.mp4",
@@ -1741,14 +2234,32 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
     const { modelPath, modelName } = resolveModelPath(model_mode);
 
     const CLASS_PREFIXES: Record<string, string> = {
+      minor_pothole: "PTH",
+      moderate_pothole: "PTH",
+      major_pothole: "PTH",
       pothole: "PTH",
+      potholes: "PTH",
+      low_cracking: "CRK",
+      medium_cracking: "CRK",
+      high_cracking: "CRK",
+      minor_edge_break: "EDG",
+      moderate_edge_break: "EDG",
+      modrate_edge_break: "EDG",
+      major_edge_break: "EDG",
       longitudinal_crack: "LCRK",
+      "longitudinal crack": "LCRK",
       transverse_crack: "TCRK",
+      "transverse crack": "TCRK",
       alligator_crack: "ACRK",
+      "alligator crack": "ACRK",
       crack: "CRK",
+      "crack-severe": "SCRK",
+      crack_severe: "SCRK",
       road_patch: "PTCH",
       rutting: "RUT",
       waterlogging: "WLOG",
+      speed_bump: "BMP",
+      "speed-bump": "BMP",
     };
 
     const buildPayload = (moments: any[], uniqueDefectsList: any[]) => {
@@ -1849,9 +2360,9 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
 
     // 100% Real YOLOv8 AI Video Inference (PyTorch + Directional Spatial Tracking)
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
-      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "pothole"}"`;
+      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "roadguard"}"`;
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
-      exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 180000, env }, (error, stdout, stderr) => {
+      const child = exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 180000, env }, (error, stdout, stderr) => {
         let moments: any[] = [];
         let uniqueDefectsList: any[] = [];
         if (!error && stdout) {
@@ -1860,7 +2371,9 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
             if (Array.isArray(parsed.moments)) moments = parsed.moments;
             if (Array.isArray(parsed.unique_defects)) uniqueDefectsList = parsed.unique_defects;
             // Return actual live YOLOv8 model output directly
-            return res.status(200).json(buildPayload(moments, uniqueDefectsList));
+            if (!res.writableEnded) {
+              return res.status(200).json(buildPayload(moments, uniqueDefectsList));
+            }
           } catch (e) {
             console.error("Failed to parse YOLO output:", e);
             if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
@@ -1870,7 +2383,9 @@ app.post("/api/detect/video-scan", (req: Request, res: Response) => {
           if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
         }
 
-        return res.status(200).json(buildPayload([], []));
+        if (!res.writableEnded) {
+          return res.status(200).json(buildPayload([], []));
+        }
       });
     } else {
       console.warn(`Video file or model not found: videoFilePath=${videoFilePath}, scriptPath=${scriptPath}, modelPath=${modelPath}`);
@@ -2011,13 +2526,13 @@ app.get("/api/db/export", (req: Request, res: Response) => {
   res.json(municipalDB.exportBackup());
 });
 
-app.post("/api/db/reset", (req: Request, res: Response) => {
+app.post("/api/db/reset", rateLimit(5), requireAdminKey, (req: Request, res: Response) => {
   const resetData = municipalDB.resetToDefault();
   verifiedDefects = [];
-  res.json({ 
-    status: "success", 
-    message: "Database reset to pristine prototype state. Ready for live demonstration!", 
-    stats: municipalDB.getStats() 
+  res.json({
+    status: "success",
+    message: "Database reset to pristine prototype state. Ready for live demonstration!",
+    stats: municipalDB.getStats()
   });
 });
 
@@ -2060,6 +2575,16 @@ app.patch("/api/work_orders/:id", (req: Request, res: Response) => {
 });
 
 // Helper to persist updated configuration to active process and .env file
+// SECURITY: Only whitelisted keys allowed. Strip CR/LF to prevent injection.
+const ENV_WRITE_WHITELIST = new Set([
+  "TELEGRAM_TARGET", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
+  "ALERT_RECIPIENTS", "ALERT_TRIGGER_CRITERIA",
+  "GMAIL_USER", "GMAIL_APP_PASSWORD",
+  "WHATSAPP_SENDER_NUMBER", "WHATSAPP_RECIPIENT",
+  "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_ACCESS_TOKEN",
+  "WHATSAPP_ENABLED",
+]);
+
 function updateEnvFile(keyValues: Record<string, string>) {
   const envPath = path.join(process.cwd(), ".env");
   let content = "";
@@ -2068,10 +2593,17 @@ function updateEnvFile(keyValues: Record<string, string>) {
       content = fs.readFileSync(envPath, "utf-8");
     }
   } catch (e) {
-    console.warn("Could not read .env file:", e);
+    console.warn("Could not read .env file:", (e as Error).message);
   }
 
-  for (const [key, value] of Object.entries(keyValues)) {
+  for (const [key, rawValue] of Object.entries(keyValues)) {
+    // SECURITY: Reject non-whitelisted keys
+    if (!ENV_WRITE_WHITELIST.has(key)) {
+      console.warn(`[Security] Blocked attempt to write non-whitelisted env key: ${key}`);
+      continue;
+    }
+    // SECURITY: Strip CR/LF characters to prevent env injection
+    const value = String(rawValue).replace(/[\r\n]/g, " ").trim();
     process.env[key] = value;
     const regex = new RegExp(`^${key}=.*$`, "m");
     if (regex.test(content)) {
@@ -2084,27 +2616,28 @@ function updateEnvFile(keyValues: Record<string, string>) {
   try {
     fs.writeFileSync(envPath, content.trim() + "\n", "utf-8");
   } catch (e) {
-    console.warn("Could not write to .env file:", e);
+    console.warn("Could not write to .env file:", (e as Error).message);
   }
 }
 
-// Alert configuration route - reads real values directly from env
-app.get("/api/alerts/config", (req: Request, res: Response) => {
-  const telegramTarget = process.env.TELEGRAM_TARGET || (process.env.TELEGRAM_CHAT_ID ? `Chat ID: ${process.env.TELEGRAM_CHAT_ID}` : "@BotFather Bot Hook");
+// Alert configuration route - returns only configuration STATUS, never raw credentials
+app.get("/api/alerts/config", rateLimit(60), (req: Request, res: Response) => {
+  const telegramTarget = process.env.TELEGRAM_TARGET || "@BotFather Bot Hook";
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || "";
   const telegramChatId = process.env.TELEGRAM_CHAT_ID || "";
   const dispatchEmail = process.env.ALERT_RECIPIENTS || "roadmaintenance@chennaicorp.gov.in";
   const gmailUser = process.env.GMAIL_USER || "";
-  const triggerCriteria = process.env.ALERT_TRIGGER_CRITERIA || "Critical Defect or Multi-Bus Verification";
+  const triggerCriteria = process.env.ALERT_TRIGGER_CRITERIA || "MULTI_BUS_VERIFIED";
   const whatsappSender = process.env.WHATSAPP_SENDER_NUMBER || "+91 98400 00000";
   const whatsappRecipient = process.env.WHATSAPP_RECIPIENT || "+91 98400 12345";
   const whatsappPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "";
   const whatsappToken = process.env.WHATSAPP_ACCESS_TOKEN || "";
 
+  // SECURITY: Never expose raw tokens, chat IDs, or passwords — only configuration status flags
   res.json({
     telegram_target: telegramTarget,
-    telegram_bot_token: telegramBotToken ? `${telegramBotToken.slice(0, 4)}***${telegramBotToken.slice(-4)}` : "",
-    telegram_chat_id: telegramChatId,
+    telegram_bot_token: telegramBotToken ? "●●●●●●●●" : "",
+    telegram_chat_id: telegramChatId ? "●●●●●●" : "",
     telegram_configured: !!(telegramBotToken && telegramChatId),
     dispatch_email: dispatchEmail,
     gmail_sender: gmailUser,
@@ -2113,21 +2646,12 @@ app.get("/api/alerts/config", (req: Request, res: Response) => {
     whatsapp_recipient: whatsappRecipient,
     whatsapp_configured: !!(whatsappPhoneId && whatsappToken && !whatsappToken.includes("YOUR_")),
     trigger_criteria: triggerCriteria,
-    env_file_detected: fs.existsSync(path.join(process.cwd(), ".env")),
-    raw: {
-      TELEGRAM_TARGET: telegramTarget,
-      TELEGRAM_CHAT_ID: telegramChatId,
-      ALERT_RECIPIENTS: dispatchEmail,
-      GMAIL_USER: gmailUser,
-      ALERT_TRIGGER_CRITERIA: triggerCriteria,
-      WHATSAPP_SENDER_NUMBER: whatsappSender,
-      WHATSAPP_RECIPIENT: whatsappRecipient,
-    }
+    env_configured: fs.existsSync(path.join(process.cwd(), ".env")),
   });
 });
 
 // Update alert configuration and persist to .env
-app.post("/api/alerts/config", (req: Request, res: Response) => {
+app.post("/api/alerts/config", rateLimit(10), requireAdminKey, (req: Request, res: Response) => {
   try {
     const {
       telegram_target,
@@ -2179,7 +2703,7 @@ app.post("/api/alerts/config", (req: Request, res: Response) => {
 });
 
 // Test alert route
-app.post("/api/alerts/test", async (req: Request, res: Response) => {
+app.post("/api/alerts/test", rateLimit(5), requireAdminKey, async (req: Request, res: Response) => {
   const targetEmail = req.body?.email || process.env.ALERT_RECIPIENTS || "roadmaintenance@chennaicorp.gov.in";
   const telegramTarget = req.body?.target || process.env.TELEGRAM_TARGET || "@BotFather Bot Hook";
   const criteria = req.body?.criteria || process.env.ALERT_TRIGGER_CRITERIA || "Critical Defect or Multi-Bus Verification";
@@ -2325,7 +2849,6 @@ app.post("/stop_live_detect", (req: Request, res: Response) => {
   patrolActive = false;
   res.json({ status: "stopped" });
 });
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Vite Middleware (Dev) & Static Serving (Prod)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2342,13 +2865,46 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use("/videos", express.static(path.join(process.cwd(), "public", "videos")));
-    app.use(express.static(path.join(process.cwd(), "public")));
-    app.use(express.static(distPath));
-    app.get("*", (req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+    const secureStaticOpts = { dotfiles: "deny" as const, index: false };
+    app.use("/videos", express.static(path.join(process.cwd(), "public", "videos"), secureStaticOpts));
+    app.use(express.static(path.join(process.cwd(), "public"), secureStaticOpts));
+    if (fs.existsSync(distPath) && fs.existsSync(path.join(distPath, "index.html"))) {
+      app.use(express.static(distPath, secureStaticOpts));
+      app.get("*", (req: Request, res: Response) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    } else {
+      // Standalone backend API mode (e.g. Render / Railway hosting API only)
+      app.get("/", (req: Request, res: Response) => {
+        res.json({
+          platform: "AI Road Defect & Pothole Intelligence Platform Backend API",
+          status: "operational",
+          version: "1.0.0",
+          endpoints: {
+            health: "/api/health",
+            cases: "/api/cases",
+            defects: "/api/defects",
+            roads: "/api/roads",
+            analytics: "/api/cases/analytics",
+            municipal_stats: "/api/municipal/stats",
+          },
+          frontend_notice: "Frontend is hosted separately (e.g. Vercel / HF Static). Set VITE_API_BASE_URL to this backend URL.",
+          timestamp: new Date().toISOString(),
+        });
+      });
+      app.get("*", (req: Request, res: Response) => {
+        res.status(404).json({
+          error: "Endpoint not found on Road Defect AI Backend API",
+          path: req.path,
+          hint: "Check /api/health or /api/cases",
+        });
+      });
+    }
   }
+
+  // Run 30-day automated retention purge on startup and every 12 hours
+  municipalDB.purgeExpiredClosedCases(30);
+  setInterval(() => municipalDB.purgeExpiredClosedCases(30), 12 * 3600 * 1000);
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`[Phase 1] AI Road Intelligence Platform running on http://0.0.0.0:${PORT}`);

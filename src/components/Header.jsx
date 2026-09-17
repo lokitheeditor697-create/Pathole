@@ -1,22 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Layers,
   MapPin,
   Bus,
   BarChart3,
   Video,
-  Download,
   Bell,
   RefreshCw,
   Pause,
   Play,
-  Wifi,
-  WifiOff,
-  Radio,
   Activity,
   RotateCcw,
   ClipboardList,
-  HardDrive
+  HardDrive,
+  Radio,
+  ShieldCheck,
+  Lock,
+  Unlock,
+  X,
+  KeyRound
 } from 'lucide-react';
 import { API_BASE } from '../config';
 
@@ -48,10 +50,62 @@ export default function Header({
   const isGpsLost = gpsStatus === 'lost' || simulatedGpsLost;
   const isGpsDegraded = gpsStatus === 'degraded' && !simulatedGpsLost;
 
+  // Admin security modal state
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminKeyInput, setAdminKeyInput] = useState('');
+  const [adminUnlocked, setAdminUnlocked] = useState(() => {
+    try { return sessionStorage.getItem('gcc_admin_unlocked') === '1'; } catch { return false; }
+  });
+  const [adminError, setAdminError] = useState('');
+  const [showKey, setShowKey] = useState(false);
+
+  const handleAdminUnlock = async () => {
+    if (!adminKeyInput.trim()) { setAdminError('Enter the admin key to continue.'); return; }
+    try {
+      const res = await fetch(`${API_BASE}/api/db/reset`, {
+        method: 'POST',
+        headers: { 'x-admin-key': adminKeyInput.trim(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ _validate_only: true })
+      });
+      // If 200 or resetted, key was correct
+      if (res.ok) {
+        sessionStorage.setItem('gcc_admin_unlocked', '1');
+        sessionStorage.setItem('gcc_admin_key', adminKeyInput.trim());
+        setAdminUnlocked(true);
+        setShowAdminModal(false);
+        setAdminKeyInput('');
+        setAdminError('');
+        // Re-trigger the actual desired action
+        if (onResetDB) {
+          // Admin just unlocked and chose to reset - call it properly
+        }
+      } else {
+        setAdminError('Invalid admin key. Access denied.');
+      }
+    } catch {
+      setAdminError('Connection error. Ensure server is running.');
+    }
+  };
+
+  const handleAdminReset = () => {
+    if (!adminUnlocked) {
+      setShowAdminModal(true);
+      return;
+    }
+    onResetDB && onResetDB();
+  };
+
+  const handleAdminLogout = () => {
+    sessionStorage.removeItem('gcc_admin_unlocked');
+    sessionStorage.removeItem('gcc_admin_key');
+    setAdminUnlocked(false);
+  };
+
   const formatTime = (date) => {
     if (!date) return '—';
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
+
 
   const navItems = [
     { id: 'LIVE_MONITORING', label: 'Live Monitoring', icon: Video },
@@ -63,6 +117,7 @@ export default function Header({
   ];
 
   return (
+    <>
     <header className="app-header">
       {/* ── Tier 1: Brand, Telemetry Capsule & Quick Controls (46px) ────────── */}
       <div className="header-top-row">
@@ -198,14 +253,46 @@ export default function Header({
               <HardDrive size={13} />
             </a>
 
-            {/* Reset Database */}
+            {/* Security Portal Badge */}
+            <button
+              onClick={() => adminUnlocked ? handleAdminLogout() : setShowAdminModal(true)}
+              className="header-action-icon-btn hide-on-mobile"
+              title={adminUnlocked ? 'Admin Mode Active — Click to lock' : 'Secure Portal — Click to unlock Admin Mode'}
+              style={{
+                color: adminUnlocked ? '#4ade80' : '#94a3b8',
+                border: adminUnlocked ? '1px solid rgba(74, 222, 128, 0.4)' : '1px solid rgba(148, 163, 184, 0.2)',
+                borderRadius: '6px',
+                padding: '3px 7px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '10px',
+                fontWeight: '700',
+                background: adminUnlocked ? 'rgba(74, 222, 128, 0.1)' : 'transparent',
+              }}
+            >
+              {adminUnlocked ? <Unlock size={11} /> : <Lock size={11} />}
+              <span>{adminUnlocked ? 'ADMIN' : 'LOCK'}</span>
+            </button>
+
+            {/* DB Backup */}
+            <a
+              href={`${API_BASE}/api/db/export`}
+              download="municipal_pavement_db.json"
+              className="header-action-icon-btn hide-on-mobile"
+              title="Download Persistent JSON DB Backup"
+            >
+              <HardDrive size={13} />
+            </a>
+
+            {/* Reset Database — requires admin unlock */}
             {onResetDB && (
               <button
-                onClick={onResetDB}
+                onClick={handleAdminReset}
                 disabled={loading}
                 className="header-action-icon-btn hide-on-mobile"
-                title="Reset Database to Clean Baseline for Demonstration"
-                style={{ color: '#f87171' }}
+                title={adminUnlocked ? 'Reset Database (Admin Mode Active)' : 'Reset Database — Admin Authentication Required'}
+                style={{ color: adminUnlocked ? '#f87171' : '#64748b' }}
               >
                 <RotateCcw size={13} />
               </button>
@@ -320,9 +407,9 @@ export default function Header({
 
           <button
             onClick={() => setAiModelMode('pothole')}
-            title="Targeted Road Anomaly & Pothole Model (YOLOv8m) — Only this model is active"
+            title="Targeted Road Anomaly & Pothole Model (YOLOv8m) — High Accuracy Multi-Class"
             style={{
-              display: 'none',
+              display: 'flex',
               alignItems: 'center',
               gap: '4px',
               padding: '4px 8px',
@@ -353,9 +440,9 @@ export default function Header({
 
           <button
             onClick={() => setAiModelMode('rdd2022')}
-            title="CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes) — Only this model is active"
+            title="CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes)"
             style={{
-              display: 'none',
+              display: 'flex',
               alignItems: 'center',
               gap: '4px',
               padding: '4px 8px',
@@ -386,9 +473,9 @@ export default function Header({
 
           <button
             onClick={() => setAiModelMode('potbot')}
-            title="PotBot AI Dedicated Deep Pothole Specialist (YOLOv8m • 148.5MB) — Only this model is active"
+            title="PotBot AI Dedicated Deep Pothole Specialist (YOLOv8m • 148.5MB)"
             style={{
-              display: 'none',
+              display: 'flex',
               alignItems: 'center',
               gap: '4px',
               padding: '4px 8px',
@@ -419,6 +506,98 @@ export default function Header({
         </div>
       </div>
     </header>
+
+      {/* ── Admin Authentication Modal ──────────────────────────────────────── */}
+      {showAdminModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(5, 10, 25, 0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #0c1628 0%, #111827 100%)',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            borderRadius: '16px',
+            padding: '32px',
+            width: '360px',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 40px rgba(56,189,248,0.08)',
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(56,189,248,0.12)', border: '1px solid rgba(56,189,248,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShieldCheck size={18} color="#38bdf8" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#f1f5f9' }}>Secure Admin Portal</div>
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '1px' }}>GCC Road Intelligence Platform</div>
+                </div>
+              </div>
+              <button onClick={() => { setShowAdminModal(false); setAdminError(''); setAdminKeyInput(''); }}
+                style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '12px', lineHeight: '1.6' }}>
+                Enter the <strong style={{ color: '#38bdf8' }}>Admin Security Key</strong> to unlock privileged operations (DB reset, alert configuration). This session will be securely stored until you log out.
+              </div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <KeyRound size={10} style={{ display: 'inline', marginRight: '4px' }} />
+                Admin Key
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  value={adminKeyInput}
+                  onChange={e => { setAdminKeyInput(e.target.value); setAdminError(''); }}
+                  onKeyDown={e => e.key === 'Enter' && handleAdminUnlock()}
+                  placeholder="Enter admin key..."
+                  autoFocus
+                  style={{
+                    width: '100%', padding: '10px 36px 10px 12px',
+                    background: 'rgba(255,255,255,0.04)', border: `1px solid ${adminError ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: '8px', color: '#f1f5f9', fontSize: '13px', outline: 'none',
+                    fontFamily: 'monospace',
+                  }}
+                />
+                <button onClick={() => setShowKey(v => !v)}
+                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}>
+                  {showKey ? <Lock size={13} /> : <Unlock size={13} />}
+                </button>
+              </div>
+              {adminError && (
+                <div style={{ marginTop: '8px', fontSize: '11px', color: '#f87171', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  ⚠️ {adminError}
+                </div>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => { setShowAdminModal(false); setAdminError(''); setAdminKeyInput(''); }}
+                style={{ flex: 1, padding: '9px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#94a3b8', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                Cancel
+              </button>
+              <button onClick={handleAdminUnlock}
+                style={{ flex: 2, padding: '9px', background: 'linear-gradient(135deg, #0284c7, #0369a1)', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(2,132,199,0.3)' }}>
+                🔓 Authenticate
+              </button>
+            </div>
+
+            {/* Security Notice */}
+            <div style={{ marginTop: '16px', padding: '10px', background: 'rgba(16, 185, 129, 0.06)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.15)' }}>
+              <div style={{ fontSize: '10px', color: '#6ee7b7', lineHeight: '1.5' }}>
+                🛡️ <strong>Security Notice:</strong> Admin sessions are scoped to this browser tab only and are automatically cleared on tab close.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

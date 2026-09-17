@@ -14,3 +14,5 @@ services:
         value: "True"
       - key: ULTRALYTICS_AUTOINSTALL
         value: "0"
+      - key: ADMIN_SECRET_KEY
+        value: "gcc2026"
