@@ -14,6 +14,7 @@ import {
   ClipboardList,
   HardDrive,
   Radio,
+  Download,
   ShieldCheck,
   Lock,
   Unlock,
