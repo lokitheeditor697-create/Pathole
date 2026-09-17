@@ -53,6 +53,15 @@ export default function RoadVideoInspectionPlayer({
   const [videoSourceFilename, setVideoSourceFilename] = useState(uploadedFile?.name || 'real_dashcam.mp4');
   const [sampleVideoOptions, setSampleVideoOptions] = useState([]);
   const fileInputRef = useRef(null);
+  const localBlobUrlRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (localBlobUrlRef.current) {
+        try { URL.revokeObjectURL(localBlobUrlRef.current); } catch {}
+      }
+    };
+  }, []);
 
   // AI Inspection scan states
   const [isAiScanning, setIsAiScanning] = useState(false);
@@ -225,6 +234,7 @@ export default function RoadVideoInspectionPlayer({
     if (uploadedPreview) {
       setVideoSourceUrl(uploadedPreview);
       setVideoSourceFilename(uploadedFile?.name || 'uploaded_video.mp4');
+      setVideoError(null);
       lastScannedKeyRef.current = '';
     }
   }, [uploadedPreview, uploadedFile]);
@@ -624,7 +634,9 @@ export default function RoadVideoInspectionPlayer({
   };
 
   const handleSelectSampleVideo = (item) => {
-    setVideoSourceUrl(item.url);
+    setVideoError(null);
+    const resolvedUrl = (item.url?.startsWith('/') && API_BASE) ? `${API_BASE}${item.url}` : item.url;
+    setVideoSourceUrl(resolvedUrl);
     setVideoSourceFilename(item.file_name);
     lastScannedKeyRef.current = '';
     setDetectedMoments([]);
@@ -632,7 +644,7 @@ export default function RoadVideoInspectionPlayer({
     setActiveDefectOnScreen(null);
     setCurrentTime(0);
     if (videoRef.current) {
-      videoRef.current.src = item.url;
+      videoRef.current.src = resolvedUrl;
       videoRef.current.load();
       videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
     }
@@ -643,41 +655,75 @@ export default function RoadVideoInspectionPlayer({
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
-    showToast(`Uploading "${file.name}" to server for AI analysis...`, 'info');
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/upload-video`, {
+    // Reset file input so the same file can be re-selected if needed
+    if (e.target) e.target.value = '';
+
+    // 1. Instant local playback: create local blob URL for 100% native zero-lag playback
+    if (localBlobUrlRef.current) {
+      try { URL.revokeObjectURL(localBlobUrlRef.current); } catch {}
+    }
+    const localUrl = URL.createObjectURL(file);
+    localBlobUrlRef.current = localUrl;
+
+    setVideoError(null);
+    setVideoSourceUrl(localUrl);
+    setVideoSourceFilename(file.name);
+    lastScannedKeyRef.current = '';
+    setDetectedMoments([]);
+    setActiveDefectsOnScreen([]);
+    setActiveDefectOnScreen(null);
+    setCurrentTime(0);
+
+    if (videoRef.current) {
+      videoRef.current.src = localUrl;
+      videoRef.current.load();
+      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    }
+
+    showToast(`Loaded "${file.name}". Uploading to edge server for live YOLOv8 AI inspection...`, 'info');
+
+    // 2. High-performance streaming upload to server for YOLOv8 AI model inference
+    try {
+      let uploadRes = await fetch(`${API_BASE}/api/upload-video?file_name=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'X-File-Name': encodeURIComponent(file.name)
+        },
+        body: file
+      });
+
+      // Fallback to JSON base64 if streaming is not accepted
+      if (!uploadRes.ok && uploadRes.status !== 413) {
+        const b64 = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+        uploadRes = await fetch(`${API_BASE}/api/upload-video`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            file_name: file.name,
-            file_data: reader.result
-          })
+          body: JSON.stringify({ file_name: file.name, file_data: b64 })
         });
-        if (res.ok) {
-          const data = await res.json();
-          setVideoSourceUrl(data.video_url);
-          setVideoSourceFilename(data.file_name);
-          lastScannedKeyRef.current = '';
-          setDetectedMoments([]);
-          setActiveDefectsOnScreen([]);
-          setActiveDefectOnScreen(null);
-          setCurrentTime(0);
-          if (videoRef.current) {
-            videoRef.current.src = data.video_url;
-            videoRef.current.load();
-            videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-          }
-          runAiVideoInspection(10, data.file_name);
-          showToast(`Uploaded "${data.file_name}". Running YOLOv8 inference...`, 'success');
-        }
-      } catch (err) {
-        console.error('Upload error:', err);
-        showToast('Upload failed, playing locally.', 'error');
       }
-    };
-    reader.readAsDataURL(file);
+
+      if (uploadRes.ok) {
+        const data = await uploadRes.json();
+        const serverFileName = data.file_name || file.name;
+        setVideoSourceFilename(serverFileName);
+        showToast(`Uploaded "${serverFileName}". Running YOLOv8 neural inference...`, 'success');
+        const vidDur = videoRef.current?.duration;
+        const validDur = isFinite(vidDur) && vidDur > 0 ? vidDur : 10;
+        runAiVideoInspection(validDur, serverFileName, null, true);
+      } else {
+        const errJson = await uploadRes.json().catch(() => ({}));
+        showToast(`Server notice: ${errJson.error || 'Server processing error'}. Video is playing locally.`, 'warning');
+      }
+    } catch (err) {
+      console.warn('Upload error:', err);
+      showToast('Network notice: Playing locally in high-speed hardware mode.', 'info');
+    }
   };
 
 
@@ -934,8 +980,17 @@ export default function RoadVideoInspectionPlayer({
 
   // Video error handler
   const handleVideoError = (e) => {
-    console.warn('Video element error:', e);
-    setVideoError('The browser encountered difficulty decoding this video format directly. You can load our certified municipal road test video or select another MP4 file.');
+    const mediaErr = videoRef.current?.error;
+    console.warn('Video element error:', e, mediaErr);
+    // Ignore code 1: MEDIA_ERR_ABORTED (user paused, aborted, or switched src)
+    if (mediaErr && mediaErr.code === 1) return;
+    let msg = 'The browser encountered difficulty decoding this video format directly.';
+    if (mediaErr?.code === 4) {
+      msg = 'This video format or codec (such as Apple HEVC/H.265 in .mov or an unsupported container) cannot be decoded natively by your browser. Please use standard MP4 (H.264) or WebM, or load our certified municipal road test video.';
+    } else if (mediaErr?.code === 2) {
+      msg = 'Network connection interrupted while streaming the video. Check network or reload our certified municipal road test video.';
+    }
+    setVideoError(msg);
   };
 
   const formatTime = (secs) => {
@@ -1232,16 +1287,19 @@ export default function RoadVideoInspectionPlayer({
           {/* Video Element */}
           <video
             ref={videoRef}
-            src={videoSourceUrl || uploadedPreview}
+            src={(videoSourceUrl?.startsWith('/') && API_BASE) ? `${API_BASE}${videoSourceUrl}` : (videoSourceUrl || uploadedPreview)}
             playsInline
             loop
             muted={isMuted}
             autoPlay
             preload="auto"
-            crossOrigin="anonymous"
+            crossOrigin={videoSourceUrl?.startsWith('blob:') ? undefined : 'anonymous'}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
-            onCanPlay={() => setVideoReady(true)}
+            onCanPlay={() => {
+              setVideoReady(true);
+              setVideoError(null);
+            }}
             onError={handleVideoError}
             onClick={togglePlay}
             style={{
@@ -1397,9 +1455,13 @@ export default function RoadVideoInspectionPlayer({
               <button
                 onClick={() => {
                   setVideoError(null);
+                  const fallbackUrl = API_BASE ? `${API_BASE}/videos/real_dashcam.mp4` : '/videos/real_dashcam.mp4';
+                  setVideoSourceUrl(fallbackUrl);
+                  setVideoSourceFilename('real_dashcam.mp4');
                   if (videoRef.current) {
-                    videoRef.current.src = '/videos/real_dashcam.mp4';
+                    videoRef.current.src = fallbackUrl;
                     videoRef.current.load();
+                    videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
                   }
                 }}
                 style={{

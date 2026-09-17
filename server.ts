@@ -1846,34 +1846,89 @@ app.get("/api/sample-videos", (req: Request, res: Response) => {
   }
 });
 
-// Upload real video file from client machine
-app.post("/api/upload-video", (req: Request, res: Response) => {
-  try {
-    const { file_name, file_data } = req.body;
-    if (!file_name || !file_data) {
-      return res.status(400).json({ error: "Missing file_name or file_data" });
+// Upload real video file from client machine (supports direct binary stream & JSON base64 up to 300MB)
+app.post(
+  "/api/upload-video",
+  (req: Request, res: Response, next: NextFunction) => {
+    const contentType = req.headers["content-type"] || "";
+    if (contentType.includes("application/json")) {
+      return express.json({ limit: "300mb" })(req, res, next);
     }
+    next();
+  },
+  (req: Request, res: Response) => {
+    try {
+      const publicUploadDir = path.join(process.cwd(), "public", "videos", "uploads");
+      const distUploadDir = path.join(process.cwd(), "dist", "videos", "uploads");
+      if (!fs.existsSync(publicUploadDir)) fs.mkdirSync(publicUploadDir, { recursive: true });
+      if (fs.existsSync(path.join(process.cwd(), "dist")) && !fs.existsSync(distUploadDir)) {
+        fs.mkdirSync(distUploadDir, { recursive: true });
+      }
 
-    const safeName = path.basename(file_name).replace(/[^a-zA-Z0-9._-]/g, "_");
-    const targetDir = path.join(process.cwd(), "public", "videos", "uploads");
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
+      // Check if this is a binary streaming upload
+      const isJson = (req.headers["content-type"] || "").includes("application/json");
+      if (!isJson) {
+        const rawName = (req.query.file_name as string) || (req.headers["x-file-name"] as string) || `upload_${Date.now()}.mp4`;
+        const decodedName = decodeURIComponent(rawName);
+        const safeName = path.basename(decodedName).replace(/[^a-zA-Z0-9._-]/g, "_");
+        const targetPath = path.join(publicUploadDir, safeName);
+
+        const writeStream = fs.createWriteStream(targetPath);
+        req.pipe(writeStream);
+
+        writeStream.on("finish", () => {
+          try {
+            if (fs.existsSync(distUploadDir)) {
+              fs.copyFileSync(targetPath, path.join(distUploadDir, safeName));
+            }
+          } catch {}
+
+          const stat = fs.statSync(targetPath);
+          return res.json({
+            status: "success",
+            file_name: safeName,
+            video_url: `/videos/uploads/${safeName}`,
+            file_path: targetPath,
+            size_bytes: stat.size
+          });
+        });
+
+        writeStream.on("error", (err) => {
+          console.error("Video streaming write error:", err);
+          return res.status(500).json({ error: "Failed to save video stream to disk" });
+        });
+        return;
+      }
+
+      // Base64 JSON upload fallback
+      const { file_name, file_data } = req.body;
+      if (!file_name || !file_data) {
+        return res.status(400).json({ error: "Missing file_name or file_data" });
+      }
+
+      const safeName = path.basename(file_name).replace(/[^a-zA-Z0-9._-]/g, "_");
+      const targetPath = path.join(publicUploadDir, safeName);
+      const base64Data = file_data.includes(",") ? file_data.split(",")[1] : file_data;
+      fs.writeFileSync(targetPath, Buffer.from(base64Data, "base64"));
+
+      try {
+        if (fs.existsSync(distUploadDir)) {
+          fs.copyFileSync(targetPath, path.join(distUploadDir, safeName));
+        }
+      } catch {}
+
+      return res.json({
+        status: "success",
+        file_name: safeName,
+        video_url: `/videos/uploads/${safeName}`,
+        file_path: targetPath,
+        size_bytes: fs.statSync(targetPath).size
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
-
-    const targetPath = path.join(targetDir, safeName);
-    const base64Data = file_data.includes(",") ? file_data.split(",")[1] : file_data;
-    fs.writeFileSync(targetPath, Buffer.from(base64Data, "base64"));
-
-    res.json({
-      status: "success",
-      file_name: safeName,
-      video_url: `/videos/uploads/${safeName}`,
-      file_path: targetPath
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
   }
-});
+);
 
 function resolveModelPath(requestedMode?: string): { modelPath: string; modelName: string } {
   const roadguardModelPath = path.join(process.cwd(), "detector", "roadguard_yolov8.pt");
@@ -2874,6 +2929,98 @@ async function startServer() {
     process.env.NODE_ENV === "production" ||
     (fs.existsSync(distPath) && fs.existsSync(path.join(distPath, "index.html")) && process.env.NODE_ENV !== "development");
 
+  // ── High-Performance Video Streaming & RFC 7233 HTTP 206 Partial Content Handler ──
+  // Ensures zero-error video streaming, seeking, and CORS support across Dev, Prod, and Dual-Host
+  app.use("/videos", (req: Request, res: Response, next: NextFunction) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Range, Content-Type, Accept");
+    res.setHeader("Access-Control-Expose-Headers", "Content-Range, Content-Length, Accept-Ranges");
+
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+
+    const relPath = decodeURIComponent(req.path).replace(/^\/+/, "");
+    const cleanPath = path.normalize(relPath).replace(/^(\.\.[\/\\])+/, "");
+
+    const candidateDirs = [
+      path.join(process.cwd(), "public", "videos"),
+      path.join(process.cwd(), "dist", "videos"),
+      path.join(process.cwd(), "public"),
+      path.join(process.cwd(), "detector")
+    ];
+
+    let filePath = "";
+    for (const dir of candidateDirs) {
+      const candidate = path.join(dir, cleanPath);
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        filePath = candidate;
+        break;
+      }
+    }
+
+    if (!filePath) {
+      const baseName = path.basename(cleanPath);
+      const uploadDirs = [
+        path.join(process.cwd(), "public", "videos", "uploads", baseName),
+        path.join(process.cwd(), "dist", "videos", "uploads", baseName),
+      ];
+      for (const u of uploadDirs) {
+        if (fs.existsSync(u) && fs.statSync(u).isFile()) {
+          filePath = u;
+          break;
+        }
+      }
+    }
+
+    if (!filePath) {
+      // Explicit 404 JSON for video - strictly prevent SPA HTML fallback
+      return res.status(404).json({ error: `Video file '${cleanPath}' not found on server` });
+    }
+
+    const stat = fs.statSync(filePath);
+    const fileSize = stat.size;
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeMap: Record<string, string> = {
+      ".mp4": "video/mp4",
+      ".webm": "video/webm",
+      ".mov": "video/quicktime",
+      ".mkv": "video/x-matroska",
+      ".avi": "video/x-msvideo",
+      ".m4v": "video/mp4"
+    };
+    const contentType = mimeMap[ext] || "video/mp4";
+
+    const range = req.headers.range;
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+      if (start >= fileSize || end >= fileSize) {
+        res.setHeader("Content-Range", `bytes */${fileSize}`);
+        return res.status(416).send("Requested range not satisfiable");
+      }
+
+      const chunksize = end - start + 1;
+      res.writeHead(206, {
+        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+        "Accept-Ranges": "bytes",
+        "Content-Length": chunksize,
+        "Content-Type": contentType
+      });
+      fs.createReadStream(filePath, { start, end }).pipe(res);
+    } else {
+      res.writeHead(200, {
+        "Content-Length": fileSize,
+        "Accept-Ranges": "bytes",
+        "Content-Type": contentType
+      });
+      fs.createReadStream(filePath).pipe(res);
+    }
+  });
+
   if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true, host: "0.0.0.0", port: PORT, allowedHosts: true },
@@ -2882,7 +3029,6 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const secureStaticOpts = { dotfiles: "deny" as const, index: false };
-    app.use("/videos", express.static(path.join(process.cwd(), "public", "videos"), secureStaticOpts));
     app.use(express.static(path.join(process.cwd(), "public"), secureStaticOpts));
     if (fs.existsSync(distPath) && fs.existsSync(path.join(distPath, "index.html"))) {
       app.use(express.static(distPath, secureStaticOpts));

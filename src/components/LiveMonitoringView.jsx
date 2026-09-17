@@ -104,28 +104,42 @@ export default function LiveMonitoringView({
     const reader = new FileReader();
 
     if (isVideo) {
-      reader.onload = async () => {
-        try {
-          const res = await fetch(`${API_BASE}/api/upload-video`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              file_name: file.name,
-              file_data: reader.result
-            })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setUploadedPreview(data.video_url);
-            setUploadedFile({ name: data.file_name, type: 'video/mp4' });
+      // Stream to edge server in the background while keeping objectUrl active for instant native playback
+      fetch(`${API_BASE}/api/upload-video?file_name=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'X-File-Name': encodeURIComponent(file.name)
+        },
+        body: file
+      })
+        .then(async (res) => {
+          if (!res.ok && res.status !== 413) {
+            const b64 = await new Promise((resolve) => {
+              const r = new FileReader();
+              r.onload = () => resolve(r.result);
+              r.readAsDataURL(file);
+            });
+            return fetch(`${API_BASE}/api/upload-video`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ file_name: file.name, file_data: b64 })
+            }).then((r) => (r.ok ? r.json() : null));
           }
-        } catch (err) {
+          return res.ok ? res.json() : null;
+        })
+        .then((data) => {
+          if (data) {
+            // Keep objectUrl for smooth native video decoding, while updating server file name
+            setUploadedFile({ name: data.file_name, type: file.type || 'video/mp4' });
+          }
+        })
+        .catch((err) => {
           console.warn('Video upload notice:', err);
-        } finally {
+        })
+        .finally(() => {
           setUploadAnalyzing(false);
-        }
-      };
-      reader.readAsDataURL(file);
+        });
     } else {
       // Real image upload to fine-tuned YOLOv8 model
       reader.onload = async () => {
