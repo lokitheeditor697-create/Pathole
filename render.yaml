@@ -1,12 +1,13 @@
 services:
   - type: web
-    name: road-pothole-intelligence
-    runtime: node
+    name: road-pothole-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     plan: free
-    buildCommand: npm install && pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install --no-cache-dir ultralytics opencv-python-headless numpy && npm run build
-    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      - key: PORT
+        value: 10000
       - key: NODE_ENV
         value: production
       - key: YOLO_OFFLINE

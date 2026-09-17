@@ -1,12 +1,13 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
-    PORT=7860 \
+    PORT=10000 \
     NODE_ENV=production \
     YOLO_OFFLINE=True \
-    ULTRALYTICS_AUTOINSTALL=0
+    ULTRALYTICS_AUTOINSTALL=0 \
+    PIP_ROOT_USER_ACTION=ignore
 
 # Install system dependencies including Node.js 20 & OpenCV / FFmpeg libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -22,17 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user with UID 1000 for Hugging Face Spaces compatibility
-RUN useradd -m -u 1000 user
 WORKDIR /app
 
-# Install CPU PyTorch, torchvision, and Ultralytics dependencies
-RUN pip install --no-cache-dir \
-    torch torchvision --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --no-cache-dir \
-    ultralytics \
-    opencv-python-headless \
-    numpy
+# Upgrade pip and install pre-built CPU PyTorch and Ultralytics
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir "numpy<2" "opencv-python-headless" ultralytics huggingface_hub
 
 # Copy package files and install npm dependencies
 COPY package*.json ./
@@ -44,11 +40,6 @@ COPY . .
 # Build Vite frontend and server bundle
 RUN npm run build
 
-# Ensure Hugging Face non-root user has full access to app directory
-RUN chown -R user:user /app && chmod -R 777 /app
-
-USER user
-
-EXPOSE 7860
+EXPOSE 10000 7860 3000
 
 CMD ["node", "dist/server.cjs"]
