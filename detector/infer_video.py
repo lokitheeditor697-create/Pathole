@@ -18,8 +18,9 @@ import numpy as np
 from ultralytics import YOLO
 
 def resolve_model_path(provided_path=None):
-    if provided_path and os.path.exists(provided_path):
+    if provided_path and os.path.exists(provided_path) and os.path.getsize(provided_path) > 1024:
         return provided_path
+
     candidates = [
         "detector/roadguard_yolov8.pt",
         "detector/potbot_yolov8m.pt",
@@ -28,8 +29,21 @@ def resolve_model_path(provided_path=None):
         "detector/best.pt"
     ]
     for c in candidates:
-        if os.path.exists(c):
+        if os.path.exists(c) and os.path.getsize(c) > 1024:
             return c
+
+    # If weights are missing or are Git LFS pointers (<1024 bytes), attempt auto-download
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import download_weights
+        download_weights.ensure_model_weights()
+    except Exception:
+        pass
+
+    for c in candidates:
+        if os.path.exists(c) and os.path.getsize(c) > 1024:
+            return c
+
     return provided_path or "detector/roadguard_yolov8.pt"
 
 CLASS_METADATA = {

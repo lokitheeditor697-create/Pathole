@@ -60,6 +60,9 @@ COPY data/ ./data/
 COPY public/ ./public/
 COPY .env.example ./.env.example
 
+# Ensure genuine AI model checkpoints are verified & downloaded if Git LFS pointers are present
+RUN python3 detector/download_weights.py
+
 EXPOSE 10000
 
 CMD ["node", "dist/server.cjs"]
