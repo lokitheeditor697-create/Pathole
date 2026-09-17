@@ -656,7 +656,7 @@ export default function LiveMonitoringView({
                       </button>
                     </div>
                   </div>
-                ) : (uploadedFile?.type?.startsWith('video') || uploadedFile?.name?.match(/\.(mp4|webm|mov|mkv|avi|m4v)$/i)) ? (
+                ) : (uploadedFile?.type?.startsWith('video') || uploadedFile?.name?.match(/\.(mp4|webm|mov|mkv|avi|m4v|3gp|flv|wmv)$/i)) ? (
                   <RoadVideoInspectionPlayer
                     uploadedFile={uploadedFile}
                     uploadedPreview={uploadedPreview}

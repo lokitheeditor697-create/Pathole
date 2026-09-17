@@ -278,13 +278,21 @@ export default function RoadVideoInspectionPlayer({
   useEffect(() => {
     if (!videoRef.current || !effectiveVideoUrl) return;
     const vid = videoRef.current;
-    setVideoReady(false);
+
+    // Check if the video is already ready or has metadata loaded (prevents race condition overwriting ready state)
+    if (vid.readyState >= 1) {
+      setVideoReady(true);
+      if (isFinite(vid.duration) && vid.duration > 0) {
+        setDuration(vid.duration);
+      }
+    } else {
+      setVideoReady(false);
+    }
     setVideoError(null);
 
-    // Do not call vid.load() here! React's key={effectiveVideoUrl} creates a fresh element
-    // which automatically starts loading. Calling load() manually can interrupt Mobile Safari blob reads.
     vid.play().then(() => {
       setIsPlaying(true);
+      setVideoReady(true);
     }).catch(err => {
       console.warn("Autoplay notice:", err);
     });
@@ -519,6 +527,13 @@ export default function RoadVideoInspectionPlayer({
     if (!videoRef.current) return;
     const cur = videoRef.current.currentTime;
     setCurrentTime(cur);
+
+    if (!videoReady) {
+      setVideoReady(true);
+      if (isFinite(videoRef.current.duration) && videoRef.current.duration > 0) {
+        setDuration(videoRef.current.duration);
+      }
+    }
 
     if (!detectedMoments || detectedMoments.length === 0) {
       setActiveDefectsOnScreen([]);
@@ -1123,6 +1138,11 @@ export default function RoadVideoInspectionPlayer({
               cursor: 'pointer'
             }}
           >
+            {!sampleVideoOptions.some(s => s.file_name === videoSourceFilename) && (
+              <option value={videoSourceFilename}>
+                📁 {videoSourceFilename} (User Media)
+              </option>
+            )}
             {sampleVideoOptions.map(opt => (
               <option key={opt.file_name} value={opt.file_name}>
                 {opt.name} ({opt.size_mb}MB)
@@ -1365,6 +1385,15 @@ export default function RoadVideoInspectionPlayer({
             }}
             onCanPlay={() => {
               setVideoReady(true);
+              setVideoError(null);
+            }}
+            onCanPlayThrough={() => {
+              setVideoReady(true);
+              setVideoError(null);
+            }}
+            onPlaying={() => {
+              setVideoReady(true);
+              setIsPlaying(true);
               setVideoError(null);
             }}
             onError={handleVideoError}
