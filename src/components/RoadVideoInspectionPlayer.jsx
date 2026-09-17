@@ -63,6 +63,31 @@ export default function RoadVideoInspectionPlayer({
     };
   }, []);
 
+  // Effective video source URL resolution (handles native blobs, remote backend, and relative paths)
+  const effectiveVideoUrl = useMemo(() => {
+    const raw = videoSourceUrl || uploadedPreview;
+    if (!raw) return '/videos/real_dashcam.mp4';
+    if (raw.startsWith('blob:') || raw.startsWith('data:') || raw.startsWith('http://') || raw.startsWith('https://')) {
+      return raw;
+    }
+    return (raw.startsWith('/') && API_BASE) ? `${API_BASE}${raw}` : raw;
+  }, [videoSourceUrl, uploadedPreview]);
+
+  // Only cross-origin remote URLs need crossOrigin="anonymous" (never blob: or local relative)
+  const isRemoteHttp = useMemo(() => {
+    if (!effectiveVideoUrl) return false;
+    if (effectiveVideoUrl.startsWith('blob:') || effectiveVideoUrl.startsWith('data:')) return false;
+    if (effectiveVideoUrl.startsWith('http://') || effectiveVideoUrl.startsWith('https://')) {
+      try {
+        const parsed = new URL(effectiveVideoUrl);
+        return parsed.origin !== window.location.origin;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }, [effectiveVideoUrl]);
+
   // AI Inspection scan states
   const [isAiScanning, setIsAiScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0);
@@ -230,14 +255,39 @@ export default function RoadVideoInspectionPlayer({
       });
   }, []);
 
+  const prevUploadedPreviewRef = useRef(uploadedPreview);
+  const prevUploadedNameRef = useRef(uploadedFile?.name);
+
   useEffect(() => {
-    if (uploadedPreview) {
-      setVideoSourceUrl(uploadedPreview);
-      setVideoSourceFilename(uploadedFile?.name || 'uploaded_video.mp4');
-      setVideoError(null);
-      lastScannedKeyRef.current = '';
+    const previewChanged = uploadedPreview && uploadedPreview !== prevUploadedPreviewRef.current;
+    const nameChanged = uploadedFile?.name && uploadedFile?.name !== prevUploadedNameRef.current;
+
+    if (previewChanged || nameChanged) {
+      prevUploadedPreviewRef.current = uploadedPreview;
+      prevUploadedNameRef.current = uploadedFile?.name;
+      if (uploadedPreview) {
+        setVideoSourceUrl(uploadedPreview);
+        setVideoSourceFilename(uploadedFile?.name || 'uploaded_video.mp4');
+        setVideoError(null);
+        lastScannedKeyRef.current = '';
+      }
     }
-  }, [uploadedPreview, uploadedFile]);
+  }, [uploadedPreview, uploadedFile?.name]);
+
+  // Ensure video loads and starts playing whenever the effective video URL changes
+  useEffect(() => {
+    if (!videoRef.current || !effectiveVideoUrl) return;
+    const vid = videoRef.current;
+    setVideoReady(false);
+    setVideoError(null);
+    vid.load();
+    vid.play().then(() => {
+      setIsPlaying(true);
+    }).catch((err) => {
+      console.warn('Auto-playback notice (awaiting user click):', err);
+      setIsPlaying(false);
+    });
+  }, [effectiveVideoUrl]);
 
   // Show notification helper
   const showToast = (msg, type = 'success') => {
@@ -409,6 +459,11 @@ export default function RoadVideoInspectionPlayer({
     // Calculate exact aspect ratio to prevent any letterbox overlay shifting
     if (videoRef.current.videoWidth && videoRef.current.videoHeight) {
       setVideoAspect(videoRef.current.videoWidth / videoRef.current.videoHeight);
+    }
+
+    // Advance slightly if 0 to force Chromium to decode & paint the first frame immediately
+    if (videoRef.current.currentTime === 0 && validDuration > 0.1) {
+      try { videoRef.current.currentTime = 0.01; } catch {}
     }
 
     // Auto-play muted video safely (browser compliant)
@@ -1284,18 +1339,26 @@ export default function RoadVideoInspectionPlayer({
             boxShadow: isFullscreen ? '0 0 50px rgba(0,0,0,0.9)' : 'none'
           }}
         >
-          {/* Video Element */}
+          {/* Video Element with key={effectiveVideoUrl} for guaranteed clean pipeline remount */}
           <video
+            key={effectiveVideoUrl}
             ref={videoRef}
-            src={(videoSourceUrl?.startsWith('/') && API_BASE) ? `${API_BASE}${videoSourceUrl}` : (videoSourceUrl || uploadedPreview)}
+            src={effectiveVideoUrl}
             playsInline
             loop
             muted={isMuted}
             autoPlay
             preload="auto"
-            crossOrigin={videoSourceUrl?.startsWith('blob:') ? undefined : 'anonymous'}
+            crossOrigin={isRemoteHttp ? 'anonymous' : undefined}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
+            onLoadedData={() => {
+              setVideoReady(true);
+              setVideoError(null);
+              if (videoRef.current && videoRef.current.paused) {
+                videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+              }
+            }}
             onCanPlay={() => {
               setVideoReady(true);
               setVideoError(null);
@@ -1308,9 +1371,65 @@ export default function RoadVideoInspectionPlayer({
               maxHeight: isFullscreen ? 'calc(100vh - 130px)' : '480px',
               width: 'auto',
               height: 'auto',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              backgroundColor: '#000000'
             }}
           />
+
+          {/* Buffering Indicator */}
+          {!videoReady && !videoError && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(5, 8, 17, 0.75)',
+                zIndex: 16,
+                gap: '8px'
+              }}
+            >
+              <RefreshCw size={26} className="animate-spin" color="#38bdf8" />
+              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600' }}>Initializing Video Stream...</span>
+            </div>
+          )}
+
+          {/* Central Play Button Overlay when Paused */}
+          {videoReady && !isPlaying && !videoError && (
+            <div
+              onClick={togglePlay}
+              title="Click anywhere to play video"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                cursor: 'pointer',
+                zIndex: 17
+              }}
+            >
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(2, 132, 199, 0.92)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 0 28px rgba(2, 132, 199, 0.8)',
+                  backdropFilter: 'blur(4px)',
+                  transition: 'transform 0.15s ease'
+                }}
+              >
+                <Play size={28} color="#ffffff" style={{ marginLeft: '4px' }} />
+              </div>
+            </div>
+          )}
 
           {/* Real-Time YOLOv8 Defect Bounding Box Overlays (All defects in current timestamp) */}
           {!videoError && activeDefectsOnScreen.map((defect, dIdx) => {

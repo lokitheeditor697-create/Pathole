@@ -19,6 +19,8 @@ import PatrolHUD from './PatrolHUD';
 import WebcamPotholeDetector from './WebcamPotholeDetector';
 import RoadVideoInspectionPlayer from './RoadVideoInspectionPlayer';
 
+const DEFAULT_SAMPLE_FILE = Object.freeze({ name: 'real_dashcam.mp4', type: 'video/mp4' });
+
 export default function LiveMonitoringView({
   defects,
   vehicles,
@@ -100,7 +102,7 @@ export default function LiveMonitoringView({
     setUploadAnalyzing(true);
     setUploadResult(null);
 
-    const isVideo = file.type.startsWith('video') || file.name.match(/\.(mp4|webm|mov|mkv|avi)$/i);
+    const isVideo = file.type.startsWith('video') || file.name.match(/\.(mp4|webm|mov|mkv|avi|m4v|3gp|flv|wmv)$/i);
     const reader = new FileReader();
 
     if (isVideo) {
@@ -473,7 +475,7 @@ export default function LiveMonitoringView({
             {/* MODE 2: Real Road Footage with Real-Time YOLOv8 Detection Overlays */}
             {videoMode === 'sample' && (
               <RoadVideoInspectionPlayer
-                uploadedFile={{ name: 'real_dashcam.mp4', type: 'video/mp4' }}
+                uploadedFile={DEFAULT_SAMPLE_FILE}
                 uploadedPreview="/videos/real_dashcam.mp4"
                 activeVehicle={activeVehicle}
                 onDefectLogged={onRefreshData}
