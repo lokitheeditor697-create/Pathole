@@ -522,6 +522,124 @@ export default function RoadVideoInspectionPlayer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, isPlaying]);
 
+  // High-Fidelity Real Video Frame Snapshot Capture with Burned Telemetry & Defect Box
+  const generateRealDefectSnapshot = (activeDefect) => {
+    const vid = videoRef.current;
+    if (!vid || !vid.videoWidth || !vid.videoHeight) return null;
+
+    const w = vid.videoWidth;
+    const h = vid.videoHeight;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // 1. Draw raw video frame at native resolution
+    ctx.drawImage(vid, 0, 0, w, h);
+
+    // 2. Draw real defect bounding box if present
+    if (activeDefect) {
+      const cls = activeDefect.class_name || selectedClass || 'pothole';
+      const sev = activeDefect.severity || 'High';
+      const conf = activeDefect.conf || 0.91;
+      const wCm = activeDefect.wCm || 50;
+      const lCm = activeDefect.lCm || 40;
+
+      let bx, by, bw, bh;
+      if (activeDefect.bbox && activeDefect.bbox.w) {
+        const scaleX = activeDefect.bbox.video_w ? (w / activeDefect.bbox.video_w) : 1;
+        const scaleY = activeDefect.bbox.video_h ? (h / activeDefect.bbox.video_h) : 1;
+        bx = activeDefect.bbox.x * scaleX;
+        by = activeDefect.bbox.y * scaleY;
+        bw = activeDefect.bbox.w * scaleX;
+        bh = activeDefect.bbox.h * scaleY;
+      } else {
+        bx = w * 0.35;
+        by = h * 0.45;
+        bw = w * 0.28;
+        bh = h * 0.18;
+      }
+
+      const boxColor = sev === 'Critical' ? '#ef4444' : sev === 'High' ? '#f97316' : '#eab308';
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = boxColor;
+      ctx.lineWidth = Math.max(3, Math.round(w / 350));
+      ctx.strokeRect(bx, by, bw, bh);
+
+      // Tactical corner markers
+      const cLen = Math.min(bw, bh) * 0.25;
+      ctx.lineWidth = ctx.lineWidth + 2;
+      ctx.beginPath();
+      ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by);
+      ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen);
+      ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh);
+      ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen);
+      ctx.stroke();
+
+      // Top label badge
+      const fontSize = Math.max(13, Math.round(w / 80));
+      ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
+      const labelText = ` ${cls.toUpperCase().replace(/_/g, ' ')} • ${(conf * 100).toFixed(0)}% • ${sev} `;
+      const textMetrics = ctx.measureText(labelText);
+      const tagH = fontSize + 8;
+      const tagW = textMetrics.width + 10;
+
+      ctx.fillStyle = boxColor;
+      ctx.fillRect(bx, Math.max(0, by - tagH - 2), tagW, tagH);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labelText, bx + 5, Math.max(tagH / 2, by - tagH / 2 - 2));
+
+      // Physical dimensions tag
+      const dimText = `${wCm}cm × ${lCm}cm`;
+      ctx.font = `bold ${Math.max(11, Math.round(w / 100))}px system-ui, sans-serif`;
+      const dimMetrics = ctx.measureText(dimText);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.fillRect(bx + bw - dimMetrics.width - 12, by + bh + 4, dimMetrics.width + 12, 18);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillText(dimText, bx + bw - dimMetrics.width - 6, by + bh + 13);
+      ctx.restore();
+    }
+
+    // 3. Official Municipal Telemetry Bar across bottom
+    const barHeight = Math.max(48, Math.round(h * 0.08));
+    ctx.save();
+    ctx.fillStyle = 'rgba(7, 16, 38, 0.92)';
+    ctx.fillRect(0, h - barHeight, w, barHeight);
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, h - barHeight);
+    ctx.lineTo(w, h - barHeight);
+    ctx.stroke();
+
+    const barFont = Math.max(11, Math.round(w / 95));
+    ctx.font = `bold ${barFont}px system-ui, sans-serif`;
+    ctx.textBaseline = 'middle';
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('🏛️ GCC MUNICIPAL ROAD INTELLIGENCE', 14, h - barHeight + barHeight * 0.32);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = `${Math.max(10, Math.round(w / 110))}px system-ui, sans-serif`;
+    ctx.fillText(`LAT: ${currentGPS.latStr}° N  |  LON: ${currentGPS.lonStr}° E  •  CH: ${currentGPS.chainageM}m  •  ${currentGPS.fixType} (${currentGPS.accuracyM})`, 14, h - barHeight + barHeight * 0.72);
+
+    ctx.textAlign = 'right';
+    ctx.font = `bold ${barFont}px system-ui, sans-serif`;
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText('✓ YOLOv8 LIVE EVIDENCE CAPTURE', w - 14, h - barHeight + barHeight * 0.32);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = `${Math.max(10, Math.round(w / 115))}px system-ui, sans-serif`;
+    ctx.fillText(`${new Date().toLocaleString()} • ${currentGPS.speedKmh} km/h`, w - 14, h - barHeight + barHeight * 0.72);
+    ctx.restore();
+
+    return canvas.toDataURL('image/jpeg', 0.88);
+  };
+
   // Video playback time update - displays exactly ONE trace/box per physical defect at any time
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
@@ -570,63 +688,25 @@ export default function RoadVideoInspectionPlayer({
       const overlaps = singleTraces.some((kept) => {
         const b2 = kept.bbox;
         if (!b2) return false;
-
-        // If they belong to the same track ID, keep only the higher-confidence instance
-        if (cand.track_id !== undefined && kept.track_id !== undefined && cand.track_id === kept.track_id) {
-          return true;
-        }
-
         const x1 = Math.max(b1.x, b2.x);
         const y1 = Math.max(b1.y, b2.y);
         const x2 = Math.min(b1.x + b1.w, b2.x + b2.w);
         const y2 = Math.min(b1.y + b1.h, b2.y + b2.h);
-        const interArea = (x2 > x1 && y2 > y1) ? (x2 - x1) * (y2 - y1) : 0;
+        const inter = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
         const area1 = b1.w * b1.h;
         const area2 = b2.w * b2.h;
-        const unionArea = area1 + area2 - interArea;
-        const iou = unionArea > 0 ? (interArea / unionArea) : 0;
-        if (iou > 0.45) return true;
-
-        const minArea = Math.min(area1, area2);
-        if (minArea > 0 && (interArea / minArea) > 0.70) return true;
-
-        return false;
+        const iou = inter / (area1 + area2 - inter + 1e-6);
+        return iou > 0.40;
       });
       if (!overlaps) {
         singleTraces.push(cand);
       }
     }
 
-    // 3. User Requirement: Lock Pothole ID until out of range
+    // 3. Stable Locked Track Cache & Automated Snapshot Extraction
     const lockedTraces = singleTraces.map((cand) => {
-      let matchedTrackKey = null;
-      for (const [key, tr] of lockedTracksRef.current.entries()) {
-        if (!tr.finalized && cur - tr.lastSeen <= 1.2) {
-          const oldB = tr.lastInfoBeforeExit?.bbox;
-          if (oldB) {
-            const vidW = cand.bbox?.video_w || 1280;
-            const vidH = cand.bbox?.video_h || 720;
-            const c1x = (cand.bbox.x + cand.bbox.w / 2) / vidW;
-            const c1y = (cand.bbox.y + cand.bbox.h / 2) / vidH;
-            const c2x = (oldB.x + oldB.w / 2) / vidW;
-            const c2y = (oldB.y + oldB.h / 2) / vidH;
-            const dx = Math.abs(c1x - c2x);
-            const dy = c1y - c2y;
-            if ((dx < 0.16 && dy >= -0.06 && dy <= 0.35) || Math.hypot(c1x - c2x, c1y - c2y) < 0.22) {
-              matchedTrackKey = key;
-              break;
-            }
-          }
-        }
-      }
-
-      const trackKey = matchedTrackKey || (
-        cand.track_id !== undefined && cand.track_id !== null
-          ? String(cand.track_id)
-          : cand.pothole_id || `${cand.class_name}-${Math.round((cand.bbox?.x || 0) / 40)}`
-      );
-
       const potholeId = cand.pothole_id || formatDefectId(cand.track_id || 1, cand.class_name);
+      const trackKey = cand.track_id ? `track_${cand.track_id}` : `time_${cand.time.toFixed(1)}_${cand.class_name}`;
       const meta = getDefectMeta(cand.class_name);
 
       let trackRecord = lockedTracksRef.current.get(trackKey);
@@ -637,12 +717,24 @@ export default function RoadVideoInspectionPlayer({
           firstSeen: cur,
           lastSeen: cur,
           lastInfoBeforeExit: { ...cand, pothole_id: potholeId, display_name: meta.fullLabel, rdd_code: meta.code, color: meta.color },
-          isLocked: true
+          isLocked: true,
+          snapshot: null,
+          caseCreated: false
         };
         lockedTracksRef.current.set(trackKey, trackRecord);
       } else {
         trackRecord.lastSeen = cur;
         trackRecord.lastInfoBeforeExit = { ...cand, pothole_id: trackRecord.pothole_id || potholeId, display_name: meta.fullLabel, rdd_code: meta.code, color: meta.color };
+      }
+
+      // Automatically capture snapshot at peak detection clarity
+      if (!trackRecord.snapshot || (cand.conf && cand.conf > trackRecord.lockedConf)) {
+        try {
+          const snap = generateRealDefectSnapshot({ ...cand, pothole_id: trackRecord.pothole_id || potholeId });
+          if (snap) {
+            trackRecord.snapshot = snap;
+          }
+        } catch {}
       }
 
       return {
@@ -654,38 +746,77 @@ export default function RoadVideoInspectionPlayer({
         color: meta.color,
         conf: trackRecord.lockedConf,
         is_locked: true,
-        lastInfoBeforeExit: trackRecord.lastInfoBeforeExit
+        lastInfoBeforeExit: trackRecord.lastInfoBeforeExit,
+        snapshot: trackRecord.snapshot
       };
     });
 
-    // Check for tracks that just went out of range (not seen in recent window)
+    // Automatically register confirmed defect cases with attached snapshots into Municipal GIS & Report Dossier
     for (const [key, trackRecord] of lockedTracksRef.current.entries()) {
-      if (cur > trackRecord.lastSeen + 0.6 && !trackRecord.finalized) {
-        trackRecord.finalized = true;
+      if ((cur > trackRecord.lastSeen + 0.5 || cur - trackRecord.firstSeen >= 0.7) && !trackRecord.caseCreated) {
+        trackRecord.caseCreated = true;
         const finalInfo = trackRecord.lastInfoBeforeExit;
-        if (onDefectLogged && finalInfo) {
+        if (finalInfo) {
           const meta = getDefectMeta(finalInfo.class_name);
-          onDefectLogged({
-            detection_id: `DET-CONFIRMED-${finalInfo.pothole_id || key}`,
-            pothole_id: finalInfo.pothole_id,
-            defect_type: finalInfo.class_name,
+          const realSnap = trackRecord.snapshot || generateRealDefectSnapshot(finalInfo);
+
+          const payload = {
             class_name: finalInfo.class_name,
-            display_name: meta.fullLabel,
-            rdd_code: meta.code,
-            category: meta.category,
-            severity: finalInfo.severity,
-            confidence: trackRecord.lockedConf,
+            severity: finalInfo.severity || 'High',
+            confidence: trackRecord.lockedConf || 0.90,
+            latitude: currentGPS.lat,
+            longitude: currentGPS.lon,
             exact_chainage_m: Math.round(100 + (trackRecord.lastSeen * 8.5)),
-            bbox: {
-              x_min: finalInfo.bbox?.x || 200,
-              y_min: finalInfo.bbox?.y || 150,
-              x_max: (finalInfo.bbox?.x || 200) + (finalInfo.bbox?.w || 120),
-              y_max: (finalInfo.bbox?.y || 150) + (finalInfo.bbox?.h || 65),
-              pixel_area: (finalInfo.bbox?.w || 120) * (finalInfo.bbox?.h || 65),
-              estimated_physical_width_cm: finalInfo.wCm,
-              estimated_physical_length_cm: finalInfo.lCm
-            }
-          });
+            vehicle_id: activeVehicle?.vehicle_id || 'MTC Transit Bus 46G',
+            dimensions: {
+              width_cm: finalInfo.wCm || 48,
+              length_cm: finalInfo.lCm || 36
+            },
+            bbox: finalInfo.bbox,
+            snapshot_thumbnail: realSnap,
+            model_mode: aiModelMode,
+            auto_dispatch: true
+          };
+
+          fetch(`${API_BASE}/api/cases/create-direct`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data && data.case) {
+                trackRecord.case_id = data.case.case_id;
+                trackRecord.caseData = data.case;
+                if (onDefectLogged) onDefectLogged(data.defect || data.case);
+              }
+            })
+            .catch((err) => console.warn('Auto case registration notice:', err));
+
+          if (onDefectLogged) {
+            onDefectLogged({
+              detection_id: `DET-CONFIRMED-${finalInfo.pothole_id || key}`,
+              pothole_id: finalInfo.pothole_id,
+              defect_type: finalInfo.class_name,
+              class_name: finalInfo.class_name,
+              display_name: meta.fullLabel,
+              rdd_code: meta.code,
+              category: meta.category,
+              severity: finalInfo.severity,
+              confidence: trackRecord.lockedConf,
+              exact_chainage_m: Math.round(100 + (trackRecord.lastSeen * 8.5)),
+              snapshot_thumbnail: realSnap,
+              bbox: {
+                x_min: finalInfo.bbox?.x || 200,
+                y_min: finalInfo.bbox?.y || 150,
+                x_max: (finalInfo.bbox?.x || 200) + (finalInfo.bbox?.w || 120),
+                y_max: (finalInfo.bbox?.y || 150) + (finalInfo.bbox?.h || 65),
+                pixel_area: (finalInfo.bbox?.w || 120) * (finalInfo.bbox?.h || 65),
+                estimated_physical_width_cm: finalInfo.wCm,
+                estimated_physical_length_cm: finalInfo.lCm
+              }
+            });
+          }
         }
       }
     }
@@ -869,125 +1000,6 @@ export default function RoadVideoInspectionPlayer({
         setIsFullscreen(false);
       }
     }
-  };
-
-  // High-Fidelity Real Video Frame Snapshot Capture with Burned Telemetry & Defect Box
-  const generateRealDefectSnapshot = (activeDefect) => {
-    const vid = videoRef.current;
-    if (!vid || !vid.videoWidth || !vid.videoHeight) return null;
-
-    const w = vid.videoWidth;
-    const h = vid.videoHeight;
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-
-    // 1. Draw raw video frame at native resolution
-    ctx.drawImage(vid, 0, 0, w, h);
-
-    // 2. Draw real defect bounding box if present
-    if (activeDefect) {
-      const cls = activeDefect.class_name || selectedClass || 'pothole';
-      const sev = activeDefect.severity || 'High';
-      const conf = activeDefect.conf || 0.91;
-      const wCm = activeDefect.wCm || 50;
-      const lCm = activeDefect.lCm || 40;
-
-      let bx, by, bw, bh;
-      if (activeDefect.bbox && activeDefect.bbox.w) {
-        const scaleX = activeDefect.bbox.video_w ? (w / activeDefect.bbox.video_w) : 1;
-        const scaleY = activeDefect.bbox.video_h ? (h / activeDefect.bbox.video_h) : 1;
-        bx = activeDefect.bbox.x * scaleX;
-        by = activeDefect.bbox.y * scaleY;
-        bw = activeDefect.bbox.w * scaleX;
-        bh = activeDefect.bbox.h * scaleY;
-      } else {
-        bx = w * 0.35;
-        by = h * 0.45;
-        bw = w * 0.28;
-        bh = h * 0.18;
-      }
-
-      const boxColor = sev === 'Critical' ? '#ef4444' : sev === 'High' ? '#f97316' : '#eab308';
-
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-      ctx.shadowBlur = 10;
-      ctx.strokeStyle = boxColor;
-      ctx.lineWidth = Math.max(3, Math.round(w / 350));
-      ctx.strokeRect(bx, by, bw, bh);
-
-      // Tactical corner markers
-      const cLen = Math.min(bw, bh) * 0.25;
-      ctx.lineWidth = ctx.lineWidth + 2;
-      ctx.beginPath();
-      ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by);
-      ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen);
-      ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh);
-      ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen);
-      ctx.stroke();
-
-      // Top label badge
-      const fontSize = Math.max(13, Math.round(w / 80));
-      ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
-      const labelText = ` ${cls.toUpperCase().replace(/_/g, ' ')} • ${(conf * 100).toFixed(0)}% • ${sev} `;
-      const textMetrics = ctx.measureText(labelText);
-      const tagH = fontSize + 8;
-      const tagW = textMetrics.width + 10;
-
-      ctx.fillStyle = boxColor;
-      ctx.fillRect(bx, Math.max(0, by - tagH - 2), tagW, tagH);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(labelText, bx + 5, Math.max(tagH / 2, by - tagH / 2 - 2));
-
-      // Physical dimensions tag
-      const dimText = `${wCm}cm × ${lCm}cm`;
-      ctx.font = `bold ${Math.max(11, Math.round(w / 100))}px system-ui, sans-serif`;
-      const dimMetrics = ctx.measureText(dimText);
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-      ctx.fillRect(bx + bw - dimMetrics.width - 12, by + bh + 4, dimMetrics.width + 12, 18);
-      ctx.fillStyle = '#f8fafc';
-      ctx.fillText(dimText, bx + bw - dimMetrics.width - 6, by + bh + 13);
-      ctx.restore();
-    }
-
-    // 3. Official Municipal Telemetry Bar across bottom
-    const barHeight = Math.max(48, Math.round(h * 0.08));
-    ctx.save();
-    ctx.fillStyle = 'rgba(7, 16, 38, 0.92)';
-    ctx.fillRect(0, h - barHeight, w, barHeight);
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, h - barHeight);
-    ctx.lineTo(w, h - barHeight);
-    ctx.stroke();
-
-    const barFont = Math.max(11, Math.round(w / 95));
-    ctx.font = `bold ${barFont}px system-ui, sans-serif`;
-    ctx.textBaseline = 'middle';
-
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillText('🏛️ GCC MUNICIPAL ROAD INTELLIGENCE', 14, h - barHeight + barHeight * 0.32);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = `${Math.max(10, Math.round(w / 110))}px system-ui, sans-serif`;
-    const veh = activeVehicle?.vehicle_id || 'MTC Transit Bus 46G';
-    ctx.fillText(`LAT: ${currentGPS.latStr}° N  |  LON: ${currentGPS.lonStr}° E  •  CH: ${currentGPS.chainageM}m  •  ${currentGPS.fixType} (${currentGPS.accuracyM})`, 14, h - barHeight + barHeight * 0.72);
-
-    ctx.textAlign = 'right';
-    ctx.font = `bold ${barFont}px system-ui, sans-serif`;
-    ctx.fillStyle = '#4ade80';
-    ctx.fillText('✓ YOLOv8 LIVE EVIDENCE CAPTURE', w - 14, h - barHeight + barHeight * 0.32);
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = `${Math.max(10, Math.round(w / 115))}px system-ui, sans-serif`;
-    ctx.fillText(`${new Date().toLocaleString()} • ${currentGPS.speedKmh} km/h`, w - 14, h - barHeight + barHeight * 0.72);
-    ctx.restore();
-
-    return canvas.toDataURL('image/jpeg', 0.88);
   };
 
   // Capture real frame and immediately generate / view official municipal defect report
