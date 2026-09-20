@@ -15,6 +15,8 @@ logging.getLogger("ultralytics").setLevel(logging.ERROR)
 import base64
 import cv2
 import numpy as np
+import torch
+torch.set_num_threads(2)
 from ultralytics import YOLO
 
 def resolve_model_path(provided_path=None):
