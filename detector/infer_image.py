@@ -22,10 +22,13 @@ def resolve_model_path(provided_path=None):
         return provided_path
 
     candidates = [
+        "detector/multitask_road_ai.pt",
+        "detector/pothole_yolov8.pt",
+        "detector/roadguard_yolov8.pt",
+        "detector/rdd2022_multiclass.pt",
         "detector/potbot_yolov8m.pt",
         "detector/best.pt",
         "best.pt",
-        "detector/pothole_yolov8.pt",
         "pothole_yolov8.pt"
     ]
     for c in candidates:

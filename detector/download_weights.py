@@ -14,21 +14,20 @@ import os
 import sys
 import urllib.request
 
-# Models stored in GitHub LFS (committed to repo)
+# Models stored in GitHub LFS (committed to repo via Git LFS)
 GITHUB_LFS_MODELS = [
+    "multitask_road_ai.pt",
     "roadguard_yolov8.pt",
     "pothole_yolov8.pt",
     "rdd2022_multiclass.pt",
     "best.pt",
 ]
 
-# Models downloaded from HuggingFace Hub (too large for standard git LFS or gitignored)
-# Set HF_REPO to your HuggingFace model repo, e.g. "Logesshhh/road-anomaly-pothole-yolov8m"
+# Models optionally downloaded from HuggingFace Hub (e.g. potbot)
 HF_REPO = os.environ.get("HF_MODEL_REPO", "Logesshhh/road-anomaly-pothole-yolov8m")
 HF_TOKEN = os.environ.get("HUGGINGFACE_TOKEN", None)  # Optional – for private repos
 
 HF_MODELS = [
-    "multitask_road_ai.pt",
     "potbot_yolov8m.pt",
 ]
 
