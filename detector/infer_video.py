@@ -268,6 +268,10 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
     if not os.path.exists(video_path):
         return {"error": f"Video not found: {video_path}"}
 
+    IS_CLOUD = os.environ.get("RENDER") == "true" or os.environ.get("VERCEL") == "1"
+    if IS_CLOUD:
+        sample_fps = min(sample_fps, 0.8)
+
     norm_mode = str(mode_name or "").lower().strip()
     is_multitask = norm_mode in ["multitask", "option_b", "multitask_road_ai"]
     effective_thresh = max(0.35, float(conf_thresh or 0.35))
@@ -285,14 +289,15 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
             except Exception:
                 pass
 
-        # Pair with CRDDC RDD2022 specialist specifically for structural cracks (Longitudinal, Transverse, Alligator)
-        rdd_pt = "detector/rdd2022_multiclass.pt"
-        if os.path.exists(rdd_pt) and os.path.getsize(rdd_pt) > 1024:
-            try:
-                m_cracks = YOLO(rdd_pt)
-                models_to_run.append((m_cracks, "road_cracks_only", 0.25))
-            except Exception:
-                pass
+        # On cloud (512MB RAM limit), keep single model to avoid OOM; locally pair with crack specialist
+        if not IS_CLOUD:
+            rdd_pt = "detector/rdd2022_multiclass.pt"
+            if os.path.exists(rdd_pt) and os.path.getsize(rdd_pt) > 1024:
+                try:
+                    m_cracks = YOLO(rdd_pt)
+                    models_to_run.append((m_cracks, "road_cracks_only", 0.25))
+                except Exception:
+                    pass
 
         if not models_to_run:
             fallback_pt = resolve_model_path(model_path)
@@ -367,9 +372,10 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
         frame_vehicle_count = 0
 
         # ── Run Mode Models on Frame ─────────────────────────────────────────
+        infer_sz = 480 if IS_CLOUD else 640
         for model_obj, role, min_conf in models_to_run:
             try:
-                res = model_obj(frame, imgsz=640, conf=min_conf, iou=0.40, verbose=False)[0]
+                res = model_obj(frame, imgsz=infer_sz, conf=min_conf, iou=0.40, verbose=False)[0]
             except Exception:
                 continue
 
