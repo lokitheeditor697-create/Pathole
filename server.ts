@@ -1824,7 +1824,7 @@ app.get("/api/sample-videos", (req: Request, res: Response) => {
       const stats = fs.statSync(filePath);
       let title = f.replace(".mp4", "").replace(/_/g, " ");
       title = title.charAt(0).toUpperCase() + title.slice(1);
-      if (f === "multitask_road_survey.mp4") title = "Option B Multi-Task AI Benchmark (Potholes, Cracks, Crosswalk & Traffic)";
+      if (f === "multitask_road.mp4") title = "Option B Multi-Task AI Benchmark (Potholes, Cracks, Crosswalk & Traffic)";
       if (f === "real_dashcam.mp4") title = "Dashcam Road Survey (Real Potholes Detected)";
       if (f === "sample_road.mp4") title = "Urban Asphalt Inspection";
       if (f === "clean_highway.mp4") title = "Express Corridor (Zero Distress)";
@@ -1842,7 +1842,7 @@ app.get("/api/sample-videos", (req: Request, res: Response) => {
       };
     });
     const preferredOrder = [
-      "multitask_road_survey.mp4",
+      "multitask_road.mp4",
       "real_dashcam.mp4",
       "shadows_and_cracks.mp4",
       "clean_highway.mp4",
@@ -2218,8 +2218,8 @@ const videoScanCache = new Map<string, any>();
 app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }), (req: Request, res: Response) => {
   try {
     const {
-      file_name = "multitask_road_survey.mp4",
-      duration_sec = 13,
+      file_name = "multitask_road.mp4",
+      duration_sec = 10,
       latitude,
       longitude,
       speed_kmh,
@@ -2293,9 +2293,9 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
       path.join(process.cwd(), "public", "videos", "uploads", cleanName),
       path.join(process.cwd(), "public", "videos", cleanName),
       path.join(process.cwd(), "detector", cleanName),
-      path.join(process.cwd(), "public", "videos", "multitask_road_survey.mp4"),
-      path.join(process.cwd(), "dist", "videos", "multitask_road_survey.mp4"),
-      path.join(process.cwd(), "detector", "multitask_road_survey.mp4"),
+      path.join(process.cwd(), "public", "videos", "multitask_road.mp4"),
+      path.join(process.cwd(), "dist", "videos", "multitask_road.mp4"),
+      path.join(process.cwd(), "detector", "multitask_road.mp4"),
       path.join(process.cwd(), "public", "videos", "real_dashcam.mp4"),
       path.join(process.cwd(), "dist", "videos", "real_dashcam.mp4"),
       path.join(process.cwd(), "detector", "real_dashcam.mp4")

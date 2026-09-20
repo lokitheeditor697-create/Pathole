@@ -19,7 +19,7 @@ import PatrolHUD from './PatrolHUD';
 import WebcamPotholeDetector from './WebcamPotholeDetector';
 import RoadVideoInspectionPlayer from './RoadVideoInspectionPlayer';
 
-const DEFAULT_SAMPLE_FILE = Object.freeze({ name: 'multitask_road_survey.mp4', type: 'video/mp4' });
+const DEFAULT_SAMPLE_FILE = Object.freeze({ name: 'multitask_road.mp4', type: 'video/mp4' });
 
 export default function LiveMonitoringView({
   defects,
@@ -481,7 +481,7 @@ export default function LiveMonitoringView({
             {videoMode === 'sample' && (
               <RoadVideoInspectionPlayer
                 uploadedFile={DEFAULT_SAMPLE_FILE}
-                uploadedPreview="/videos/multitask_road_survey.mp4"
+                uploadedPreview="/videos/multitask_road.mp4"
                 activeVehicle={activeVehicle}
                 onDefectLogged={onRefreshData}
                 aiModelMode={aiModelMode}
@@ -583,8 +583,8 @@ export default function LiveMonitoringView({
                     <div className="upload-hub-presets">
                       <button
                         onClick={() => {
-                          setUploadedFile({ name: 'multitask_road_survey.mp4', type: 'video/mp4', size: 4872704 });
-                          setUploadedPreview('/videos/multitask_road_survey.mp4');
+                          setUploadedFile({ name: 'multitask_road.mp4', type: 'video/mp4', size: 7641495 });
+                          setUploadedPreview('/videos/multitask_road.mp4');
                         }}
                         style={{
                           backgroundColor: '#1e293b',

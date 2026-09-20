@@ -54,8 +54,8 @@ export default function RoadVideoInspectionPlayer({
   const [videoAspect, setVideoAspect] = useState(16 / 9);
 
   // Video Source Management
-  const [videoSourceUrl, setVideoSourceUrl] = useState(uploadedPreview || '/videos/multitask_road_survey.mp4');
-  const [videoSourceFilename, setVideoSourceFilename] = useState(uploadedFile?.name || 'multitask_road_survey.mp4');
+  const [videoSourceUrl, setVideoSourceUrl] = useState(uploadedPreview || '/videos/multitask_road.mp4');
+  const [videoSourceFilename, setVideoSourceFilename] = useState(uploadedFile?.name || 'multitask_road.mp4');
   const [sampleVideoOptions, setSampleVideoOptions] = useState([]);
   const fileInputRef = useRef(null);
   const localBlobUrlRef = useRef(null);
@@ -71,7 +71,7 @@ export default function RoadVideoInspectionPlayer({
   // Effective video source URL resolution (handles native blobs, remote backend, and relative paths)
   const effectiveVideoUrl = useMemo(() => {
     const raw = videoSourceUrl || uploadedPreview;
-    if (!raw) return '/videos/multitask_road_survey.mp4';
+    if (!raw) return '/videos/multitask_road.mp4';
     if (raw.startsWith('blob:') || raw.startsWith('data:') || raw.startsWith('http://') || raw.startsWith('https://')) {
       return raw;
     }
@@ -260,7 +260,7 @@ export default function RoadVideoInspectionPlayer({
   const [notificationToast, setNotificationToast] = useState(null);
 
   const DEFAULT_SAMPLE_VIDEOS = [
-    { id: 'multitask_road_survey', file_name: 'multitask_road_survey.mp4', name: 'Option B Multi-Task AI Benchmark (Potholes, Cracks, Crosswalk & Traffic)', url: '/videos/multitask_road_survey.mp4' },
+    { id: 'multitask_road', file_name: 'multitask_road.mp4', name: 'Option B Multi-Task AI Benchmark (Potholes, Cracks, Crosswalk & Traffic)', url: '/videos/multitask_road.mp4' },
     { id: 'real_dashcam', file_name: 'real_dashcam.mp4', name: 'Dashcam Road Survey (Real Potholes Detected)', url: '/videos/real_dashcam.mp4' },
     { id: 'shadows_and_cracks', file_name: 'shadows_and_cracks.mp4', name: 'Asphalt Fatigue & Longitudinal Cracks', url: '/videos/shadows_and_cracks.mp4' },
     { id: 'clean_highway', file_name: 'clean_highway.mp4', name: 'Express Corridor (Zero Distress)', url: '/videos/clean_highway.mp4' },
@@ -1811,9 +1811,9 @@ export default function RoadVideoInspectionPlayer({
               <button
                 onClick={() => {
                   setVideoError(null);
-                  const fallbackUrl = API_BASE ? `${API_BASE}/videos/multitask_road_survey.mp4` : '/videos/multitask_road_survey.mp4';
+                  const fallbackUrl = API_BASE ? `${API_BASE}/videos/multitask_road.mp4` : '/videos/multitask_road.mp4';
                   setVideoSourceUrl(fallbackUrl);
-                  setVideoSourceFilename('multitask_road_survey.mp4');
+                  setVideoSourceFilename('multitask_road.mp4');
                   if (videoRef.current) {
                     videoRef.current.src = fallbackUrl;
                     videoRef.current.load();

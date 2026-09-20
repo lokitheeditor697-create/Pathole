@@ -671,9 +671,9 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
     }
 
 if __name__ == "__main__":
-    default_vid = "detector/multitask_road_survey.mp4"
+    default_vid = "detector/multitask_road.mp4"
     if not os.path.exists(default_vid):
-        default_vid = "public/videos/multitask_road_survey.mp4"
+        default_vid = "public/videos/multitask_road.mp4"
 
     v_path = sys.argv[1] if len(sys.argv) > 1 else default_vid
     m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/multitask_road_ai.pt"
