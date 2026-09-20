@@ -671,13 +671,13 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
     }
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "No video provided"}))
-        sys.exit(1)
+    default_vid = "detector/multitask_road_survey.mp4"
+    if not os.path.exists(default_vid):
+        default_vid = "public/videos/multitask_road_survey.mp4"
 
-    v_path = sys.argv[1]
-    m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/pothole_yolov8.pt"
-    c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.38
+    v_path = sys.argv[1] if len(sys.argv) > 1 else default_vid
+    m_path = sys.argv[2] if len(sys.argv) > 2 else "detector/multitask_road_ai.pt"
+    c_thresh = float(sys.argv[3]) if len(sys.argv) > 3 else 0.28
     mode_arg = sys.argv[4] if len(sys.argv) > 4 else "multitask"
 
     res = analyze_video(v_path, m_path, c_thresh, mode_name=mode_arg)

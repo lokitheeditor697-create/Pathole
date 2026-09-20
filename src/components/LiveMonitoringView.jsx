@@ -35,7 +35,7 @@ export default function LiveMonitoringView({
   setAiModelMode = () => {}
 }) {
   // Video source modes: 'simulation' | 'sample' | 'webcam' | 'upload'
-  const [videoMode, setVideoMode] = useState('simulation');
+  const [videoMode, setVideoMode] = useState('sample');
   const [selectedVehicleId, setSelectedVehicleId] = useState('MTC 46G');
   const [showModeGuide, setShowModeGuide] = useState(false);
 
@@ -581,6 +581,31 @@ export default function LiveMonitoringView({
 
                     {/* Quick-Test Buttons */}
                     <div className="upload-hub-presets">
+                      <button
+                        onClick={() => {
+                          setUploadedFile({ name: 'multitask_road_survey.mp4', type: 'video/mp4', size: 4872704 });
+                          setUploadedPreview('/videos/multitask_road_survey.mp4');
+                        }}
+                        style={{
+                          backgroundColor: '#1e293b',
+                          color: '#38bdf8',
+                          border: '1px solid #38bdf8',
+                          padding: '8px 6px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span style={{ fontSize: '14px' }}>✨</span>
+                        <span>Multi-Task AI</span>
+                        <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '400' }}>Default Benchmark</span>
+                      </button>
+
                       <button
                         onClick={() => {
                           setUploadedFile({ name: 'real_dashcam.mp4', type: 'video/mp4', size: 10257801 });

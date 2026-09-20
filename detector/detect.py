@@ -388,7 +388,7 @@ def process_video(
 
 def main():
     parser = argparse.ArgumentParser(description="Smart City Road Defect & Traffic Detector")
-    default_video = "detector/real_dashcam.mp4" if os.path.exists("detector/real_dashcam.mp4") else "detector/sample_road.mp4"
+    default_video = "detector/multitask_road_survey.mp4" if os.path.exists("detector/multitask_road_survey.mp4") else "detector/real_dashcam.mp4"
     parser.add_argument("--video", type=str, default=default_video,
                         help=f"Path to video file or camera index (default: {default_video})")
     default_model = os.getenv("YOLO_MODEL_PATH") or (
