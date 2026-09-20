@@ -17,7 +17,11 @@ logging.getLogger("ultralytics").setLevel(logging.ERROR)
 import cv2
 import numpy as np
 import torch
-torch.set_num_threads(2)
+IS_CLOUD = os.environ.get("RENDER") == "true" or os.environ.get("VERCEL") == "1" or os.environ.get("IS_CLOUD") == "true"
+if IS_CLOUD:
+    torch.set_num_threads(1)
+else:
+    torch.set_num_threads(4)
 from ultralytics import YOLO
 
 def resolve_model_path(provided_path=None):
@@ -359,6 +363,10 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
 
     sampled_count = 0
     target_frame_indices = list(range(0, total_frames, frame_interval))
+    if IS_CLOUD and len(target_frame_indices) > 8:
+        # Uniformly pick 8 keyframes across the entire video so inference takes < 10 seconds on cloud
+        step = len(target_frame_indices) / 8.0
+        target_frame_indices = [target_frame_indices[int(i * step)] for i in range(8)]
 
     for frame_idx in target_frame_indices:
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
@@ -372,10 +380,11 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
         frame_vehicle_count = 0
 
         # ── Run Mode Models on Frame ─────────────────────────────────────────
-        infer_sz = 480 if IS_CLOUD else 640
+        infer_sz = 384 if IS_CLOUD else 640
         for model_obj, role, min_conf in models_to_run:
             try:
-                res = model_obj(frame, imgsz=infer_sz, conf=min_conf, iou=0.40, verbose=False)[0]
+                with torch.no_grad():
+                    res = model_obj(frame, imgsz=infer_sz, conf=min_conf, iou=0.40, verbose=False)[0]
             except Exception:
                 continue
 

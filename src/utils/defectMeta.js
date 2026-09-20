@@ -298,6 +298,91 @@ export const DEFECT_META_REGISTRY = {
     textColor: '#67e8f9',
     description: 'Surface water accumulation risking hydroplaning and sub-base weakening',
     icon: '🌊'
+  },
+  // Option B: Multi-Task Road AI Classes (Pedestrian Zone, Traffic & VRU)
+  zebra_crossing: {
+    key: 'zebra_crossing',
+    name: 'Zebra Crossing',
+    code: 'ZBR',
+    fullLabel: 'Zebra Crosswalk (ZBR)',
+    prefix: 'ZBR',
+    category: 'Pedestrian Crossing Zone',
+    color: '#06b6d4',
+    bgColor: 'rgba(6, 182, 212, 0.18)',
+    borderColor: '#06b6d4',
+    textColor: '#67e8f9',
+    description: 'Pedestrian crosswalk zone marking roadway right-of-way',
+    icon: '🦓'
+  },
+  crosswalk: {
+    key: 'crosswalk',
+    name: 'Zebra Crossing',
+    code: 'ZBR',
+    fullLabel: 'Zebra Crosswalk (ZBR)',
+    prefix: 'ZBR',
+    category: 'Pedestrian Crossing Zone',
+    color: '#06b6d4',
+    bgColor: 'rgba(6, 182, 212, 0.18)',
+    borderColor: '#06b6d4',
+    textColor: '#67e8f9',
+    description: 'Pedestrian crosswalk zone marking roadway right-of-way',
+    icon: '🦓'
+  },
+  heavy_vehicle: {
+    key: 'heavy_vehicle',
+    name: 'Heavy Vehicle / Bus',
+    code: 'TRF-HV',
+    fullLabel: 'Heavy Vehicle (Transit Bus / Truck)',
+    prefix: 'TRF',
+    category: 'Traffic Vehicle',
+    color: '#3b82f6',
+    bgColor: 'rgba(59, 130, 246, 0.18)',
+    borderColor: '#3b82f6',
+    textColor: '#93c5fd',
+    description: 'Heavy municipal transit vehicle or freight truck in adjacent lane',
+    icon: '🚌'
+  },
+  light_vehicle: {
+    key: 'light_vehicle',
+    name: 'Light Vehicle / Car',
+    code: 'TRF-LV',
+    fullLabel: 'Light Vehicle (Car / Auto)',
+    prefix: 'TRF',
+    category: 'Traffic Vehicle',
+    color: '#38bdf8',
+    bgColor: 'rgba(56, 189, 248, 0.18)',
+    borderColor: '#38bdf8',
+    textColor: '#bae6fd',
+    description: 'Passenger automobile or light commercial vehicle in corridor',
+    icon: '🚗'
+  },
+  two_wheeler: {
+    key: 'two_wheeler',
+    name: 'Two-Wheeler / Bike',
+    code: 'TRF-2W',
+    fullLabel: 'Two-Wheeler (Motorcycle / Bicycle)',
+    prefix: 'TRF',
+    category: 'Vulnerable Road User',
+    color: '#a855f7',
+    bgColor: 'rgba(168, 85, 247, 0.18)',
+    borderColor: '#a855f7',
+    textColor: '#d8b4fe',
+    description: 'Motorcycle, scooter or cyclist sharing lane space',
+    icon: '🛵'
+  },
+  pedestrian: {
+    key: 'pedestrian',
+    name: 'Pedestrian',
+    code: 'PED',
+    fullLabel: 'Pedestrian Hazard (PED)',
+    prefix: 'PED',
+    category: 'Vulnerable Road User',
+    color: '#10b981',
+    bgColor: 'rgba(16, 185, 129, 0.18)',
+    borderColor: '#10b981',
+    textColor: '#6ee7b7',
+    description: 'Vulnerable pedestrian crossing carriageway or near road margin',
+    icon: '🚶'
   }
 };
 
