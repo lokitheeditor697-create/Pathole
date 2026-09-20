@@ -1,0 +1,27 @@
+# 🛣️ Multi-Task Road AI: Pavement Distress + Crosswalk + Traffic Dataset Configuration
+# Harmonized Schema for Smart City Transit Fleets (SIH 2026)
+
+path: E:/Pathole detection/ml/dataset/multitask_data  # Absolute dataset root
+train: images/train                   # Training partition
+val: images/val                       # 15% Validation partition (~2,775 images)
+test: images/test                     # 5% Benchmark test partition (~925 images)
+
+# Class count
+nc: 7
+
+# Unified Class Taxonomy
+names:
+  0: Pothole          # Asphalt void / crater localization & physical dimension estimation
+  1: Crack-Severe     # Structural longitudinal, transverse, and alligator fractures (>10mm)
+  2: Zebra-Crossing   # Pedestrian crosswalk marking visibility and right-of-way zones
+  3: Heavy-Vehicle    # Public transit buses (MTC/BMTC) and multi-axle commercial trucks
+  4: Light-Vehicle    # Passenger cars, sedans, SUVs, and commercial vans
+  5: Two-Wheeler      # Motorcycles, scooters, and three-wheeler auto-rickshaws
+  6: Pedestrian       # Pedestrians crossing road surfaces or walking along curbs
+
+# Benchmark Target Metrics
+# - Pothole mAP@50: >= 82%
+# - Zebra-Crossing mAP@50: >= 90%
+# - Traffic Flow mAP@50: >= 85%
+# - Overall Mean Average Precision (mAP@50): >= 80.5%
+# - Target Edge Latency: <= 12.0 ms (~83 FPS) on NVIDIA Jetson Orin Nano / Hailo-8

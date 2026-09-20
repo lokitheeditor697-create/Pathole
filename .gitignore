@@ -22,6 +22,7 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+.vscode/
 
 # Temporary test screenshots & user video uploads
 /*.png
@@ -34,8 +35,17 @@ ml/raw/
 scratch/
 test_*.py
 frontend/
+scripts/fix_*.cjs
+scripts/patch_*.cjs
+scripts/sync_*.py
+
 
 # Model Weights & Backups (Heavy weights hosted on Hugging Face: https://huggingface.co/Logesshhh/road-anomaly-pothole-yolov8m)
 detector/potbot_yolov8m.pt
 detector/*_backup.pt
 detector/collabdoor_*.pt
+yolov8m.pt
+runs/
+datasets/
+multitask_data.zip
+

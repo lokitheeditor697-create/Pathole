@@ -54,8 +54,8 @@ export default function RoadVideoInspectionPlayer({
   const [videoAspect, setVideoAspect] = useState(16 / 9);
 
   // Video Source Management
-  const [videoSourceUrl, setVideoSourceUrl] = useState(uploadedPreview || '/videos/real_dashcam.mp4');
-  const [videoSourceFilename, setVideoSourceFilename] = useState(uploadedFile?.name || 'real_dashcam.mp4');
+  const [videoSourceUrl, setVideoSourceUrl] = useState(uploadedPreview || '/videos/multitask_road_survey.mp4');
+  const [videoSourceFilename, setVideoSourceFilename] = useState(uploadedFile?.name || 'multitask_road_survey.mp4');
   const [sampleVideoOptions, setSampleVideoOptions] = useState([]);
   const fileInputRef = useRef(null);
   const localBlobUrlRef = useRef(null);
@@ -71,7 +71,7 @@ export default function RoadVideoInspectionPlayer({
   // Effective video source URL resolution (handles native blobs, remote backend, and relative paths)
   const effectiveVideoUrl = useMemo(() => {
     const raw = videoSourceUrl || uploadedPreview;
-    if (!raw) return '/videos/real_dashcam.mp4';
+    if (!raw) return '/videos/multitask_road_survey.mp4';
     if (raw.startsWith('blob:') || raw.startsWith('data:') || raw.startsWith('http://') || raw.startsWith('https://')) {
       return raw;
     }
@@ -165,7 +165,7 @@ export default function RoadVideoInspectionPlayer({
     if (!detectedMoments || detectedMoments.length === 0) return [];
     const filtered = detectedMoments.filter(m => {
       const isCrack = (m.class_name || '').toLowerCase().includes('crack');
-      const minConf = isCrack ? 0.28 : 0.38;
+      const minConf = isCrack ? 0.20 : 0.25;
       return m.conf === undefined || m.conf >= minConf;
     });
     const trackMap = new Map();
@@ -262,13 +262,9 @@ export default function RoadVideoInspectionPlayer({
   const DEFAULT_SAMPLE_VIDEOS = [
     { id: 'multitask_road_survey', file_name: 'multitask_road_survey.mp4', name: 'Option B Multi-Task AI Benchmark (Potholes, Cracks, Crosswalk & Traffic)', url: '/videos/multitask_road_survey.mp4' },
     { id: 'real_dashcam', file_name: 'real_dashcam.mp4', name: 'Dashcam Road Survey (Real Potholes Detected)', url: '/videos/real_dashcam.mp4' },
-    { id: 'sample_road', file_name: 'sample_road.mp4', name: 'Urban Asphalt Inspection', url: '/videos/sample_road.mp4' },
     { id: 'shadows_and_cracks', file_name: 'shadows_and_cracks.mp4', name: 'Asphalt Fatigue & Longitudinal Cracks', url: '/videos/shadows_and_cracks.mp4' },
     { id: 'clean_highway', file_name: 'clean_highway.mp4', name: 'Express Corridor (Zero Distress)', url: '/videos/clean_highway.mp4' },
-    { id: 'video_46g', file_name: 'video_46g.mp4', name: 'MTC 46G Poonamallee Corridor', url: '/videos/video_46g.mp4' },
-    { id: 'video_15g', file_name: 'video_15g.mp4', name: 'MTC 15G Aminjikarai Corridor', url: '/videos/video_15g.mp4' },
-    { id: 'video_27b', file_name: 'video_27b.mp4', name: 'MTC 27B Anna Salai Route', url: '/videos/video_27b.mp4' },
-    { id: 'video_29c', file_name: 'video_29c.mp4', name: 'MTC 29C Perambur Route', url: '/videos/video_29c.mp4' }
+    { id: 'video_46g', file_name: 'video_46g.mp4', name: 'MTC 46G Poonamallee Corridor', url: '/videos/video_46g.mp4' }
   ];
 
   // Fetch available sample videos with static defaults
@@ -728,11 +724,11 @@ export default function RoadVideoInspectionPlayer({
       return;
     }
 
-    // Filter detections for current video playhead window (±0.35s) — exclude vehicles & pedestrians
+    // Filter detections for current video playhead window (±0.55s) — exclude vehicles & pedestrians
     const rawMatches = detectedMoments.filter((m) => {
-      if (Math.abs(m.time - cur) > 0.35) return false;
+      if (Math.abs(m.time - cur) > 0.55) return false;
       const isCrack = (m.class_name || '').toLowerCase().includes('crack');
-      const minConf = isCrack ? 0.25 : 0.35;
+      const minConf = isCrack ? 0.20 : 0.25;
       if (m.conf !== undefined && m.conf < minConf) return false;
       const c = (m.class_name || '').toLowerCase();
       return !c.includes('vehicle') && !c.includes('two_wheeler') && !c.includes('pedestrian') && !c.includes('person');
@@ -1815,9 +1811,9 @@ export default function RoadVideoInspectionPlayer({
               <button
                 onClick={() => {
                   setVideoError(null);
-                  const fallbackUrl = API_BASE ? `${API_BASE}/videos/real_dashcam.mp4` : '/videos/real_dashcam.mp4';
+                  const fallbackUrl = API_BASE ? `${API_BASE}/videos/multitask_road_survey.mp4` : '/videos/multitask_road_survey.mp4';
                   setVideoSourceUrl(fallbackUrl);
-                  setVideoSourceFilename('real_dashcam.mp4');
+                  setVideoSourceFilename('multitask_road_survey.mp4');
                   if (videoRef.current) {
                     videoRef.current.src = fallbackUrl;
                     videoRef.current.load();

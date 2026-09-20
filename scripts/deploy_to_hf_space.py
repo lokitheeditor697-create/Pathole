@@ -4,12 +4,13 @@ import tempfile
 from huggingface_hub import HfApi
 
 def deploy():
-    repo_id = "Logesshhh/road-defect-ai"
     api = HfApi()
+    user = api.whoami()
+    username = user['name']
+    repo_id = f"{username}/road-defect-ai"
 
     print(f"Connecting to Hugging Face Space: {repo_id}...")
-    user = api.whoami()
-    print(f"Authenticated as: {user['name']}")
+    print(f"Authenticated as: {username}")
 
     staging_dir = tempfile.mkdtemp(prefix="hf_space_staging_")
     print(f"Staging full Docker space bundle in: {staging_dir}")
@@ -65,7 +66,7 @@ Real-Time AI Pavement Condition Intelligence, GIS 100m Road Segmentation & Autom
     runtime = api.get_space_runtime(repo_id)
     print(f"\nSpace Runtime Stage: {runtime.stage}")
     print(f"Live Space URL: https://huggingface.co/spaces/{repo_id}")
-    print(f"Direct App URL: https://logesshhh-road-defect-ai.static.hf.space")
+    print(f"Direct App URL: https://{username.lower().replace('_', '-')}-road-defect-ai.static.hf.space")
 
 if __name__ == "__main__":
     deploy()

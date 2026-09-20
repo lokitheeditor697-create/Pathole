@@ -27,8 +27,8 @@ export default function App() {
   const [vehicles, setVehicles] = useState(DEFAULT_VEHICLES);
   const [systemStatus, setSystemStatus] = useState(null);
 
-  // Default AI model set to 7-Class Road Anomaly (YOLOv8m)
-  const [aiModelMode, setAiModelMode] = useState('pothole');
+  // Default AI model set to Option B Multi-Task AI (YOLOv8m)
+  const [aiModelMode, setAiModelMode] = useState('multitask');
 
   // Connection & GPS Operational Reliability States
   const [serverStatus, setServerStatus] = useState('connected'); // 'connected' | 'reconnecting' | 'disconnected'

@@ -19,7 +19,7 @@ import PatrolHUD from './PatrolHUD';
 import WebcamPotholeDetector from './WebcamPotholeDetector';
 import RoadVideoInspectionPlayer from './RoadVideoInspectionPlayer';
 
-const DEFAULT_SAMPLE_FILE = Object.freeze({ name: 'real_dashcam.mp4', type: 'video/mp4' });
+const DEFAULT_SAMPLE_FILE = Object.freeze({ name: 'multitask_road_survey.mp4', type: 'video/mp4' });
 
 export default function LiveMonitoringView({
   defects,
@@ -31,7 +31,7 @@ export default function LiveMonitoringView({
   onSelectDefect,
   gpsStatus = 'locked',
   serverConnected = true,
-  aiModelMode = 'pothole',
+  aiModelMode = 'multitask',
   setAiModelMode = () => {}
 }) {
   // Video source modes: 'simulation' | 'sample' | 'webcam' | 'upload'
@@ -481,7 +481,7 @@ export default function LiveMonitoringView({
             {videoMode === 'sample' && (
               <RoadVideoInspectionPlayer
                 uploadedFile={DEFAULT_SAMPLE_FILE}
-                uploadedPreview="/videos/real_dashcam.mp4"
+                uploadedPreview="/videos/multitask_road_survey.mp4"
                 activeVehicle={activeVehicle}
                 onDefectLogged={onRefreshData}
                 aiModelMode={aiModelMode}

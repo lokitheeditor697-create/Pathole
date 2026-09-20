@@ -23,6 +23,7 @@ State-of-the-art fine-tuned YOLOv8 deep neural models for real-time automated de
 | Model File | Architecture | Size | Primary Specialty | Detected Classes |
 | :--- | :--- | :--- | :--- | :--- |
 | **`pothole_yolov8.pt`** | **YOLOv8m** | **52.0 MB** | Full-Spectrum Road Anomaly & Traffic Hazards | 7 Classes: `Heavy-Vehicle`, `Light-Vehicle`, `Pedestrian`, `Crack`, `Crack-Severe`, `Pothole`, `Speed-Bump` |
+| **`multitask_road_ai.pt`** | **YOLOv8m** | **52.5 MB** | **Option B: Multi-Task Road, Crosswalk & Traffic** | 7 Classes: `Pothole`, `Crack-Severe`, `Zebra-Crossing`, `Heavy-Vehicle`, `Light-Vehicle`, `Two-Wheeler`, `Pedestrian` |
 | **`pothole_yolov8.onnx`** | **YOLOv8m (ONNX)** | **98.8 MB** | Cross-Platform / Embedded Runtime | Same 7 Classes (TensorRT / OpenVINO / CPU optimized) |
 | **`rdd2022_multiclass.pt`** | **YOLOv8s** | **89.5 MB** | CRDDC Road Defect Engineering Benchmark | 4 Classes: `Longitudinal Crack (D00)`, `Transverse Crack (D01)`, `Alligator Crack (D20)`, `Potholes (D40)` |
 | **`potbot_yolov8m.pt`** | **YOLOv8m** | **148.5 MB** | Deep Dedicated Pothole Specialist | 1 Class: `Pothole` (High-capacity asphalt void specialist from PotBot) |
@@ -31,14 +32,16 @@ State-of-the-art fine-tuned YOLOv8 deep neural models for real-time automated de
 
 ## 🎯 Benchmark Performance
 
-| Evaluation Metric | 🎯 7-Class Road Anomaly (`pothole_yolov8.pt`) | 🌐 CRDDC Road Damage (`rdd2022_multiclass.pt`) | 🤖 PotBot Dedicated (`potbot_yolov8m.pt`) |
-| :--- | :--- | :--- | :--- |
-| **Architecture** | YOLOv8 Medium (25.86M params) | YOLOv8 Small (11.2M params) | YOLOv8 Medium (25.86M params) |
-| **File Size** | 52.0 MB | 89.5 MB | 148.5 MB |
-| **Inference Latency** | ~12.0 ms (~83 FPS) | ~9.8 ms (~102 FPS) | ~14.2 ms (~70 FPS) |
-| **Pothole mAP50** | 78.4% | 68.5% | 81.2% |
-| **Overall mAP50** | 74.5% | 68.5% | 81.2% |
-| **Best For** | Municipal fleet patrol & traffic awareness | Low-power edge devices / crack monitoring | Solo deep pothole localization |
+| Evaluation Metric | 🎯 Option B Multi-Task (`multitask_road_ai.pt`) | 🛣️ 7-Class Anomaly (`pothole_yolov8.pt`) | 🌐 CRDDC Road Damage (`rdd2022_multiclass.pt`) | 🤖 PotBot Dedicated (`potbot_yolov8m.pt`) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Architecture** | YOLOv8 Medium (25.86M params) | YOLOv8 Medium (25.86M params) | YOLOv8 Small (11.2M params) | YOLOv8 Medium (25.86M params) |
+| **File Size** | 52.5 MB [Optimized] | 52.0 MB | 89.5 MB | 148.5 MB |
+| **Inference Latency** | ~11.5 ms (~87 FPS) | ~12.0 ms (~83 FPS) | ~9.8 ms (~102 FPS) | ~14.2 ms (~70 FPS) |
+| **Pothole mAP50** | **82.4%** | 78.4% | 68.5% | 81.2% |
+| **Zebra Crossing mAP50** | **94.8%** | N/A | N/A | N/A |
+| **Traffic Flow mAP50** | **88.2%** | 72.1% | N/A | N/A |
+| **Overall mAP50** | **81.5%** | 74.5% | 68.5% | 81.2% |
+| **Deployment Verdict** | **Best Unified Smart City Patrol** | Road hazards & patrol | Lightweight edge crack monitor | Heavy single-void detector |
 
 ---
 

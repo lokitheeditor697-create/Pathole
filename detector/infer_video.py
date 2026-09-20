@@ -278,7 +278,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
 
     norm_mode = str(mode_name or "").lower().strip()
     is_multitask = norm_mode in ["multitask", "option_b", "multitask_road_ai"]
-    effective_thresh = max(0.35, float(conf_thresh or 0.35))
+    effective_thresh = float(conf_thresh or 0.28)
 
     # Determine which model(s) to run for the selected mode
     models_to_run = []
@@ -293,15 +293,14 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
             except Exception:
                 pass
 
-        # On cloud (512MB RAM limit), keep single model to avoid OOM; locally pair with crack specialist
-        if not IS_CLOUD:
-            rdd_pt = "detector/rdd2022_multiclass.pt"
-            if os.path.exists(rdd_pt) and os.path.getsize(rdd_pt) > 1024:
-                try:
-                    m_cracks = YOLO(rdd_pt)
-                    models_to_run.append((m_cracks, "road_cracks_only", 0.25))
-                except Exception:
-                    pass
+        # Pair with CRDDC crack specialist (longitudinal, transverse, alligator cracks)
+        rdd_pt = "detector/rdd2022_multiclass.pt"
+        if os.path.exists(rdd_pt) and os.path.getsize(rdd_pt) > 1024:
+            try:
+                m_cracks = YOLO(rdd_pt)
+                models_to_run.append((m_cracks, "road_cracks_only", 0.22))
+            except Exception:
+                pass
 
         if not models_to_run:
             fallback_pt = resolve_model_path(model_path)
@@ -363,10 +362,10 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
 
     sampled_count = 0
     target_frame_indices = list(range(0, total_frames, frame_interval))
-    if IS_CLOUD and len(target_frame_indices) > 8:
-        # Uniformly pick 8 keyframes across the entire video so inference takes < 10 seconds on cloud
-        step = len(target_frame_indices) / 8.0
-        target_frame_indices = [target_frame_indices[int(i * step)] for i in range(8)]
+    if IS_CLOUD and len(target_frame_indices) > 16:
+        # Uniformly pick 16 keyframes so inference finishes in ~14s on cloud without missing defects
+        step = len(target_frame_indices) / 16.0
+        target_frame_indices = [target_frame_indices[int(i * step)] for i in range(16)]
 
     for frame_idx in target_frame_indices:
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
@@ -464,10 +463,6 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
                         'model_track_id': None
                     })
 
-        # Dynamic Zebra Crosswalk Detection via Computer Vision in Multi-Task mode
-        if is_multitask:
-            z_boxes = detect_zebra_crossing_cv(frame, w, h)
-            frame_boxes.extend(z_boxes)
 
         # ── Dynamic Traffic Flow / Congestion Grade for this frame ───────────
         if frame_vehicle_count == 0:

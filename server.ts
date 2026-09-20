@@ -1841,6 +1841,21 @@ app.get("/api/sample-videos", (req: Request, res: Response) => {
         size_mb: Math.round((stats.size / (1024 * 1024)) * 10) / 10
       };
     });
+    const preferredOrder = [
+      "multitask_road_survey.mp4",
+      "real_dashcam.mp4",
+      "shadows_and_cracks.mp4",
+      "clean_highway.mp4",
+      "video_46g.mp4"
+    ];
+    list.sort((a, b) => {
+      const idxA = preferredOrder.indexOf(a.file_name);
+      const idxB = preferredOrder.indexOf(b.file_name);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.file_name.localeCompare(b.file_name);
+    });
     res.json(list);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -2199,33 +2214,18 @@ app.post("/api/detect/upload", rateLimit(15), express.json({ limit: "150mb" }), 
 });
 const videoScanCache = new Map<string, any>();
 
-// Load precalculated scans from disk for fast, zero-delay responses (especially on Render / Cloud)
-let precalculatedScansStore: Record<string, any> = {};
-const precalculatedScansPath = path.join(process.cwd(), "detector", "precalculated_scans.json");
-function loadPrecalculatedScans() {
-  try {
-    if (fs.existsSync(precalculatedScansPath)) {
-      const raw = fs.readFileSync(precalculatedScansPath, "utf-8");
-      precalculatedScansStore = JSON.parse(raw);
-      console.log(`[VideoScan] Preloaded ${Object.keys(precalculatedScansStore).length} neural scans from disk.`);
-    }
-  } catch (e) {
-    console.warn("[VideoScan] Failed to load precalculated scans:", e);
-  }
-}
-loadPrecalculatedScans();
 // Automated Video Inspection AI Keyframe Scanner (100% Real YOLOv8 AI Inference)
 app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }), (req: Request, res: Response) => {
   try {
     const {
-      file_name = "real_dashcam.mp4",
-      duration_sec = 10,
+      file_name = "multitask_road_survey.mp4",
+      duration_sec = 13,
       latitude,
       longitude,
       speed_kmh,
       vehicle_id = "User Video Inspection",
       bus_id,
-      model_mode = "pothole",
+      model_mode = "multitask",
       video_start_timestamp,   // ISO wall-clock time when the video recording started
     } = req.body;
 
@@ -2293,6 +2293,9 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
       path.join(process.cwd(), "public", "videos", "uploads", cleanName),
       path.join(process.cwd(), "public", "videos", cleanName),
       path.join(process.cwd(), "detector", cleanName),
+      path.join(process.cwd(), "public", "videos", "multitask_road_survey.mp4"),
+      path.join(process.cwd(), "dist", "videos", "multitask_road_survey.mp4"),
+      path.join(process.cwd(), "detector", "multitask_road_survey.mp4"),
       path.join(process.cwd(), "public", "videos", "real_dashcam.mp4"),
       path.join(process.cwd(), "dist", "videos", "real_dashcam.mp4"),
       path.join(process.cwd(), "detector", "real_dashcam.mp4")
@@ -2466,33 +2469,11 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
       return scanPayload;
     };
 
-    // 2. Instant Precalculated Scan hit (5ms response for all sample videos, zero 502 Bad Gateway on Render)
-    if (Object.keys(precalculatedScansStore).length === 0) {
-      loadPrecalculatedScans();
-    }
-    const precalculatedData = precalculatedScansStore[cacheKey] || 
-                              precalculatedScansStore[`${cleanName}_${model_mode}`] ||
-                              precalculatedScansStore[`${cleanName}_multitask`] || 
-                              precalculatedScansStore[`${cleanName}_pothole`];
-
-    const IS_CLOUD_ENV = process.env.RENDER === "true" || process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
-    if (precalculatedData && (!forceRescan || IS_CLOUD_ENV)) {
-      console.log(`[VideoScan] Precalculated neural scan hit for ${cleanName} (${model_mode}) - returning in 5ms`);
-      const payload = buildPayload(
-        precalculatedData.moments || [],
-        precalculatedData.unique_defects || [],
-        precalculatedData.traffic_summary,
-        precalculatedData.traffic_timeline
-      );
-      return res.status(200).json(payload);
-    }
-
-    // 100% Genuine Real-Time YOLOv8 Neural Network Video Inference for custom uploads
+    // 100% Genuine Natural Real-Time YOLOv8 Neural Network Video Inference
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
-      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.38 "${model_mode || "multitask"}"`;
+      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "multitask"}"`;
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
-      // 35s timeout ensures we catch and respond before Render reverse proxy cutoff (60s)
-      const child = exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 35000, env }, (error, stdout, stderr) => {
+      const child = exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 55000, env }, (error, stdout, stderr) => {
         let moments: any[] = [];
         let uniqueDefectsList: any[] = [];
         let trafficSummary: any = null;
