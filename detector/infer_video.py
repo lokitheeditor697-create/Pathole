@@ -16,6 +16,8 @@ logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 import cv2
 import numpy as np
+import torch
+torch.set_num_threads(2)
 from ultralytics import YOLO
 
 def resolve_model_path(provided_path=None):
@@ -271,8 +273,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=1.2,
     models_to_run = []
 
     if is_multitask:
-        # Multi-task ensemble: PotBot (potholes) + RoadGuard (cracks) + Traffic (vehicles/pedestrians)
-        # Check for trained multitask road AI weights first
+        # Load trained unified multitask model (detects potholes, cracks, crosswalks, vehicles, pedestrians)
         multitask_pt = "detector/multitask_road_ai.pt"
         if os.path.exists(multitask_pt) and os.path.getsize(multitask_pt) > 1024:
             try:
@@ -281,34 +282,13 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=1.2,
             except Exception:
                 pass
 
-        potbot_path = "detector/potbot_yolov8m.pt"
-        if not os.path.exists(potbot_path) or os.path.getsize(potbot_path) < 1024:
-            potbot_path = resolve_model_path(model_path)
-        try:
-            m_pot = YOLO(potbot_path)
-            models_to_run.append((m_pot, "potbot", effective_thresh))
-        except Exception:
-            pass
-
-        road_candidates = ["detector/pothole_yolov8.pt", "detector/roadguard_yolov8.pt", "detector/rdd2022_multiclass.pt"]
-        for rc in road_candidates:
-            if os.path.exists(rc) and os.path.getsize(rc) > 1024 and rc != potbot_path:
-                try:
-                    m_road = YOLO(rc)
-                    models_to_run.append((m_road, "road_cracks_only", effective_thresh))
-                    break
-                except Exception:
-                    pass
-
-        traffic_candidates = ["yolov8m.pt", "detector/pothole_yolov8.pt", "yolov8s.pt", "yolov8n.pt"]
-        for tc in traffic_candidates:
-            if os.path.exists(tc) and os.path.getsize(tc) > 1024:
-                try:
-                    m_trf = YOLO(tc)
-                    models_to_run.append((m_trf, "traffic_only", 0.35))
-                    break
-                except Exception:
-                    pass
+        if not models_to_run:
+            fallback_pt = resolve_model_path(model_path)
+            try:
+                m_fallback = YOLO(fallback_pt)
+                models_to_run.append((m_fallback, "fallback", effective_thresh))
+            except Exception:
+                pass
 
     elif norm_mode in ["potbot", "potbot_yolov8m"]:
         target_path = "detector/potbot_yolov8m.pt"
