@@ -213,25 +213,28 @@ def detect_zebra_crossing_cv(frame, w, h):
             if 20 <= bw <= 0.45 * w and 12 <= bh <= 0.35 * h and area >= 300:
                 stripes.append((x, y + roi_y1, bw, bh))
 
-        # Check for periodic spacing (minimum 4 evenly spaced bars)
-        if len(stripes) >= 4:
-            stripes.sort(key=lambda s: s[0])
-            dxs = [stripes[i+1][0] - stripes[i][0] for i in range(len(stripes)-1)]
-            avg_dx = float(np.mean(dxs))
-            std_dx = float(np.std(dxs))
-            # Periodicity check: standard deviation of stripe spacing must be consistent
-            if std_dx / (avg_dx + 1e-5) < 0.68:
-                min_x = max(0, min(s[0] for s in stripes) - 15)
-                max_x = min(w, max(s[0] + s[2] for s in stripes) + 15)
-                min_y = max(roi_y1, min(s[1] for s in stripes) - 10)
-                max_y = min(h, max(s[1] + s[3] for s in stripes) + 10)
+        # Cluster stripes along similar horizontal elevation bands (y-band)
+        y_clusters = {}
+        for s in stripes:
+            cluster_key = int(s[1] / 35) * 35
+            if cluster_key not in y_clusters:
+                y_clusters[cluster_key] = []
+            y_clusters[cluster_key].append(s)
+
+        for _, cluster in y_clusters.items():
+            if len(cluster) >= 4:
+                cluster.sort(key=lambda s: s[0])
+                min_x = max(0, min(s[0] for s in cluster) - 15)
+                max_x = min(w, max(s[0] + s[2] for s in cluster) + 15)
+                min_y = max(roi_y1, min(s[1] for s in cluster) - 10)
+                max_y = min(h, max(s[1] + s[3] for s in cluster) + 10)
                 box_w = max_x - min_x
                 box_h = max_y - min_y
-                if box_w > 0.28 * w and box_h > 25:
+                if box_w > 0.25 * w and box_h >= 20:
                     return [{
                         'coords': [float(min_x), float(min_y), float(max_x), float(max_y)],
                         'cls_name': 'zebra_crossing',
-                        'conf': 0.88,
+                        'conf': 0.91,
                         'model_track_id': None
                     }]
     except Exception:
@@ -273,12 +276,21 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=1.2,
     models_to_run = []
 
     if is_multitask:
-        # Load trained unified multitask model (detects potholes, cracks, crosswalks, vehicles, pedestrians)
+        # Load trained unified multitask model (potholes, crosswalks, vehicles, pedestrians)
         multitask_pt = "detector/multitask_road_ai.pt"
         if os.path.exists(multitask_pt) and os.path.getsize(multitask_pt) > 1024:
             try:
                 m_multi = YOLO(multitask_pt)
                 models_to_run.append((m_multi, "multitask_unified", effective_thresh))
+            except Exception:
+                pass
+
+        # Pair with CRDDC RDD2022 specialist specifically for structural cracks (Longitudinal, Transverse, Alligator)
+        rdd_pt = "detector/rdd2022_multiclass.pt"
+        if os.path.exists(rdd_pt) and os.path.getsize(rdd_pt) > 1024:
+            try:
+                m_cracks = YOLO(rdd_pt)
+                models_to_run.append((m_cracks, "road_cracks_only", 0.28))
             except Exception:
                 pass
 
@@ -618,10 +630,12 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=1.2,
             "traffic_timeline": traffic_timeline
         }
 
-    # Retain all tracks with at least 1 validated sighting and conf >= effective_thresh (0.38)
+    # Retain all tracks with at least 1 validated sighting and appropriate confidence threshold
     valid_track_ids = {
         t_id for t_id, v in tracked_unique_defects.items()
-        if v.get('sightings', 0) >= 1 and v.get('best_conf', 0) >= effective_thresh
+        if v.get('sightings', 0) >= 1 and (
+            v.get('best_conf', 0) >= (0.28 if 'crack' in str(v.get('class_name', '')).lower() else effective_thresh)
+        )
     }
 
     filtered_moments = [m for m in raw_moments if m['track_id'] in valid_track_ids]

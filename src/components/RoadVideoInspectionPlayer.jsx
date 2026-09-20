@@ -161,10 +161,13 @@ export default function RoadVideoInspectionPlayer({
     }
   };
 
-  // Unique physical defect tracks (deduplicated across consecutive frames for clean HUD display)
   const uniqueDefectsList = useMemo(() => {
     if (!detectedMoments || detectedMoments.length === 0) return [];
-    const filtered = detectedMoments.filter(m => m.conf === undefined || m.conf >= 0.38);
+    const filtered = detectedMoments.filter(m => {
+      const isCrack = (m.class_name || '').toLowerCase().includes('crack');
+      const minConf = isCrack ? 0.28 : 0.38;
+      return m.conf === undefined || m.conf >= minConf;
+    });
     const trackMap = new Map();
     const untracked = [];
     for (const m of filtered) {
@@ -726,11 +729,14 @@ export default function RoadVideoInspectionPlayer({
     }
 
     // Filter detections for current video playhead window (±0.35s) — exclude vehicles (used strictly for traffic flow)
-    const rawMatches = detectedMoments.filter((m) => 
-      Math.abs(m.time - cur) <= 0.35 && 
-      (m.conf === undefined || m.conf >= 0.38) &&
-      !m.class_name?.includes('vehicle') && !m.class_name?.includes('two_wheeler')
-    );
+    const rawMatches = detectedMoments.filter((m) => {
+      if (Math.abs(m.time - cur) > 0.35) return false;
+      const isCrack = (m.class_name || '').toLowerCase().includes('crack');
+      const minConf = isCrack ? 0.28 : 0.38;
+      if (m.conf !== undefined && m.conf < minConf) return false;
+      const c = (m.class_name || '').toLowerCase();
+      return !c.includes('vehicle') && !c.includes('two_wheeler');
+    });
 
     // 1. Group by track_id: keep ONLY the frame detection closest in time to current playback head
     const trackMap = new Map();
