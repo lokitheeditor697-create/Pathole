@@ -2473,7 +2473,7 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
       const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "multitask"}"`;
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
-      const child = exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 55000, env }, (error, stdout, stderr) => {
+      const child = exec(cmd, { maxBuffer: 20 * 1024 * 1024, timeout: 80000, env }, (error, stdout, stderr) => {
         let moments: any[] = [];
         let uniqueDefectsList: any[] = [];
         let trafficSummary: any = null;

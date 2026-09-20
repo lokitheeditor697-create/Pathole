@@ -164,8 +164,8 @@ export default function RoadVideoInspectionPlayer({
   const uniqueDefectsList = useMemo(() => {
     if (!detectedMoments || detectedMoments.length === 0) return [];
     const filtered = detectedMoments.filter(m => {
-      const isCrack = (m.class_name || '').toLowerCase().includes('crack');
-      const minConf = isCrack ? 0.20 : 0.25;
+      const isCrackOrZebra = (m.class_name || '').toLowerCase().includes('crack') || (m.class_name || '').toLowerCase().includes('zebra') || (m.class_name || '').toLowerCase().includes('crosswalk');
+      const minConf = isCrackOrZebra ? 0.20 : 0.25;
       return m.conf === undefined || m.conf >= minConf;
     });
     const trackMap = new Map();
@@ -727,8 +727,8 @@ export default function RoadVideoInspectionPlayer({
     // Filter detections for current video playhead window (±0.55s) — exclude vehicles & pedestrians
     const rawMatches = detectedMoments.filter((m) => {
       if (Math.abs(m.time - cur) > 0.55) return false;
-      const isCrack = (m.class_name || '').toLowerCase().includes('crack');
-      const minConf = isCrack ? 0.20 : 0.25;
+      const isCrackOrZebra = (m.class_name || '').toLowerCase().includes('crack') || (m.class_name || '').toLowerCase().includes('zebra') || (m.class_name || '').toLowerCase().includes('crosswalk');
+      const minConf = isCrackOrZebra ? 0.20 : 0.25;
       if (m.conf !== undefined && m.conf < minConf) return false;
       const c = (m.class_name || '').toLowerCase();
       return !c.includes('vehicle') && !c.includes('two_wheeler') && !c.includes('pedestrian') && !c.includes('person');

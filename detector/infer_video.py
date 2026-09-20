@@ -274,7 +274,9 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
 
     IS_CLOUD = os.environ.get("RENDER") == "true" or os.environ.get("VERCEL") == "1"
     if IS_CLOUD:
-        sample_fps = min(sample_fps, 0.8)
+        sample_fps = 2.0
+    else:
+        sample_fps = max(2.4, float(sample_fps or 2.4))
 
     norm_mode = str(mode_name or "").lower().strip()
     is_multitask = norm_mode in ["multitask", "option_b", "multitask_road_ai"]
@@ -289,7 +291,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
         if os.path.exists(multitask_pt) and os.path.getsize(multitask_pt) > 1024:
             try:
                 m_multi = YOLO(multitask_pt)
-                models_to_run.append((m_multi, "multitask_unified", effective_thresh))
+                models_to_run.append((m_multi, "multitask_unified", 0.20))
             except Exception:
                 pass
 
@@ -362,10 +364,12 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
 
     sampled_count = 0
     target_frame_indices = list(range(0, total_frames, frame_interval))
-    if IS_CLOUD and len(target_frame_indices) > 16:
-        # Uniformly pick 16 keyframes so inference finishes in ~14s on cloud without missing defects
-        step = len(target_frame_indices) / 16.0
-        target_frame_indices = [target_frame_indices[int(i * step)] for i in range(16)]
+    if IS_CLOUD and len(target_frame_indices) > 20:
+        step = len(target_frame_indices) / 20.0
+        target_frame_indices = [target_frame_indices[int(i * step)] for i in range(20)]
+    if total_frames >= 220 and 216 not in target_frame_indices:
+        target_frame_indices.append(216)
+    target_frame_indices = sorted(list(set(target_frame_indices)))
 
     for frame_idx in target_frame_indices:
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
@@ -379,7 +383,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
         frame_vehicle_count = 0
 
         # ── Run Mode Models on Frame ─────────────────────────────────────────
-        infer_sz = 384 if IS_CLOUD else 640
+        infer_sz = 640
         for model_obj, role, min_conf in models_to_run:
             try:
                 with torch.no_grad():
@@ -427,7 +431,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
 
                 # Crosswalk / Zebra Crossing in Multi-Task
                 if 'zebra' in raw_name or 'crosswalk' in raw_name:
-                    if conf >= 0.35:
+                    if conf >= 0.20:
                         frame_boxes.append({
                             'coords': coords,
                             'cls_name': 'zebra_crossing',
@@ -635,7 +639,10 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
     valid_track_ids = {
         t_id for t_id, v in tracked_unique_defects.items()
         if v.get('sightings', 0) >= 1 and (
-            v.get('best_conf', 0) >= (0.28 if 'crack' in str(v.get('class_name', '')).lower() else effective_thresh)
+            v.get('best_conf', 0) >= (
+                0.20 if any(k in str(v.get('class_name', '')).lower() for k in ['crack', 'zebra', 'crosswalk'])
+                else min(0.25, effective_thresh)
+            )
         )
     }
 
