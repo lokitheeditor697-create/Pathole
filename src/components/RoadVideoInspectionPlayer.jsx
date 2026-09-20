@@ -19,7 +19,12 @@ import {
   FileText,
   Navigation,
   MapPin,
-  X
+  X,
+  Zap,
+  Bot,
+  Crosshair,
+  Globe,
+  Shield
 } from 'lucide-react';
 import { API_BASE } from '../config';
 import { getDefectMeta, formatDefectId } from '../utils/defectMeta';
@@ -98,7 +103,7 @@ export default function RoadVideoInspectionPlayer({
   const [activeDefectsOnScreen, setActiveDefectsOnScreen] = useState([]);
   const [reportModalCase, setReportModalCase] = useState(null);
   const [autoPauseOnDefects, setAutoPauseOnDefects] = useState(false);
-  const [showGpsHud, setShowGpsHud] = useState(true);
+  const [showGpsHud, setShowGpsHud] = useState(false);
   const lockedTracksRef = useRef(new Map());
   const isScanningRef = useRef(false);
   const lastScannedKeyRef = useRef('');
@@ -150,6 +155,7 @@ export default function RoadVideoInspectionPlayer({
       case 'roadguard': return 'Road Doctor (9-Class Model)';
       case 'potbot': return 'PotBot Pothole Specialist';
       case 'rdd2022': return 'CRDDC Road Damage';
+      case 'multitask': return 'Option B Multi-Task AI';
       case 'pothole':
       default: return '7-Class Road Anomaly';
     }
@@ -158,9 +164,10 @@ export default function RoadVideoInspectionPlayer({
   // Unique physical defect tracks (deduplicated across consecutive frames for clean HUD display)
   const uniqueDefectsList = useMemo(() => {
     if (!detectedMoments || detectedMoments.length === 0) return [];
+    const filtered = detectedMoments.filter(m => m.conf === undefined || m.conf >= 0.38);
     const trackMap = new Map();
     const untracked = [];
-    for (const m of detectedMoments) {
+    for (const m of filtered) {
       const key = m.pothole_id || (m.track_id !== undefined && m.track_id !== null ? `TRK-${m.track_id}` : null);
       if (key) {
         const existing = trackMap.get(key);
@@ -178,11 +185,35 @@ export default function RoadVideoInspectionPlayer({
 
   const uniqueDefectsCount = uniqueDefectsList.length;
 
+  // Category counts for tactical HUD breakdown (Option B Multi-Task AI)
+  const categoryCounts = useMemo(() => {
+    let potholes = 0;
+    let cracks = 0;
+    let zebras = 0;
+    let vehicles = 0;
+    let peds = 0;
+    for (const d of uniqueDefectsList) {
+      const cls = (d.class_name || '').toLowerCase();
+      if (cls.includes('pothole')) potholes++;
+      else if (cls.includes('crack')) cracks++;
+      else if (cls.includes('zebra') || cls.includes('crosswalk')) zebras++;
+      else if (cls.includes('vehicle')) vehicles++;
+      else if (cls.includes('pedestrian') || cls.includes('two_wheeler')) peds++;
+    }
+    return { potholes, cracks, zebras, vehicles, peds };
+  }, [uniqueDefectsList]);
+
   // Manual logging states
   const [isCapturingManual, setIsCapturingManual] = useState(false);
   const [autoDispatchToOfficers, setAutoDispatchToOfficers] = useState(true);
   const [autoDispatchedCount, setAutoDispatchedCount] = useState(0);
   const autoDispatchedKeysRef = useRef(new Set());
+
+  // Dynamic Road Traffic Flow & Congestion Level
+  const [trafficSummary, setTrafficSummary] = useState(null);
+  const [trafficTimeline, setTrafficTimeline] = useState([]);
+  const [currentTrafficLevel, setCurrentTrafficLevel] = useState('No Traffic');
+  const [currentVehicleCount, setCurrentVehicleCount] = useState(0);
 
   const autoCaptureAndDispatch = async (defectToCapture) => {
     if (!defectToCapture || !videoRef.current) return;
@@ -226,6 +257,7 @@ export default function RoadVideoInspectionPlayer({
   const [notificationToast, setNotificationToast] = useState(null);
 
   const DEFAULT_SAMPLE_VIDEOS = [
+    { id: 'multitask_road_survey', file_name: 'multitask_road_survey.mp4', name: 'Option B Multi-Task AI Benchmark (Potholes, Cracks, Crosswalk & Traffic)', url: '/videos/multitask_road_survey.mp4' },
     { id: 'real_dashcam', file_name: 'real_dashcam.mp4', name: 'Dashcam Road Survey (Real Potholes Detected)', url: '/videos/real_dashcam.mp4' },
     { id: 'sample_road', file_name: 'sample_road.mp4', name: 'Urban Asphalt Inspection', url: '/videos/sample_road.mp4' },
     { id: 'shadows_and_cracks', file_name: 'shadows_and_cracks.mp4', name: 'Asphalt Fatigue & Longitudinal Cracks', url: '/videos/shadows_and_cracks.mp4' },
@@ -360,8 +392,23 @@ export default function RoadVideoInspectionPlayer({
         setScanStep(3);
         setScanStatusMessage(`Live Edge AI Scan [${modeLabel}]: ${data.total_defects} road distresses identified.`);
 
+        // Ingest dynamic road traffic flow & congestion intelligence
+        if (data.traffic_summary) {
+          setTrafficSummary(data.traffic_summary);
+          setCurrentTrafficLevel(data.traffic_summary.overall_traffic_level || 'No Traffic');
+          setCurrentVehicleCount(Math.round(data.traffic_summary.avg_vehicle_count || 0));
+        }
+        if (Array.isArray(data.traffic_timeline)) {
+          setTrafficTimeline(data.traffic_timeline);
+        }
+
         if (Array.isArray(data.moments) && data.moments.length > 0) {
-          const mappedMoments = data.moments.map((m, idx) => {
+          const isVehicleMoment = (m) => {
+            const c = (m.class_name || '').toLowerCase();
+            return c.includes('vehicle') || c.includes('two_wheeler') || c.includes('car') || c.includes('bus') || c.includes('truck');
+          };
+          const eligibleMoments = data.moments.filter((m) => !isVehicleMoment(m));
+          const mappedMoments = eligibleMoments.map((m, idx) => {
             const meta = getDefectMeta(m.class_name);
             const formattedId = m.pothole_id || formatDefectId(m.track_id || idx + 1, m.class_name);
             return {
@@ -370,12 +417,22 @@ export default function RoadVideoInspectionPlayer({
               display_name: m.display_name || meta.fullLabel,
               rdd_code: m.rdd_code || meta.code,
               category: m.category || meta.category,
-              color: meta.color
+              color: meta.color,
+              bbox: {
+                ...m.bbox,
+                video_w: m.bbox?.video_w || 1280,
+                video_h: m.bbox?.video_h || 720
+              }
             };
           });
           setDetectedMoments(mappedMoments);
         } else if (Array.isArray(data.defects) && data.defects.length > 0) {
-          const mappedMoments = data.defects.map((d, idx) => {
+          const isVehicleDefect = (d) => {
+            const c = (d.class_name || d.defect_type || '').toLowerCase();
+            return c.includes('vehicle') || c.includes('two_wheeler') || c.includes('car') || c.includes('bus') || c.includes('truck');
+          };
+          const eligibleDefects = data.defects.filter((d) => !isVehicleDefect(d));
+          const mappedMoments = eligibleDefects.map((d, idx) => {
             const meta = getDefectMeta(d.class_name);
             const formattedId = d.pothole_id || formatDefectId(idx + 1, d.class_name);
             return {
@@ -395,8 +452,8 @@ export default function RoadVideoInspectionPlayer({
                 y: d.bbox?.y_min || 150,
                 w: (d.bbox?.x_max || 320) - (d.bbox?.x_min || 200),
                 h: (d.bbox?.y_max || 220) - (d.bbox?.y_min || 150),
-                video_w: d.moment_bbox?.video_w || 1280,
-                video_h: d.moment_bbox?.video_h || 720
+                video_w: d.bbox?.video_w || d.moment_bbox?.video_w || 1280,
+                video_h: d.bbox?.video_h || d.moment_bbox?.video_h || 720
               },
               detection_id: d.detection_id
             };
@@ -406,7 +463,7 @@ export default function RoadVideoInspectionPlayer({
           setDetectedMoments([]);
         }
 
-        showToast(`AI Video Scan [${modeLabel}]: ${data.total_defects} real defects verified.`, data.total_defects > 0 ? 'success' : 'info');
+        showToast(`AI Video Scan [${modeLabel}]: ${data.total_defects} road distresses confirmed.`, data.total_defects > 0 ? 'success' : 'info');
       } else {
         setDetectedMoments([]);
       }
@@ -452,7 +509,7 @@ export default function RoadVideoInspectionPlayer({
   // Re-run AI inspection whenever the user changes the active AI model mode or video source
   useEffect(() => {
     if (videoReady && duration > 0) {
-      runAiVideoInspection(duration, videoSourceFilename, aiModelMode);
+      runAiVideoInspection(duration, videoSourceFilename, aiModelMode, true);
     }
   }, [aiModelMode, videoReady, videoSourceFilename]);
 
@@ -653,14 +710,27 @@ export default function RoadVideoInspectionPlayer({
       }
     }
 
+    // Update live dynamic traffic flow & congestion reading for current video playhead
+    if (trafficTimeline && trafficTimeline.length > 0) {
+      const match = trafficTimeline.find((t) => Math.abs(t.time - cur) <= 0.65);
+      if (match) {
+        setCurrentTrafficLevel(match.traffic_level || 'No Traffic');
+        setCurrentVehicleCount(match.vehicle_count || 0);
+      }
+    }
+
     if (!detectedMoments || detectedMoments.length === 0) {
       setActiveDefectsOnScreen([]);
       setActiveDefectOnScreen(null);
       return;
     }
 
-    // Filter detections in a responsive ±0.65s window around current playhead, requiring >= 0.20 confidence
-    const rawMatches = detectedMoments.filter((m) => Math.abs(m.time - cur) <= 0.65 && (m.conf === undefined || m.conf >= 0.20));
+    // Filter detections for current video playhead window (±0.35s) — exclude vehicles (used strictly for traffic flow)
+    const rawMatches = detectedMoments.filter((m) => 
+      Math.abs(m.time - cur) <= 0.35 && 
+      (m.conf === undefined || m.conf >= 0.38) &&
+      !m.class_name?.includes('vehicle') && !m.class_name?.includes('two_wheeler')
+    );
 
     // 1. Group by track_id: keep ONLY the frame detection closest in time to current playback head
     const trackMap = new Map();
@@ -680,7 +750,7 @@ export default function RoadVideoInspectionPlayer({
     const candidateDefects = [...Array.from(trackMap.values()), ...untrackedList];
     candidateDefects.sort((a, b) => (b.conf || 0) - (a.conf || 0));
 
-    // 2. High-Precision Spatial Deduplication: Eliminate genuine duplicate bounding boxes while preserving separate defects
+    // 2. High-Precision Spatial Deduplication: Eliminate overlapping bounding boxes on the same void
     const singleTraces = [];
     for (const cand of candidateDefects) {
       const b1 = cand.bbox;
@@ -688,6 +758,8 @@ export default function RoadVideoInspectionPlayer({
       const overlaps = singleTraces.some((kept) => {
         const b2 = kept.bbox;
         if (!b2) return false;
+        // Do not merge different classes (e.g. zebra with pothole or bus with car)
+        if (cand.class_name !== kept.class_name) return false;
         const x1 = Math.max(b1.x, b2.x);
         const y1 = Math.max(b1.y, b2.y);
         const x2 = Math.min(b1.x + b1.w, b2.x + b2.w);
@@ -696,15 +768,19 @@ export default function RoadVideoInspectionPlayer({
         const area1 = b1.w * b1.h;
         const area2 = b2.w * b2.h;
         const iou = inter / (area1 + area2 - inter + 1e-6);
-        return iou > 0.40;
+        const iomin = inter / (Math.min(area1, area2) + 1e-6);
+        return iou > 0.25 || iomin > 0.35;
       });
       if (!overlaps) {
         singleTraces.push(cand);
       }
     }
 
+    // Keep top 6 verified confirmed detections on screen to accommodate all multi-task objects
+    const topTraces = singleTraces.slice(0, 6);
+
     // 3. Stable Locked Track Cache & Automated Snapshot Extraction
-    const lockedTraces = singleTraces.map((cand) => {
+    const lockedTraces = topTraces.map((cand) => {
       const potholeId = cand.pothole_id || formatDefectId(cand.track_id || 1, cand.class_name);
       const trackKey = cand.track_id ? `track_${cand.track_id}` : `time_${cand.time.toFixed(1)}_${cand.class_name}`;
       const meta = getDefectMeta(cand.class_name);
@@ -1009,14 +1085,14 @@ export default function RoadVideoInspectionPlayer({
 
     try {
       const activeDefect = activeDefectOnScreen || (detectedMoments.length > 0
-        ? detectedMoments.find((m) => Math.abs(m.time - currentTime) <= 1.5)
-        : null) || {
-        class_name: selectedClass || 'pothole',
-        conf: 0.92,
-        severity: 'High',
-        wCm: 52,
-        lCm: 40
-      };
+        ? detectedMoments.find((m) => Math.abs(m.time - currentTime) <= 1.0)
+        : null);
+
+      if (!activeDefect) {
+        showToast('No defect detected at this frame. Pause at a detected defect marker to generate an official report.', 'warning');
+        setIsCapturingManual(false);
+        return;
+      }
 
       const realSnapshot = generateRealDefectSnapshot(activeDefect);
 
@@ -1167,111 +1243,60 @@ export default function RoadVideoInspectionPlayer({
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: '#020617',
-          border: '1px solid #334155',
+          backgroundColor: '#080f1e',
+          border: '1px solid #1a2540',
           borderRadius: '7px',
           padding: '2px',
-          gap: '3px'
+          gap: '2px'
         }}>
-          <button
-            onClick={() => handleSwitchModel('roadguard')}
-            title="Switch to Road Doctor (RoadGuard 9-Class Pavement Model) — Instant Live Inference"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 9px',
-              borderRadius: '5px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: 'none',
-              backgroundColor: aiModelMode === 'roadguard' ? '#16a34a' : 'transparent',
-              color: aiModelMode === 'roadguard' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'roadguard' ? '0 0 8px rgba(22,163,74,0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <span>🛡️ Road Doctor (9-Class)</span>
-            {aiModelMode === 'roadguard' && isAiScanning && (
-              <RefreshCw size={10} className="animate-spin" style={{ color: '#ffffff' }} />
-            )}
-          </button>
-
-          <button
-            onClick={() => handleSwitchModel('pothole')}
-            title="Switch to 7-Class Road Anomaly Model (YOLOv8m) — Instant Live Inference"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 9px',
-              borderRadius: '5px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: 'none',
-              backgroundColor: aiModelMode === 'pothole' ? '#2563eb' : 'transparent',
-              color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'pothole' ? '0 0 8px rgba(37,99,235,0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <span>🎯 7-Class Road Anomaly</span>
-            {aiModelMode === 'pothole' && isAiScanning && (
-              <RefreshCw size={10} className="animate-spin" style={{ color: '#ffffff' }} />
-            )}
-          </button>
-
-          <button
-            onClick={() => handleSwitchModel('rdd2022')}
-            title="Switch to CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes)"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 9px',
-              borderRadius: '5px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: 'none',
-              backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
-              color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'rdd2022' ? '0 0 8px rgba(13,148,136,0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <span>🌐 CRDDC Road Damage</span>
-            {aiModelMode === 'rdd2022' && isAiScanning && (
-              <RefreshCw size={10} className="animate-spin" style={{ color: '#ffffff' }} />
-            )}
-          </button>
-
-          <button
-            onClick={() => handleSwitchModel('potbot')}
-            title="Switch to PotBot Dedicated Pothole Specialist (YOLOv8m 148.5MB)"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 9px',
-              borderRadius: '5px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: 'none',
-              backgroundColor: aiModelMode === 'potbot' ? '#7c3aed' : 'transparent',
-              color: aiModelMode === 'potbot' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'potbot' ? '0 0 8px rgba(124,58,237,0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <span>🤖 PotBot Pothole (148MB)</span>
-            {aiModelMode === 'potbot' && isAiScanning && (
-              <RefreshCw size={10} className="animate-spin" style={{ color: '#ffffff' }} />
-            )}
-          </button>
+          {[
+            { mode: 'multitask', icon: Zap, label: 'Multi-Task', badge: 'SIH', color: '#a78bfa' },
+            { mode: 'roadguard', icon: Shield, label: 'Road Doctor', badge: '9-Class', color: '#4ade80' },
+            { mode: 'pothole', icon: Crosshair, label: '7-Class', badge: 'YOLOv8m', color: '#38bdf8' },
+            { mode: 'rdd2022', icon: Globe, label: 'CRDDC', badge: 'YOLOv8s', color: '#2dd4bf' },
+            { mode: 'potbot', icon: Bot, label: 'PotBot', badge: '148MB', color: '#c084fc' },
+          ].map(({ mode, icon: Icon, label, badge, color }) => {
+            const isActive = aiModelMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => handleSwitchModel(mode)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '4px 9px',
+                  borderRadius: '5px',
+                  fontSize: '11px',
+                  fontWeight: isActive ? '700' : '500',
+                  cursor: 'pointer',
+                  border: isActive ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
+                  borderLeft: isActive ? `3px solid ${color}` : '3px solid transparent',
+                  background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
+                  color: isActive ? '#f1f5f9' : '#64748b',
+                  transition: 'all 0.15s ease',
+                  boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,0.07)' : 'none',
+                }}
+              >
+                {isActive && (
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: color, flexShrink: 0 }} />
+                )}
+                <Icon size={11} color={isActive ? color : '#475569'} />
+                <span>{label}</span>
+                <span style={{
+                  fontSize: '9px',
+                  backgroundColor: isActive ? 'rgba(255,255,255,0.1)' : '#0f1929',
+                  color: isActive ? '#cbd5e1' : '#475569',
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  fontWeight: '600'
+                }}>{badge}</span>
+                {isActive && isAiScanning && (
+                  <RefreshCw size={10} className="animate-spin" style={{ color: color }} />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1375,6 +1400,114 @@ export default function RoadVideoInspectionPlayer({
             boxShadow: isFullscreen ? '0 0 50px rgba(0,0,0,0.9)' : 'none'
           }}
         >
+          {/* Live Dynamic Road Traffic Flow & Surface Health HUD */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              zIndex: 22,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              pointerEvents: 'none',
+              flexWrap: 'wrap'
+            }}
+          >
+            {/* Dynamic Road Traffic Congestion Indicator */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '7px',
+                padding: '5px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(9, 13, 22, 0.90)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.7)'
+              }}
+            >
+              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '800', letterSpacing: '0.04em' }}>
+                TRAFFIC FLOW:
+              </span>
+              <span
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '900',
+                  letterSpacing: '0.02em',
+                  color: currentTrafficLevel === 'High Traffic' 
+                    ? '#f87171' 
+                    : currentTrafficLevel === 'Medium Traffic' 
+                    ? '#fbbf24' 
+                    : currentTrafficLevel === 'Low Traffic' 
+                    ? '#4ade80' 
+                    : '#38bdf8',
+                  backgroundColor: currentTrafficLevel === 'High Traffic' 
+                    ? 'rgba(239, 68, 68, 0.22)' 
+                    : currentTrafficLevel === 'Medium Traffic' 
+                    ? 'rgba(245, 158, 11, 0.22)' 
+                    : currentTrafficLevel === 'Low Traffic' 
+                    ? 'rgba(34, 197, 94, 0.22)' 
+                    : 'rgba(56, 189, 248, 0.22)',
+                  border: `1px solid ${
+                    currentTrafficLevel === 'High Traffic' 
+                      ? 'rgba(239, 68, 68, 0.5)' 
+                      : currentTrafficLevel === 'Medium Traffic' 
+                      ? 'rgba(245, 158, 11, 0.5)' 
+                      : currentTrafficLevel === 'Low Traffic' 
+                      ? 'rgba(34, 197, 94, 0.5)' 
+                      : 'rgba(56, 189, 248, 0.5)'
+                  }`
+                }}
+              >
+                <span
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    backgroundColor: 'currentColor',
+                    display: 'inline-block',
+                    boxShadow: '0 0 6px currentColor'
+                  }}
+                />
+                {currentTrafficLevel.toUpperCase()}
+                {currentVehicleCount > 0 ? ` (${currentVehicleCount} VEHICLES)` : ''}
+              </span>
+            </div>
+
+            {/* Road Surface Health Status */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '5px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(9, 13, 22, 0.90)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.7)'
+              }}
+            >
+              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '800' }}>ROAD DISTRESS:</span>
+              <span style={{
+                fontSize: '11px',
+                fontWeight: '800',
+                color: activeDefectsOnScreen.length > 0 ? '#f97316' : '#4ade80'
+              }}>
+                {activeDefectsOnScreen.length > 0
+                  ? `⚠️ ${activeDefectsOnScreen.length} DISTRESS${activeDefectsOnScreen.length > 1 ? 'ES' : ''}`
+                  : '✓ NO DISTRESS'}
+              </span>
+            </div>
+          </div>
+
           {/* Video Element with key={effectiveVideoUrl} for guaranteed clean pipeline remount */}
           <video
             key={effectiveVideoUrl}
@@ -1476,39 +1609,75 @@ export default function RoadVideoInspectionPlayer({
             </div>
           )}
 
-          {/* Real-Time YOLOv8 Defect Bounding Box Overlays (All defects in current timestamp) */}
+          {/* Real-Time YOLOv8 Defect & Multi-Task Bounding Box Overlays */}
           {!videoError && activeDefectsOnScreen.map((defect, dIdx) => {
+            const isVehicle = defect.class_name?.includes('vehicle') || defect.class_name?.includes('two_wheeler');
+            // Vehicles are used strictly for Traffic Flow calculation, never rendered as defect boxes
+            if (isVehicle) return null;
+
+            const isZebra = defect.class_name?.includes('zebra') || defect.class_name?.includes('crosswalk');
+            const isPed = defect.class_name?.includes('pedestrian');
+            const isHeavy = defect.class_name?.includes('heavy') || defect.class_name?.includes('bus');
+            const isLight = defect.class_name?.includes('light') || defect.class_name?.includes('car');
+            const isTwoWheeler = defect.class_name?.includes('two_wheeler');
+
+            let boxColor = '#ef4444';
+            if (isHeavy) boxColor = '#3b82f6';
+            else if (isLight) boxColor = '#38bdf8';
+            else if (isTwoWheeler) boxColor = '#a855f7';
+            else if (isPed) boxColor = '#f59e0b';
+            else if (isZebra) boxColor = '#06b6d4';
+            else {
+              const meta = getDefectMeta(defect.class_name);
+              boxColor = meta.color || getSeverityColor(defect.severity);
+            }
+
             const meta = getDefectMeta(defect.class_name);
-            const boxColor = meta.color || getSeverityColor(defect.severity);
             const sevColor = getSeverityColor(defect.severity);
+
+            const refW = defect.bbox?.video_w || (videoRef.current && videoRef.current.videoWidth) || 1280;
+            const refH = defect.bbox?.video_h || (videoRef.current && videoRef.current.videoHeight) || 720;
+            const topPct = (defect.bbox.y / refH) * 100;
+            const leftPct = (defect.bbox.x / refW) * 100;
+            const widthPct = (defect.bbox.w / refW) * 100;
+            const heightPct = (defect.bbox.h / refH) * 100;
+
+            const defectId = defect.pothole_id || formatDefectId(defect.track_id || dIdx + 1, defect.class_name);
+            const confPct = Math.round((defect.conf || 0.88) * 100);
 
             return (
               <div
                 key={dIdx}
                 style={{
                   position: 'absolute',
-                  top: `${((defect.bbox.y) / (defect.bbox.video_h || 720)) * 100}%`,
-                  left: `${((defect.bbox.x) / (defect.bbox.video_w || 1280)) * 100}%`,
-                  width: `${((defect.bbox.w) / (defect.bbox.video_w || 1280)) * 100}%`,
-                  height: `${((defect.bbox.h) / (defect.bbox.video_h || 720)) * 100}%`,
-                  border: `2.5px solid ${boxColor}`,
-                  backgroundColor: `${boxColor}22`,
-                  borderRadius: '4px',
-                  boxShadow: `0 0 16px ${boxColor}66`,
+                  top: `${topPct}%`,
+                  left: `${leftPct}%`,
+                  width: `${widthPct}%`,
+                  height: `${heightPct}%`,
+                  border: `2px solid ${boxColor}`,
+                  backgroundColor: isZebra ? 'rgba(6, 182, 212, 0.12)' : (isPed ? 'rgba(245, 158, 11, 0.12)' : (isHeavy ? 'rgba(59, 130, 246, 0.10)' : (isLight ? 'rgba(56, 189, 248, 0.10)' : `${boxColor}22`))),
+                  borderRadius: '3px',
+                  boxShadow: `0 0 16px ${boxColor}77, inset 0 0 10px ${boxColor}33`,
                   pointerEvents: 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  padding: '4px',
+                  padding: '3px',
                   zIndex: 15,
-                  transition: 'all 0.1s ease-out'
+                  transition: 'all 0.08s ease-out'
                 }}
               >
-                {/* Top Badge: Defect ID, Distress Icon & Full Name, Locked status, & Confidence */}
+                {/* Tactical Corner Brackets */}
+                <div style={{ position: 'absolute', top: '-2px', left: '-2px', width: '10px', height: '10px', borderTop: `3px solid ${boxColor}`, borderLeft: `3px solid ${boxColor}`, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '10px', height: '10px', borderTop: `3px solid ${boxColor}`, borderRight: `3px solid ${boxColor}`, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '-2px', left: '-2px', width: '10px', height: '10px', borderBottom: `3px solid ${boxColor}`, borderLeft: `3px solid ${boxColor}`, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', borderBottom: `3px solid ${boxColor}`, borderRight: `3px solid ${boxColor}`, pointerEvents: 'none' }} />
+
+                {/* Top Badge: Tactical Detection Header */}
                 <div
                   style={{
-                    backgroundColor: 'rgba(9, 13, 22, 0.95)',
-                    backdropFilter: 'blur(4px)',
+                    backgroundColor: 'rgba(9, 13, 22, 0.94)',
+                    backdropFilter: 'blur(8px)',
                     color: '#f8fafc',
                     fontSize: '11px',
                     fontWeight: '800',
@@ -1516,76 +1685,97 @@ export default function RoadVideoInspectionPlayer({
                     borderRadius: '4px',
                     alignSelf: 'flex-start',
                     border: `1.5px solid ${boxColor}`,
-                    boxShadow: '0 3px 10px rgba(0,0,0,0.85)',
+                    boxShadow: `0 4px 14px rgba(0,0,0,0.9), 0 0 8px ${boxColor}44`,
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    marginTop: '-22px',
+                    marginLeft: '-2px'
                   }}
                 >
                   {/* Defect Code/ID */}
-                  <span style={{
-                    backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                    color: meta.textColor || '#38bdf8',
-                    padding: '1px 6px',
-                    borderRadius: '3px',
-                    fontSize: '10px',
-                    fontFamily: 'monospace',
-                    fontWeight: '900',
-                    border: `1px solid ${boxColor}44`,
-                    letterSpacing: '0.04em'
-                  }}>
-                    {defect.pothole_id || formatDefectId(defect.track_id || 1, defect.class_name)}
+                  {!isZebra && (
+                    <span style={{
+                      backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                      color: meta.textColor || '#38bdf8',
+                      padding: '1px 6px',
+                      borderRadius: '3px',
+                      fontSize: '10px',
+                      fontFamily: 'monospace',
+                      fontWeight: '900',
+                      border: `1px solid ${boxColor}66`,
+                      letterSpacing: '0.05em'
+                    }}>
+                      {defectId}
+                    </span>
+                  )}
+
+                  {/* Defect Name — fully model-driven via defectMeta registry */}
+                  <span style={{ color: boxColor, display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '800' }}>
+                    {(meta.name || defect.class_name?.replace(/_/g, ' ')).toUpperCase()}
                   </span>
 
-                  {/* Defect Name & Code */}
-                  <span style={{ color: boxColor, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>{meta.icon}</span>
-                    <span>{meta.fullLabel}</span>
+                  <span style={{ color: '#cbd5e1', fontSize: '10px', fontWeight: '800' }}>
+                    • {confPct}%
                   </span>
 
-                  {/* Locked indicator tag */}
-                  <span style={{
-                    fontSize: '9px',
-                    backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                    color: '#4ade80',
-                    border: '1px solid rgba(34, 197, 94, 0.4)',
-                    padding: '0 4px',
-                    borderRadius: '2px',
-                    fontWeight: '800'
-                  }}>
-                    LOCKED
-                  </span>
-
-                  <span style={{ color: '#94a3b8', fontSize: '10px' }}>
-                    {(defect.conf * 100).toFixed(0)}%
-                  </span>
+                  {/* Target Locked beacon — shown when model has confirmed tracking */}
+                  {(defect.track_id || defect.pothole_id) && (
+                    <span style={{
+                      fontSize: '8.5px',
+                      backgroundColor: 'rgba(34, 197, 94, 0.22)',
+                      color: '#4ade80',
+                      border: '1px solid rgba(34, 197, 94, 0.5)',
+                      padding: '1px 5px',
+                      borderRadius: '3px',
+                      fontWeight: '900',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '3px'
+                    }}>
+                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#4ade80', display: 'inline-block' }} />
+                      LOCKED
+                    </span>
+                  )}
                 </div>
 
-                {/* Bottom Badge: Category, Physical Dimensions & Severity */}
+                {/* Bottom Badge: Contextual Sub-label */}
                 <div
                   style={{
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                    backdropFilter: 'blur(4px)',
+                    backgroundColor: 'rgba(9, 13, 22, 0.94)',
+                    backdropFilter: 'blur(8px)',
                     color: '#f8fafc',
                     fontSize: '10px',
                     fontWeight: '700',
-                    padding: '2px 7px',
+                    padding: '2px 8px',
                     borderRadius: '3px',
-                    alignSelf: 'flex-end',
-                    border: '1px solid #334155',
+                    alignSelf: isZebra || isHeavy ? 'flex-start' : 'flex-end',
+                    border: `1px solid ${boxColor}66`,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    marginBottom: '-20px',
+                    marginRight: isZebra || isHeavy ? '0' : '-2px',
+                    marginLeft: isZebra || isHeavy ? '-2px' : '0',
+                    boxShadow: '0 3px 10px rgba(0,0,0,0.85)',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <span style={{ color: '#94a3b8', fontSize: '9px' }}>{meta.category}</span>
-                  <span style={{ color: '#475569' }}>·</span>
-                  <span>{defect.wCm}cm × {defect.lCm}cm</span>
-                  <span style={{ color: '#475569' }}>·</span>
-                  <span style={{ color: sevColor, fontWeight: '800' }}>
-                    {defect.severity}
-                  </span>
+                  {/* Bottom Badge: model-driven category + physical dimensions + severity */}
+                  <>
+                    <span style={{ color: '#94a3b8', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {meta.category || 'Detection'}
+                    </span>
+                    <span style={{ color: '#475569' }}>•</span>
+                    <span style={{ color: '#e2e8f0', fontFamily: 'monospace', fontWeight: '800' }}>
+                      {defect.wCm > 100 ? `${(defect.wCm / 100).toFixed(1)}m` : `${defect.wCm}cm`} × {defect.lCm > 100 ? `${(defect.lCm / 100).toFixed(1)}m` : `${defect.lCm}cm`}
+                    </span>
+                    <span style={{ color: '#475569' }}>-</span>
+                    <span style={{ color: sevColor, fontWeight: '900', textTransform: 'uppercase', fontSize: '9px' }}>
+                      {defect.severity} Severity
+                    </span>
+                  </>
                 </div>
               </div>
             );
@@ -1703,22 +1893,25 @@ export default function RoadVideoInspectionPlayer({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            zIndex: 20
+            zIndex: 20,
+            flexWrap: 'wrap'
           }}
         >
+          {/* AI Inspection Status Beacon */}
           <div
             style={{
-              backgroundColor: 'rgba(15, 23, 42, 0.88)',
-              backdropFilter: 'blur(6px)',
+              backgroundColor: 'rgba(9, 14, 26, 0.90)',
+              backdropFilter: 'blur(8px)',
               color: '#38bdf8',
               fontSize: '11px',
-              fontWeight: '700',
+              fontWeight: '800',
               padding: '4px 10px',
               borderRadius: '6px',
-              border: '1px solid #334155',
+              border: '1px solid rgba(56, 189, 248, 0.35)',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)'
             }}
           >
             <span
@@ -1726,85 +1919,82 @@ export default function RoadVideoInspectionPlayer({
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                backgroundColor: isPlaying ? '#22c55e' : '#eab308'
+                backgroundColor: isPlaying ? '#22c55e' : '#eab308',
+                boxShadow: isPlaying ? '0 0 8px #22c55e' : '0 0 8px #eab308'
               }}
             />
-            <span>AI ROAD INSPECTION</span>
+            <span style={{ letterSpacing: '0.04em' }}>LIVE VISION ENGINE</span>
           </div>
 
+          {/* Video Filename */}
           <div
             style={{
               backgroundColor: 'rgba(15, 23, 42, 0.88)',
-              color: '#f8fafc',
+              color: '#e2e8f0',
               fontSize: '11px',
+              fontWeight: '600',
               padding: '4px 8px',
               borderRadius: '6px',
               border: '1px solid #334155',
-              maxWidth: '200px',
+              maxWidth: '180px',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap'
             }}
           >
-            {uploadedFile?.name || 'Municipal_Pavement_Survey.mp4'}
+            {uploadedFile?.name || videoSourceFilename || 'Municipal_Pavement_Survey.mp4'}
           </div>
 
+          {/* Dynamic Multi-Hazard Telemetry Counter Pill */}
           <div
             style={{
-              backgroundColor: 'rgba(15, 23, 42, 0.90)',
-              color: isAiScanning ? '#38bdf8' : (uniqueDefectsCount > 0 ? '#ef4444' : '#22c55e'),
+              backgroundColor: 'rgba(9, 14, 26, 0.94)',
+              backdropFilter: 'blur(10px)',
+              color: '#f8fafc',
               fontSize: '11px',
-              fontWeight: '700',
-              padding: '4px 10px',
+              fontWeight: '800',
+              padding: '4px 12px',
               borderRadius: '6px',
-              border: `1px solid ${isAiScanning ? '#0284c7' : (uniqueDefectsCount > 0 ? '#ef4444' : '#1e293b')}`,
+              border: `1.5px solid ${isAiScanning ? '#0284c7' : (uniqueDefectsCount > 0 ? (aiModelMode === 'multitask' ? '#ec4899' : '#ef4444') : '#22c55e')}`,
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              boxShadow: isAiScanning ? '0 0 10px rgba(2, 132, 199, 0.4)' : 'none'
+              gap: '8px',
+              boxShadow: isAiScanning ? '0 0 12px rgba(2, 132, 199, 0.5)' : (uniqueDefectsCount > 0 ? '0 0 12px rgba(236, 72, 153, 0.35)' : 'none')
             }}
           >
-            <Scan size={13} className={isAiScanning ? 'animate-spin' : ''} />
-            <span>
-              {isAiScanning
-                ? 'AI Analyzing Road Frames...'
-                : `${uniqueDefectsCount > 0 ? `${uniqueDefectsCount} Defect${uniqueDefectsCount === 1 ? '' : 's'} Found` : '0 Defects Found'}`}
-            </span>
+            <Scan size={13} className={isAiScanning ? 'animate-spin' : ''} color={aiModelMode === 'multitask' ? '#f472b6' : '#38bdf8'} />
+            {isAiScanning ? (
+              <span style={{ color: '#38bdf8' }}>AI Analyzing Video Pixels...</span>
+            ) : aiModelMode === 'multitask' ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontFamily: 'monospace' }}>
+                <span title="Potholes" style={{ color: '#ef4444' }}>🕳️ {categoryCounts.potholes} PTH</span>
+                <span style={{ color: '#475569' }}>|</span>
+                <span title="Fatigue & Longitudinal Cracks" style={{ color: '#f97316' }}>⚡ {categoryCounts.cracks} CRK</span>
+                <span style={{ color: '#475569' }}>|</span>
+                <span title="Zebra Crossings / Crosswalks" style={{ color: '#06b6d4' }}>🦓 {categoryCounts.zebras} ZBR</span>
+                <span style={{ color: '#475569' }}>|</span>
+                <span title="Traffic Vehicles (Buses, Cars, Bikes)" style={{ color: '#3b82f6' }}>🚗 {categoryCounts.vehicles} VEH</span>
+                <span style={{ color: '#475569' }}>|</span>
+                <span title="Vulnerable Road Users (Pedestrians)" style={{ color: '#10b981' }}>🚶 {categoryCounts.peds} VRU</span>
+              </div>
+            ) : (
+              <span>
+                {uniqueDefectsCount > 0 ? `${uniqueDefectsCount} Defect${uniqueDefectsCount === 1 ? '' : 's'} Verified` : '0 Defects Found'}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Top-Right Active Model HUD Badge & Fullscreen Exit Button */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            zIndex: 30
-          }}
-        >
+        {/* Fullscreen Exit Button */}
+        {isFullscreen && (
           <div
             style={{
-              backgroundColor: aiModelMode === 'potbot' ? 'rgba(124, 58, 237, 0.92)' : (aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.92)' : 'rgba(37, 99, 235, 0.92)'),
-              backdropFilter: 'blur(6px)',
-              color: '#ffffff',
-              fontSize: '11px',
-              fontWeight: '800',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: `1px solid ${aiModelMode === 'potbot' ? '#c084fc' : (aiModelMode === 'rdd2022' ? '#2dd4bf' : '#60a5fa')}`,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: `0 0 12px ${aiModelMode === 'potbot' ? 'rgba(124, 58, 237, 0.5)' : (aiModelMode === 'rdd2022' ? 'rgba(13, 148, 136, 0.5)' : 'rgba(37, 99, 235, 0.5)')}`
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              zIndex: 30
             }}
           >
-            <span>{aiModelMode === 'potbot' ? '🤖 PotBot YOLOv8m Dedicated Pothole' : (aiModelMode === 'rdd2022' ? '🌐 YOLOv8s CRDDC Road Damage' : '🎯 YOLOv8m 7-Class Road Anomaly')}</span>
-          </div>
-
-          {isFullscreen && (
             <button
               onClick={toggleFullscreen}
               title="Exit Fullscreen (Esc or F)"
@@ -1826,62 +2016,6 @@ export default function RoadVideoInspectionPlayer({
               <Minimize2 size={13} />
               <span>Exit Fullscreen</span>
             </button>
-          )}
-        </div>
-
-        {/* Real-Time High-Precision GPS Telemetry Overlay */}
-        {showGpsHud && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '16px',
-              left: '12px',
-              backgroundColor: 'rgba(7, 16, 38, 0.88)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(56, 189, 248, 0.35)',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px',
-              zIndex: 20,
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6)',
-              minWidth: '290px',
-              pointerEvents: 'none'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: '#10b981',
-                    boxShadow: '0 0 8px #10b981'
-                  }}
-                />
-                <span style={{ fontSize: '10px', fontWeight: '800', color: '#34d399', letterSpacing: '0.5px' }}>
-                  GPS: {currentGPS.fixType} ({currentGPS.accuracyM})
-                </span>
-              </div>
-              <span style={{ fontSize: '10px', color: '#94a3b8' }}>
-                SATS: {currentGPS.satellites} • HDOP: {currentGPS.hdop}
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontFamily: 'monospace' }}>
-              <span style={{ color: '#38bdf8', fontWeight: '800' }}>
-                📍 {currentGPS.latStr}° N, {currentGPS.lonStr}° E
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10px', color: '#cbd5e1' }}>
-              <span>🛣️ {currentGPS.corridor.split('(')[0]} (Ch {currentGPS.chainageM}m)</span>
-              <span style={{ color: '#facc15', fontWeight: '700' }}>
-                {currentGPS.speedKmh} km/h • {currentGPS.headingDeg}° W
-              </span>
-            </div>
           </div>
         )}
 
@@ -2099,112 +2233,7 @@ export default function RoadVideoInspectionPlayer({
               <span>Auto-Pause on Defect</span>
             </label>
 
-            {/* Re-Run AI Scan Button */}
-            <button
-              onClick={() => runAiVideoInspection(duration, null, null, true)}
-              disabled={isAiScanning}
-              title="Re-run YOLOv8 Road AI scan across keyframes"
-              style={{
-                backgroundColor: isAiScanning ? '#1e293b' : '#0369a1',
-                color: '#ffffff',
-                border: 'none',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '700',
-                cursor: isAiScanning ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <Sparkles size={13} className={isAiScanning ? 'animate-spin' : ''} />
-              <span>{isAiScanning ? 'Scanning...' : 'Re-Scan Video'}</span>
-            </button>
-
-            {/* Multi-Hazard Active Badge & Quick Log Frame Button */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {aiModelMode === 'potbot' ? (
-                <div
-                  title="PotBot AI dedicated deep pothole detection model (148.5MB)"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    backgroundColor: 'rgba(124, 58, 237, 0.2)',
-                    border: '1px solid rgba(192, 132, 252, 0.45)',
-                    padding: '5px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    color: '#c084fc',
-                    fontWeight: '700'
-                  }}
-                >
-                  <Sparkles size={12} color="#c084fc" />
-                  <span>🤖 PotBot Dedicated Pothole Active</span>
-                </div>
-              ) : aiModelMode === 'rdd2022' ? (
-                <div
-                  title="All 4 CRDDC defect classes scanned and classified simultaneously"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    backgroundColor: 'rgba(13, 148, 136, 0.2)',
-                    border: '1px solid rgba(45, 212, 191, 0.45)',
-                    padding: '5px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    color: '#2dd4bf',
-                    fontWeight: '700'
-                  }}
-                >
-                  <Sparkles size={12} color="#2dd4bf" />
-                  <span>🌐 CRDDC Road Damage Active</span>
-                </div>
-              ) : (
-                <div
-                  title="7-Class Road Anomaly & Safety Defect Model"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    backgroundColor: 'rgba(37, 99, 235, 0.18)',
-                    border: '1px solid rgba(56, 189, 248, 0.4)',
-                    padding: '5px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    color: '#38bdf8',
-                    fontWeight: '700'
-                  }}
-                >
-                  <span>🎯 7-Class Road Anomaly Active</span>
-                </div>
-              )}
-
-              {/* GPS Live Odometry Badge & Toggle */}
-              <button
-                type="button"
-                onClick={() => setShowGpsHud(!showGpsHud)}
-                title={showGpsHud ? 'GPS RTK Tracking Active (Click to Hide Overlay)' : 'GPS Tracking Inactive (Click to Show Overlay)'}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  backgroundColor: showGpsHud ? 'rgba(16, 185, 129, 0.18)' : '#1e293b',
-                  border: showGpsHud ? '1px solid #10b981' : '1px solid #334155',
-                  padding: '5px 10px',
-                  borderRadius: '6px',
-                  fontSize: '11px',
-                  color: showGpsHud ? '#34d399' : '#94a3b8',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                <Navigation size={12} color={showGpsHud ? '#34d399' : '#94a3b8'} />
-                <span>🛰️ RTK GPS ({currentGPS.accuracyM})</span>
-              </button>
-
               <button
                 onClick={() => captureAndCreateReport(true)}
                 disabled={isCapturingManual}
@@ -2213,7 +2242,7 @@ export default function RoadVideoInspectionPlayer({
                   backgroundColor: '#0284c7',
                   color: '#ffffff',
                   border: '1px solid #38bdf8',
-                  padding: '6px 14px',
+                  padding: '6px 16px',
                   borderRadius: '6px',
                   fontSize: '11px',
                   fontWeight: '800',
@@ -2226,28 +2255,6 @@ export default function RoadVideoInspectionPlayer({
               >
                 <FileText size={13} />
                 <span>📸 Capture &amp; View Report</span>
-              </button>
-
-              <button
-                onClick={captureAndLogCurrentFrame}
-                disabled={isCapturingManual}
-                title="Log current frame defect to Municipal GIS Inventory"
-                style={{
-                  backgroundColor: '#22c55e',
-                  color: '#090d16',
-                  border: 'none',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontSize: '11px',
-                  fontWeight: '800',
-                  cursor: isCapturingManual ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px'
-                }}
-              >
-                <Camera size={13} />
-                <span>Log Frame</span>
               </button>
             </div>
 
@@ -2299,7 +2306,7 @@ export default function RoadVideoInspectionPlayer({
         {/* ───────────────────────────────────────────────────────────────── */}
         <div className="defect-chips-scroll">
           <span style={{ fontSize: '10px', color: '#64748b', whiteSpace: 'nowrap', fontWeight: '800', textTransform: 'uppercase' }}>
-            Identified Road Defects:
+            {aiModelMode === 'multitask' ? 'Multi-Task Hazards & Features:' : 'Identified Road Defects:'}
           </span>
 
           {uniqueDefectsList.length === 0 ? (

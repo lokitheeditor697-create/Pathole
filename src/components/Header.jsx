@@ -19,7 +19,13 @@ import {
   Lock,
   Unlock,
   X,
-  KeyRound
+  KeyRound,
+  AlertCircle,
+  Zap,
+  Bot,
+  Crosshair,
+  Globe,
+  Shield
 } from 'lucide-react';
 import { API_BASE } from '../config';
 
@@ -276,16 +282,6 @@ export default function Header({
               <span>{adminUnlocked ? 'ADMIN' : 'LOCK'}</span>
             </button>
 
-            {/* DB Backup */}
-            <a
-              href={`${API_BASE}/api/db/export`}
-              download="municipal_pavement_db.json"
-              className="header-action-icon-btn hide-on-mobile"
-              title="Download Persistent JSON DB Backup"
-            >
-              <HardDrive size={13} />
-            </a>
-
             {/* Reset Database — requires admin unlock */}
             {onResetDB && (
               <button
@@ -362,149 +358,64 @@ export default function Header({
           style={{
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: '#070f24',
-            border: '1px solid #1e293b',
-            borderRadius: '6px',
-            padding: '2px 4px',
-            gap: '3px'
+            backgroundColor: '#080f1e',
+            border: '1px solid #1a2540',
+            borderRadius: '7px',
+            padding: '3px 4px',
+            gap: '2px'
           }}
         >
-          <span style={{ fontSize: '9px', color: '#64748b', fontWeight: '800', letterSpacing: '0.05em', padding: '0 4px', textTransform: 'uppercase' }}>
-            Active AI:
+          <span style={{ fontSize: '9px', color: '#475569', fontWeight: '700', letterSpacing: '0.06em', padding: '0 6px', textTransform: 'uppercase' }}>
+            Model
           </span>
 
-          <button
-            onClick={() => setAiModelMode('roadguard')}
-            title="Road Doctor (RoadGuard 9-Class Pavement Model) — Minor/Moderate/Major Potholes, Cracking & Edge Breaks"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: aiModelMode === 'roadguard' ? '1px solid rgba(34, 197, 94, 0.5)' : '1px solid transparent',
-              backgroundColor: aiModelMode === 'roadguard' ? '#16a34a' : 'transparent',
-              color: aiModelMode === 'roadguard' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'roadguard' ? '0 0 8px rgba(34, 197, 94, 0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {aiModelMode === 'roadguard' && (
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
-            )}
-            <span>🛡️ Road Doctor</span>
-            <span style={{
-              fontSize: '9px',
-              backgroundColor: aiModelMode === 'roadguard' ? 'rgba(255,255,255,0.2)' : 'rgba(51,65,85,0.5)',
-              padding: '1px 4px',
-              borderRadius: '3px'
-            }}>
-              9-Class
-            </span>
-          </button>
-
-          <button
-            onClick={() => setAiModelMode('pothole')}
-            title="Targeted Road Anomaly & Pothole Model (YOLOv8m) — High Accuracy Multi-Class"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: aiModelMode === 'pothole' ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid transparent',
-              backgroundColor: aiModelMode === 'pothole' ? '#0284c7' : 'transparent',
-              color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'pothole' ? '0 0 8px rgba(2, 132, 199, 0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {aiModelMode === 'pothole' && (
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38bdf8', boxShadow: '0 0 6px #38bdf8' }} />
-            )}
-            <span>🎯 7-Class Anomaly</span>
-            <span style={{
-              fontSize: '9px',
-              backgroundColor: aiModelMode === 'pothole' ? 'rgba(255,255,255,0.2)' : 'rgba(51,65,85,0.5)',
-              padding: '1px 4px',
-              borderRadius: '3px'
-            }}>
-              YOLOv8m
-            </span>
-          </button>
-
-          <button
-            onClick={() => setAiModelMode('rdd2022')}
-            title="CRDDC Road Damage Model (Longitudinal, Transverse, Alligator Cracks & Potholes)"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: aiModelMode === 'rdd2022' ? '1px solid rgba(45, 212, 191, 0.5)' : '1px solid transparent',
-              backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
-              color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'rdd2022' ? '0 0 8px rgba(13, 148, 136, 0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {aiModelMode === 'rdd2022' && (
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2dd4bf', boxShadow: '0 0 6px #2dd4bf' }} />
-            )}
-            <span>🌐 CRDDC Road Damage</span>
-            <span style={{
-              fontSize: '9px',
-              backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(255,255,255,0.2)' : 'rgba(51,65,85,0.5)',
-              padding: '1px 4px',
-              borderRadius: '3px'
-            }}>
-              YOLOv8s
-            </span>
-          </button>
-
-          <button
-            onClick={() => setAiModelMode('potbot')}
-            title="PotBot AI Dedicated Deep Pothole Specialist (YOLOv8m • 148.5MB)"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: aiModelMode === 'potbot' ? '1px solid rgba(192, 132, 252, 0.5)' : '1px solid transparent',
-              backgroundColor: aiModelMode === 'potbot' ? '#7c3aed' : 'transparent',
-              color: aiModelMode === 'potbot' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'potbot' ? '0 0 8px rgba(124, 58, 237, 0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {aiModelMode === 'potbot' && (
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#c084fc', boxShadow: '0 0 6px #c084fc' }} />
-            )}
-            <span>🤖 PotBot Pothole</span>
-            <span style={{
-              fontSize: '9px',
-              backgroundColor: aiModelMode === 'potbot' ? 'rgba(255,255,255,0.2)' : 'rgba(51,65,85,0.5)',
-              padding: '1px 4px',
-              borderRadius: '3px'
-            }}>
-              148MB
-            </span>
-          </button>
+          {[
+            { mode: 'multitask', icon: Zap, label: 'Multi-Task', badge: 'SIH', color: '#a78bfa' },
+            { mode: 'roadguard', icon: Shield, label: 'Road Doctor', badge: '9-Class', color: '#4ade80' },
+            { mode: 'pothole', icon: Crosshair, label: '7-Class', badge: 'YOLOv8m', color: '#38bdf8' },
+            { mode: 'rdd2022', icon: Globe, label: 'CRDDC', badge: 'YOLOv8s', color: '#2dd4bf' },
+            { mode: 'potbot', icon: Bot, label: 'PotBot', badge: '148MB', color: '#c084fc' },
+          ].map(({ mode, icon: Icon, label, badge, color }) => {
+            const isActive = aiModelMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => setAiModelMode(mode)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '5px 9px',
+                  borderRadius: '5px',
+                  fontSize: '11px',
+                  fontWeight: isActive ? '700' : '500',
+                  cursor: 'pointer',
+                  border: isActive ? `1px solid rgba(255,255,255,0.1)` : '1px solid transparent',
+                  borderLeft: isActive ? `3px solid ${color}` : '3px solid transparent',
+                  background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
+                  color: isActive ? '#f1f5f9' : '#64748b',
+                  transition: 'all 0.15s ease',
+                  boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,0.07)' : 'none',
+                }}
+              >
+                {isActive && (
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: color, flexShrink: 0 }} />
+                )}
+                <Icon size={12} color={isActive ? color : '#475569'} />
+                <span>{label}</span>
+                <span style={{
+                  fontSize: '9px',
+                  backgroundColor: isActive ? 'rgba(255,255,255,0.1)' : '#0f1929',
+                  color: isActive ? '#cbd5e1' : '#475569',
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  fontWeight: '600'
+                }}>{badge}</span>
+              </button>
+            );
+          })}
         </div>
+
       </div>
     </header>
 
@@ -517,12 +428,12 @@ export default function Header({
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
           <div style={{
-            background: 'linear-gradient(135deg, #0c1628 0%, #111827 100%)',
-            border: '1px solid rgba(56, 189, 248, 0.25)',
+            background: '#0d1628',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '16px',
             padding: '32px',
             width: '360px',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 40px rgba(56,189,248,0.08)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
           }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -571,8 +482,9 @@ export default function Header({
                 </button>
               </div>
               {adminError && (
-                <div style={{ marginTop: '8px', fontSize: '11px', color: '#f87171', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  ⚠️ {adminError}
+                <div style={{ marginTop: '8px', fontSize: '11px', color: '#f87171', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <AlertCircle size={12} />
+                  {adminError}
                 </div>
               )}
             </div>
@@ -580,19 +492,21 @@ export default function Header({
             {/* Buttons */}
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => { setShowAdminModal(false); setAdminError(''); setAdminKeyInput(''); }}
-                style={{ flex: 1, padding: '9px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#94a3b8', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '9px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#94a3b8', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
                 Cancel
               </button>
               <button onClick={handleAdminUnlock}
-                style={{ flex: 2, padding: '9px', background: 'linear-gradient(135deg, #0284c7, #0369a1)', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(2,132,199,0.3)' }}>
-                🔓 Authenticate
+                style={{ flex: 2, padding: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: '#0284c7', border: '1px solid rgba(56,189,248,0.25)', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 8px rgba(2,132,199,0.25), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+                <Unlock size={13} />
+                Authenticate
               </button>
             </div>
 
             {/* Security Notice */}
-            <div style={{ marginTop: '16px', padding: '10px', background: 'rgba(16, 185, 129, 0.06)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.15)' }}>
-              <div style={{ fontSize: '10px', color: '#6ee7b7', lineHeight: '1.5' }}>
-                🛡️ <strong>Security Notice:</strong> Admin sessions are scoped to this browser tab only and are automatically cleared on tab close.
+            <div style={{ marginTop: '16px', padding: '10px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.12)' }}>
+              <div style={{ fontSize: '10px', color: '#6ee7b7', lineHeight: '1.5', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ShieldCheck size={11} style={{ flexShrink: 0 }} />
+                <span><strong>Security Notice:</strong> Admin sessions are scoped to this browser tab only and are automatically cleared on tab close.</span>
               </div>
             </div>
           </div>

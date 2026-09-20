@@ -57,11 +57,14 @@ export default function LiveMonitoringView({
     latitude: 13.0743,
     longitude: 80.2108,
     edge_device: 'NVIDIA Jetson Orin Nano',
-    camera: 'Front Dashcam 1080p 30fps',
     buffer_queue: 0
   };
 
-  const recentDetections = defects.slice(0, 10);
+  const isVehicleRecord = (d) => {
+    const c = (d.class_name || d.defect_type || '').toLowerCase();
+    return c.includes('vehicle') || c.includes('car') || c.includes('bus') || c.includes('truck') || c.includes('two_wheeler');
+  };
+  const recentDetections = defects.filter(d => !isVehicleRecord(d)).slice(0, 10);
   const [verificationTargets, setVerificationTargets] = useState([]);
 
   useEffect(() => {
@@ -931,7 +934,13 @@ export default function LiveMonitoringView({
           }}>
             {recentDetections.map((defect) => {
               const isMulti = defect.is_multi_bus_verified;
-              const sevColor =
+              const isZebra = defect.class_name?.includes('zebra') || defect.class_name?.includes('crosswalk');
+              const isHeavy = defect.class_name?.includes('heavy') || defect.class_name?.includes('bus');
+              const isLight = defect.class_name?.includes('light') || defect.class_name?.includes('car');
+              const isTwoWheeler = defect.class_name?.includes('two_wheeler');
+              const isPed = defect.class_name?.includes('pedestrian');
+
+              let sevColor =
                 defect.severity === 'Critical'
                   ? '#ef4444'
                   : defect.severity === 'High'
@@ -940,6 +949,14 @@ export default function LiveMonitoringView({
                   ? '#eab308'
                   : '#3b82f6';
 
+              if (isZebra) sevColor = '#06b6d4';
+              else if (isHeavy) sevColor = '#3b82f6';
+              else if (isLight) sevColor = '#38bdf8';
+              else if (isTwoWheeler) sevColor = '#a855f7';
+              else if (isPed) sevColor = '#f59e0b';
+
+              const timeFormatted = new Date(defect.last_detected).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
               return (
                 <div
                   key={defect.id}
@@ -947,7 +964,7 @@ export default function LiveMonitoringView({
                   style={{
                     backgroundColor: '#1e293b',
                     borderRadius: '8px',
-                    border: `1px solid ${isMulti ? 'rgba(34, 197, 94, 0.4)' : '#334155'}`,
+                    border: `1px solid ${isMulti ? 'rgba(34, 197, 94, 0.4)' : (isZebra ? 'rgba(6, 182, 212, 0.4)' : (isHeavy || isLight ? 'rgba(56, 189, 248, 0.4)' : '#334155'))}`,
                     padding: '10px 12px',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
@@ -956,7 +973,7 @@ export default function LiveMonitoringView({
                     gap: '6px'
                   }}
                 >
-                  {/* Line 1: Class + Severity + Multi-bus pill */}
+                  {/* Line 1: Class + Category Pill + Status Pill */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{
@@ -967,7 +984,7 @@ export default function LiveMonitoringView({
                         flexShrink: 0
                       }} />
                       <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
-                        {defect.class_name.replace('_', ' ').toUpperCase()}
+                        {defect.class_name?.replace(/_/g, ' ').toUpperCase()}
                       </span>
                       <span style={{
                         fontSize: '10px',
@@ -982,7 +999,19 @@ export default function LiveMonitoringView({
                       </span>
                     </div>
 
-                    {isMulti ? (
+                    {(isHeavy || isLight || isTwoWheeler || isPed || isZebra) ? (
+                      <span style={{
+                        fontSize: '10px',
+                        backgroundColor: `${sevColor}22`,
+                        color: sevColor,
+                        border: `1px solid ${sevColor}66`,
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontWeight: '700'
+                      }}>
+                        DETECTED
+                      </span>
+                    ) : isMulti ? (
                       <span style={{
                         fontSize: '10px',
                         backgroundColor: 'rgba(34, 197, 94, 0.2)',
@@ -1012,18 +1041,26 @@ export default function LiveMonitoringView({
                     )}
                   </div>
 
-                  {/* Line 2: Segment + Physical Dimension */}
+                  {/* Line 2: Segment / Context Info + Physical Dimension — fully model-driven */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <MapPin size={12} color="#38bdf8" />
-                      <span>{defect.segment_id} (Chainage: {defect.exact_chainage_m}m)</span>
+                      <span>
+                        {defect.segment_id
+                          ? `${defect.segment_id} (Chainage: ${defect.exact_chainage_m ?? '--'}m)`
+                          : `Chainage: ${defect.exact_chainage_m ?? '--'}m`}
+                      </span>
                     </div>
                     <span style={{ color: '#f8fafc', fontWeight: '600' }}>
-                      {defect.bbox.estimated_physical_width_cm}cm × {defect.bbox.estimated_physical_length_cm}cm
+                      {defect.bbox?.estimated_physical_width_cm != null && defect.bbox?.estimated_physical_length_cm != null
+                        ? `${defect.bbox.estimated_physical_width_cm}cm × ${defect.bbox.estimated_physical_length_cm}cm`
+                        : defect.wCm != null
+                          ? `${defect.wCm}cm × ${defect.lCm}cm`
+                          : '--'}
                     </span>
                   </div>
 
-                  {/* Line 3: Bus IDs + Confidence + Timestamp */}
+                  {/* Line 3: Reporting Entity + Confidence + Timestamp — fully model-driven */}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -1034,9 +1071,14 @@ export default function LiveMonitoringView({
                     paddingTop: '6px',
                     marginTop: '2px'
                   }}>
-                    <span>Reporting: <strong style={{ color: '#cbd5e1' }}>{defect.bus_ids}</strong></span>
+                    <span>
+                      Reporting:{' '}
+                      <strong style={{ color: '#cbd5e1' }}>
+                        {defect.bus_ids || defect.class_name?.replace(/_/g, ' ')}
+                      </strong>
+                    </span>
                     <span>Conf: <strong style={{ color: '#38bdf8' }}>{(defect.confidence * 100).toFixed(1)}%</strong></span>
-                    <span>{new Date(defect.last_detected).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span>{timeFormatted}</span>
                   </div>
                 </div>
               );

@@ -1824,6 +1824,7 @@ app.get("/api/sample-videos", (req: Request, res: Response) => {
       const stats = fs.statSync(filePath);
       let title = f.replace(".mp4", "").replace(/_/g, " ");
       title = title.charAt(0).toUpperCase() + title.slice(1);
+      if (f === "multitask_road_survey.mp4") title = "Option B Multi-Task AI Benchmark (Potholes, Cracks, Crosswalk & Traffic)";
       if (f === "real_dashcam.mp4") title = "Dashcam Road Survey (Real Potholes Detected)";
       if (f === "sample_road.mp4") title = "Urban Asphalt Inspection";
       if (f === "clean_highway.mp4") title = "Express Corridor (Zero Distress)";
@@ -1959,6 +1960,12 @@ function resolveModelPath(requestedMode?: string): { modelPath: string; modelNam
   if (requestedMode === "pothole" || requestedMode === "7class" || requestedMode === "anomaly") {
     const activePothole = fs.existsSync(defaultModelPath) ? defaultModelPath : (fs.existsSync(bestModelPath) ? bestModelPath : activeDefaultPath);
     return { modelPath: activePothole, modelName: "YOLOv8m 7-Class Road Anomaly Model" };
+  }
+
+  if (requestedMode === "multitask" || requestedMode === "option_b" || requestedMode === "multitask_road_ai") {
+    const multitaskModelPath = path.join(process.cwd(), "detector", "multitask_road_ai.pt");
+    const active = fs.existsSync(multitaskModelPath) ? multitaskModelPath : activeDefaultPath;
+    return { modelPath: active, modelName: "Option B: Multi-Task Road, Crosswalk & Traffic AI" };
   }
 
   return { modelPath: activeDefaultPath, modelName: "YOLOv8m 7-Class Road Anomaly Model" };
@@ -2315,11 +2322,24 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
       waterlogging: "WLOG",
       speed_bump: "BMP",
       "speed-bump": "BMP",
+      zebra_crossing: "ZBR",
+      "zebra-crossing": "ZBR",
+      crosswalk: "ZBR",
+      heavy_vehicle: "TRF",
+      "heavy-vehicle": "TRF",
+      light_vehicle: "TRF",
+      "light-vehicle": "TRF",
+      two_wheeler: "TRF",
+      "two-wheeler": "TRF",
+      pedestrian: "PED",
     };
 
-    const buildPayload = (moments: any[], uniqueDefectsList: any[]) => {
+    const buildPayload = (moments: any[], uniqueDefectsList: any[], trafficSummary?: any, trafficTimeline?: any[]) => {
       const cleanFileId = cleanName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
-      const generatedDefects = uniqueDefectsList.map((m: any, idx: number) => {
+      // Vehicles are strictly traffic flow metrics, NOT road surface defects
+      const isVehicle = (c: string) => ['vehicle', 'car', 'bus', 'truck', 'two_wheeler', 'light_vehicle', 'heavy_vehicle'].some(k => (c || '').toLowerCase().includes(k));
+      const roadDefectsOnly = uniqueDefectsList.filter((m: any) => !isVehicle(m.class_name));
+      const generatedDefects = roadDefectsOnly.map((m: any, idx: number) => {
         const trackNum = m.track_id !== undefined && m.track_id !== null ? m.track_id : idx + 1;
         const prefix = CLASS_PREFIXES[m.class_name] || "DST";
         const potholeId = m.pothole_id || `${prefix}-#${String(trackNum).padStart(2, '0')}`;
@@ -2361,6 +2381,8 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
             pixel_area: (m.bbox?.w || 120) * (m.bbox?.h || 65),
             estimated_physical_width_cm: m.wCm || 50,
             estimated_physical_length_cm: m.lCm || 40,
+            video_w: m.bbox?.video_w || 1280,
+            video_h: m.bbox?.video_h || 720
           },
           first_detected: existing ? existing.first_detected : defTimestamp,
           last_detected: defTimestamp,
@@ -2393,12 +2415,29 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
         status: "Completed"
       });
 
+      const enrichedMoments = moments.map((m: any, idx: number) => {
+        const trackNum = m.track_id !== undefined && m.track_id !== null ? m.track_id : idx + 1;
+        const prefix = CLASS_PREFIXES[m.class_name] || "DST";
+        const potholeId = m.pothole_id || `${prefix}-#${String(trackNum).padStart(2, '0')}`;
+        return {
+          ...m,
+          pothole_id: potholeId
+        };
+      });
+
       const scanPayload = {
         status: "success",
         file_name,
         total_defects: generatedDefects.length,
         defects: generatedDefects,
-        moments,
+        moments: enrichedMoments,
+        traffic_summary: trafficSummary || {
+          overall_traffic_level: "No Traffic",
+          peak_traffic_level: "No Traffic",
+          avg_vehicle_count: 0,
+          peak_vehicle_count: 0
+        },
+        traffic_timeline: trafficTimeline || [],
         inspection,
         model: modelName,
         model_mode,
@@ -2415,11 +2454,13 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
 
     // 100% Genuine Real-Time YOLOv8 Neural Network Video Inference
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
-      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "roadguard"}"`;
+      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.38 "${model_mode || "multitask"}"`;
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
       const child = exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 180000, env }, (error, stdout, stderr) => {
         let moments: any[] = [];
         let uniqueDefectsList: any[] = [];
+        let trafficSummary: any = null;
+        let trafficTimeline: any[] = [];
         if (!error && stdout) {
           try {
             const parsed = extractJsonFromOutput(stdout);
@@ -2431,9 +2472,12 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
             }
             if (Array.isArray(parsed.moments)) moments = parsed.moments;
             if (Array.isArray(parsed.unique_defects)) uniqueDefectsList = parsed.unique_defects;
+            if (parsed.traffic_summary) trafficSummary = parsed.traffic_summary;
+            if (Array.isArray(parsed.traffic_timeline)) trafficTimeline = parsed.traffic_timeline;
+
             // Return actual live YOLOv8 model output directly
             if (!res.writableEnded) {
-              return res.status(200).json(buildPayload(moments, uniqueDefectsList));
+              return res.status(200).json(buildPayload(moments, uniqueDefectsList, trafficSummary, trafficTimeline));
             }
           } catch (e: any) {
             console.error("Failed to parse YOLO output:", e);

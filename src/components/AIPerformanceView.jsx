@@ -9,7 +9,7 @@ import {
   Legend,
   CartesianGrid
 } from 'recharts';
-import { Cpu, CheckCircle2, Zap, Layers, Activity, ShieldCheck } from 'lucide-react';
+import { Cpu, CheckCircle2, Zap, Layers, Activity, ShieldCheck, Bot, Crosshair, Globe } from 'lucide-react';
 import { API_BASE } from '../config';
 
 const POTHOLE_MODEL_METRICS = {
@@ -168,100 +168,55 @@ export default function AIPerformanceView({
         {/* Interactive Model Toggle */}
         <div style={{
           display: 'flex',
-          backgroundColor: '#020617',
-          border: '1px solid #334155',
+          backgroundColor: '#080f1e',
+          border: '1px solid #1a2540',
           borderRadius: '8px',
           padding: '3px',
-          gap: '4px',
+          gap: '2px',
           flexWrap: 'wrap'
         }}>
-          <button
-            onClick={() => setAiModelMode('pothole')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: 'none',
-              backgroundColor: aiModelMode === 'pothole' ? '#2563eb' : 'transparent',
-              color: aiModelMode === 'pothole' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'pothole' ? '0 0 12px rgba(37,99,235,0.4)' : 'none',
-              transition: 'all 0.15s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <span>🎯 7-Class Road Anomaly</span>
-            <span style={{
-              fontSize: '10px',
-              padding: '1px 6px',
-              borderRadius: '4px',
-              backgroundColor: aiModelMode === 'pothole' ? 'rgba(255,255,255,0.2)' : '#1e293b'
-            }}>
-              YOLOv8m
-            </span>
-          </button>
-
-          <button
-            onClick={() => setAiModelMode('rdd2022')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: 'none',
-              backgroundColor: aiModelMode === 'rdd2022' ? '#0d9488' : 'transparent',
-              color: aiModelMode === 'rdd2022' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'rdd2022' ? '0 0 12px rgba(13,148,136,0.4)' : 'none',
-              transition: 'all 0.15s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <span>🌐 CRDDC Road Damage</span>
-            <span style={{
-              fontSize: '10px',
-              padding: '1px 6px',
-              borderRadius: '4px',
-              backgroundColor: aiModelMode === 'rdd2022' ? 'rgba(255,255,255,0.2)' : '#1e293b'
-            }}>
-              YOLOv8s
-            </span>
-          </button>
-
-          <button
-            onClick={() => setAiModelMode('potbot')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              border: 'none',
-              backgroundColor: aiModelMode === 'potbot' ? '#7c3aed' : 'transparent',
-              color: aiModelMode === 'potbot' ? '#ffffff' : '#94a3b8',
-              boxShadow: aiModelMode === 'potbot' ? '0 0 12px rgba(124,58,237,0.4)' : 'none',
-              transition: 'all 0.15s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <span>🤖 PotBot Pothole</span>
-            <span style={{
-              fontSize: '10px',
-              padding: '1px 6px',
-              borderRadius: '4px',
-              backgroundColor: aiModelMode === 'potbot' ? 'rgba(255,255,255,0.2)' : '#1e293b'
-            }}>
-              148.5MB
-            </span>
-          </button>
+          {[
+            { mode: 'pothole', icon: Crosshair, label: '7-Class Road Anomaly', badge: 'YOLOv8m', color: '#38bdf8' },
+            { mode: 'rdd2022', icon: Globe, label: 'CRDDC Road Damage', badge: 'YOLOv8s', color: '#2dd4bf' },
+            { mode: 'potbot', icon: Bot, label: 'PotBot Pothole', badge: '148MB', color: '#c084fc' },
+          ].map(({ mode, icon: Icon, label, badge, color }) => {
+            const isActive = aiModelMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => setAiModelMode(mode)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: isActive ? '700' : '500',
+                  cursor: 'pointer',
+                  border: isActive ? `1px solid rgba(255,255,255,0.1)` : '1px solid transparent',
+                  borderLeft: isActive ? `3px solid ${color}` : '3px solid transparent',
+                  background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
+                  color: isActive ? '#f1f5f9' : '#64748b',
+                  transition: 'all 0.15s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,0.07)' : 'none',
+                }}
+              >
+                <Icon size={14} color={isActive ? color : '#475569'} />
+                <span>{label}</span>
+                <span style={{
+                  fontSize: '10px',
+                  padding: '1px 6px',
+                  borderRadius: '4px',
+                  backgroundColor: isActive ? 'rgba(255,255,255,0.1)' : '#0f1929',
+                  color: isActive ? '#cbd5e1' : '#475569',
+                  fontWeight: '600'
+                }}>{badge}</span>
+              </button>
+            );
+          })}
         </div>
+
       </div>
 
       {/* Global Metrics KPI Row */}
@@ -427,11 +382,26 @@ export default function AIPerformanceView({
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', color: '#cbd5e1', textAlign: 'left' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #334155', backgroundColor: '#020617' }}>
-                <th style={{ padding: '10px 12px', color: '#94a3b8' }}>Evaluation Metric</th>
-                <th style={{ padding: '10px 12px', color: '#38bdf8' }}>🎯 7-Class Road Anomaly</th>
-                <th style={{ padding: '10px 12px', color: '#2dd4bf' }}>🌐 CRDDC Road Damage</th>
-                <th style={{ padding: '10px 12px', color: '#c084fc' }}>🤖 PotBot Dedicated</th>
+              <tr style={{ borderBottom: '1px solid #1e2d45', backgroundColor: '#080f1e' }}>
+                <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Evaluation Metric</th>
+                <th style={{ padding: '10px 12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8' }}>
+                    <Crosshair size={12} />
+                    <span style={{ fontSize: '12px', fontWeight: '700' }}>7-Class Road Anomaly</span>
+                  </div>
+                </th>
+                <th style={{ padding: '10px 12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2dd4bf' }}>
+                    <Globe size={12} />
+                    <span style={{ fontSize: '12px', fontWeight: '700' }}>CRDDC Road Damage</span>
+                  </div>
+                </th>
+                <th style={{ padding: '10px 12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c084fc' }}>
+                    <Bot size={12} />
+                    <span style={{ fontSize: '12px', fontWeight: '700' }}>PotBot Dedicated</span>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>

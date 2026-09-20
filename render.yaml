@@ -16,3 +16,5 @@ services:
         value: "0"
       - key: ADMIN_SECRET_KEY
         value: "gcc2026"
+      - key: HF_MODEL_REPO
+        value: "Logesshhh/road-anomaly-pothole-yolov8m"
