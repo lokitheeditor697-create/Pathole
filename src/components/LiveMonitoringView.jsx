@@ -221,9 +221,11 @@ export default function LiveMonitoringView({
           </span>
           <span style={{ color: '#64748b', fontSize: '13px' }}>|</span>
           <span style={{ color: '#94a3b8', fontSize: '12px' }}>
-            Model: <strong style={{ color: aiModelMode === 'potbot' ? '#c084fc' : (aiModelMode === 'rdd2022' ? '#2dd4bf' : '#38bdf8') }}>
-              {aiModelMode === 'potbot' ? 'PotBot-YOLOv8m' : (aiModelMode === 'rdd2022' ? 'YOLOv8s-CRDDC' : 'YOLOv8m-7Class')}
-            </strong> ({aiModelMode === 'potbot' ? '14.2ms · 70 FPS' : (aiModelMode === 'rdd2022' ? '9.8ms · 102 FPS' : '12.0ms · 83 FPS')})
+            Model: <strong style={{
+              color: aiModelMode === 'multitask' ? '#a78bfa' : (aiModelMode === 'potbot' ? '#c084fc' : (aiModelMode === 'roadguard' ? '#4ade80' : (aiModelMode === 'rdd2022' ? '#2dd4bf' : '#38bdf8')))
+            }}>
+              {aiModelMode === 'multitask' ? 'YOLOv8m-MultiTask' : (aiModelMode === 'potbot' ? 'PotBot-YOLOv8m' : (aiModelMode === 'roadguard' ? 'RoadGuard-9Class' : (aiModelMode === 'rdd2022' ? 'YOLOv8s-CRDDC' : 'YOLOv8m-7Class')))}
+            </strong> ({aiModelMode === 'potbot' ? '14.2ms · 70 FPS' : (aiModelMode === 'rdd2022' ? '9.8ms · 102 FPS' : (aiModelMode === 'roadguard' ? '11.5ms · 87 FPS' : '12.0ms · 83 FPS'))})
           </span>
         </div>
 

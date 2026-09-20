@@ -1967,15 +1967,15 @@ export default function RoadVideoInspectionPlayer({
               <span style={{ color: '#38bdf8' }}>AI Analyzing Video Pixels...</span>
             ) : aiModelMode === 'multitask' ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontFamily: 'monospace' }}>
-                <span title="Potholes" style={{ color: '#ef4444' }}>🕳️ {categoryCounts.potholes} PTH</span>
+                <span title="Potholes" style={{ color: '#ef4444', fontWeight: '700' }}>{categoryCounts.potholes} PTH</span>
                 <span style={{ color: '#475569' }}>|</span>
-                <span title="Fatigue & Longitudinal Cracks" style={{ color: '#f97316' }}>⚡ {categoryCounts.cracks} CRK</span>
+                <span title="Fatigue & Longitudinal Cracks" style={{ color: '#f97316', fontWeight: '700' }}>{categoryCounts.cracks} CRK</span>
                 <span style={{ color: '#475569' }}>|</span>
-                <span title="Zebra Crossings / Crosswalks" style={{ color: '#06b6d4' }}>🦓 {categoryCounts.zebras} ZBR</span>
+                <span title="Zebra Crossings / Crosswalks" style={{ color: '#06b6d4', fontWeight: '700' }}>{categoryCounts.zebras} ZBR</span>
                 <span style={{ color: '#475569' }}>|</span>
-                <span title="Traffic Vehicles (Buses, Cars, Bikes)" style={{ color: '#3b82f6' }}>🚗 {categoryCounts.vehicles} VEH</span>
+                <span title="Traffic Vehicles (Buses, Cars, Bikes)" style={{ color: '#3b82f6', fontWeight: '700' }}>{categoryCounts.vehicles} VEH</span>
                 <span style={{ color: '#475569' }}>|</span>
-                <span title="Vulnerable Road Users (Pedestrians)" style={{ color: '#10b981' }}>🚶 {categoryCounts.peds} VRU</span>
+                <span title="Vulnerable Road Users (Pedestrians)" style={{ color: '#10b981', fontWeight: '700' }}>{categoryCounts.peds} VRU</span>
               </div>
             ) : (
               <span>
