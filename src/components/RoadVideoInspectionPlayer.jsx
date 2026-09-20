@@ -406,11 +406,11 @@ export default function RoadVideoInspectionPlayer({
         }
 
         if (Array.isArray(data.moments) && data.moments.length > 0) {
-          const isVehicleMoment = (m) => {
+          const isVehicleOrPedMoment = (m) => {
             const c = (m.class_name || '').toLowerCase();
-            return c.includes('vehicle') || c.includes('two_wheeler') || c.includes('car') || c.includes('bus') || c.includes('truck');
+            return c.includes('vehicle') || c.includes('two_wheeler') || c.includes('car') || c.includes('bus') || c.includes('truck') || c.includes('pedestrian') || c.includes('person');
           };
-          const eligibleMoments = data.moments.filter((m) => !isVehicleMoment(m));
+          const eligibleMoments = data.moments.filter((m) => !isVehicleOrPedMoment(m));
           const mappedMoments = eligibleMoments.map((m, idx) => {
             const meta = getDefectMeta(m.class_name);
             const formattedId = m.pothole_id || formatDefectId(m.track_id || idx + 1, m.class_name);
@@ -728,14 +728,14 @@ export default function RoadVideoInspectionPlayer({
       return;
     }
 
-    // Filter detections for current video playhead window (±0.35s) — exclude vehicles (used strictly for traffic flow)
+    // Filter detections for current video playhead window (±0.35s) — exclude vehicles & pedestrians
     const rawMatches = detectedMoments.filter((m) => {
       if (Math.abs(m.time - cur) > 0.35) return false;
       const isCrack = (m.class_name || '').toLowerCase().includes('crack');
-      const minConf = isCrack ? 0.28 : 0.38;
+      const minConf = isCrack ? 0.25 : 0.35;
       if (m.conf !== undefined && m.conf < minConf) return false;
       const c = (m.class_name || '').toLowerCase();
-      return !c.includes('vehicle') && !c.includes('two_wheeler');
+      return !c.includes('vehicle') && !c.includes('two_wheeler') && !c.includes('pedestrian') && !c.includes('person');
     });
 
     // 1. Group by track_id: keep ONLY the frame detection closest in time to current playback head
@@ -1978,10 +1978,6 @@ export default function RoadVideoInspectionPlayer({
                 <span title="Fatigue & Longitudinal Cracks" style={{ color: '#f97316', fontWeight: '700' }}>{categoryCounts.cracks} CRK</span>
                 <span style={{ color: '#475569' }}>|</span>
                 <span title="Zebra Crossings / Crosswalks" style={{ color: '#06b6d4', fontWeight: '700' }}>{categoryCounts.zebras} ZBR</span>
-                <span style={{ color: '#475569' }}>|</span>
-                <span title="Traffic Vehicles (Buses, Cars, Bikes)" style={{ color: '#3b82f6', fontWeight: '700' }}>{categoryCounts.vehicles} VEH</span>
-                <span style={{ color: '#475569' }}>|</span>
-                <span title="Vulnerable Road Users (Pedestrians)" style={{ color: '#10b981', fontWeight: '700' }}>{categoryCounts.peds} VRU</span>
               </div>
             ) : (
               <span>

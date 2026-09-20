@@ -264,13 +264,13 @@ def estimate_dimensions(coords, frame_w, frame_h, cls_name):
     else: # pothole
         return max(20, int(bw * scale)), max(15, int(bh * scale))
 
-def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=1.2, mode_name="multitask"):
+def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8, mode_name="multitask"):
     if not os.path.exists(video_path):
         return {"error": f"Video not found: {video_path}"}
 
     norm_mode = str(mode_name or "").lower().strip()
     is_multitask = norm_mode in ["multitask", "option_b", "multitask_road_ai"]
-    effective_thresh = max(0.38, float(conf_thresh or 0.38))
+    effective_thresh = max(0.35, float(conf_thresh or 0.35))
 
     # Determine which model(s) to run for the selected mode
     models_to_run = []
@@ -290,7 +290,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=1.2,
         if os.path.exists(rdd_pt) and os.path.getsize(rdd_pt) > 1024:
             try:
                 m_cracks = YOLO(rdd_pt)
-                models_to_run.append((m_cracks, "road_cracks_only", 0.28))
+                models_to_run.append((m_cracks, "road_cracks_only", 0.25))
             except Exception:
                 pass
 
@@ -369,7 +369,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=1.2,
         # ── Run Mode Models on Frame ─────────────────────────────────────────
         for model_obj, role, min_conf in models_to_run:
             try:
-                res = model_obj(frame, imgsz=480, conf=min_conf, iou=0.40, verbose=False)[0]
+                res = model_obj(frame, imgsz=640, conf=min_conf, iou=0.40, verbose=False)[0]
             except Exception:
                 continue
 
@@ -407,22 +407,13 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.38, sample_fps=1.2,
                     # Vehicles are used ONLY for traffic calculation, not emitted as road defect boxes
                     continue
 
-                # Pedestrian hazard in Option B multi-task
+                # Pedestrians are excluded from road distress defects per user requirement
                 if 'pedestrian' in raw_name or 'person' in raw_name:
-                    bw_p = coords[2] - coords[0]
-                    bh_p = coords[3] - coords[1]
-                    if conf >= 0.42 and center_y >= 0.28 * h and bh_p >= 30:
-                        frame_boxes.append({
-                            'coords': coords,
-                            'cls_name': 'pedestrian',
-                            'conf': conf,
-                            'model_track_id': None
-                        })
                     continue
 
                 # Crosswalk / Zebra Crossing in Multi-Task
                 if 'zebra' in raw_name or 'crosswalk' in raw_name:
-                    if conf >= 0.40:
+                    if conf >= 0.35:
                         frame_boxes.append({
                             'coords': coords,
                             'cls_name': 'zebra_crossing',

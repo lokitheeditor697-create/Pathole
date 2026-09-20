@@ -2336,9 +2336,9 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
 
     const buildPayload = (moments: any[], uniqueDefectsList: any[], trafficSummary?: any, trafficTimeline?: any[]) => {
       const cleanFileId = cleanName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
-      // Vehicles are strictly traffic flow metrics, NOT road surface defects
-      const isVehicle = (c: string) => ['vehicle', 'car', 'bus', 'truck', 'two_wheeler', 'light_vehicle', 'heavy_vehicle'].some(k => (c || '').toLowerCase().includes(k));
-      const roadDefectsOnly = uniqueDefectsList.filter((m: any) => !isVehicle(m.class_name));
+      // Vehicles and pedestrians are excluded from road surface defects
+      const isVehicleOrPed = (c: string) => ['vehicle', 'car', 'bus', 'truck', 'two_wheeler', 'light_vehicle', 'heavy_vehicle', 'pedestrian', 'person'].some(k => (c || '').toLowerCase().includes(k));
+      const roadDefectsOnly = uniqueDefectsList.filter((m: any) => !isVehicleOrPed(m.class_name));
       const generatedDefects = roadDefectsOnly.map((m: any, idx: number) => {
         const trackNum = m.track_id !== undefined && m.track_id !== null ? m.track_id : idx + 1;
         const prefix = CLASS_PREFIXES[m.class_name] || "DST";
