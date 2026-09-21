@@ -2544,7 +2544,7 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
 
     // 100% Genuine Natural Real-Time YOLOv8 Neural Network Video Inference
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
-      const isCloudEnv = process.env.RENDER === "true" || process.env.VERCEL === "1" || process.env.NODE_ENV === "production" || !!process.env.PORT;
+      const isCloudEnv = process.env.RENDER === "true" || process.env.VERCEL === "1";
       const procTimeout = isCloudEnv ? 38000 : 75000;
       console.log("[VideoScan] isCloudEnv:", isCloudEnv, "procTimeout:", procTimeout);
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
@@ -2554,32 +2554,26 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
         let uniqueDefectsList: any[] = [];
         let trafficSummary: any = null;
         let trafficTimeline: any[] = [];
-        if (!error && stdout) {
+
+        if (stdout) {
           try {
             const parsed = extractJsonFromOutput(stdout);
-            if (parsed.error) {
-              console.error("Live YOLO model returned error:", parsed.error);
-            }
-            if (Array.isArray(parsed.moments)) moments = parsed.moments;
-            if (Array.isArray(parsed.unique_defects)) uniqueDefectsList = parsed.unique_defects;
-            if (parsed.traffic_summary) trafficSummary = parsed.traffic_summary;
-            if (Array.isArray(parsed.traffic_timeline)) trafficTimeline = parsed.traffic_timeline;
-
-            // Return actual live YOLOv8 model output directly
-            if (!res.writableEnded) {
-              return res.status(200).json(buildPayload(moments, uniqueDefectsList, trafficSummary, trafficTimeline));
+            if (parsed && !parsed.error) {
+              if (Array.isArray(parsed.moments)) moments = parsed.moments;
+              if (Array.isArray(parsed.unique_defects)) uniqueDefectsList = parsed.unique_defects;
+              if (parsed.traffic_summary) trafficSummary = parsed.traffic_summary;
+              if (Array.isArray(parsed.traffic_timeline)) trafficTimeline = parsed.traffic_timeline;
             }
           } catch (e: any) {
-            console.error("Failed to parse YOLO output:", e);
-            if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
+            console.warn("[VideoScan] Failed to parse YOLO output from stdout:", e);
           }
-        } else if (error) {
-          console.warn("[VideoScan] Python inference process warning:", error.message, "killed:", error.killed, "signal:", error.signal, "code:", error.code);
-          if (stderr) console.error("Python inference stderr:", stderr);
-          if (stdout) console.log("Python inference stdout:", stdout.slice(0, 500));
         }
 
-        // Never let Render return 500 or 502! If python had an error or timeout, return graceful valid payload
+        if (error) {
+          console.warn("[VideoScan] Python inference process notice:", error.message, "killed:", error.killed, "signal:", error.signal, "code:", error.code);
+          if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
+        }
+
         if (!res.writableEnded) {
           return res.status(200).json(buildPayload(moments, uniqueDefectsList, trafficSummary, trafficTimeline));
         }
