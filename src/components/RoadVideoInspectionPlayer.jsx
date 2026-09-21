@@ -724,11 +724,13 @@ export default function RoadVideoInspectionPlayer({
       return;
     }
 
-    // Filter detections for current video playhead window (±0.55s) — exclude vehicles & pedestrians
+    // Filter detections for current video playhead window (±0.55s for defects, ±0.95s for zebra crossings) — exclude vehicles & pedestrians
     const rawMatches = detectedMoments.filter((m) => {
-      if (Math.abs(m.time - cur) > 0.55) return false;
-      const isCrackOrZebra = (m.class_name || '').toLowerCase().includes('crack') || (m.class_name || '').toLowerCase().includes('zebra') || (m.class_name || '').toLowerCase().includes('crosswalk');
-      const minConf = isCrackOrZebra ? 0.20 : 0.25;
+      const isZebra = (m.class_name || '').toLowerCase().includes('zebra') || (m.class_name || '').toLowerCase().includes('crosswalk');
+      const timeWindow = isZebra ? 0.95 : 0.55;
+      if (Math.abs(m.time - cur) > timeWindow) return false;
+      const isCrack = (m.class_name || '').toLowerCase().includes('crack');
+      const minConf = (isCrack || isZebra) ? 0.16 : 0.25;
       if (m.conf !== undefined && m.conf < minConf) return false;
       const c = (m.class_name || '').toLowerCase();
       return !c.includes('vehicle') && !c.includes('two_wheeler') && !c.includes('pedestrian') && !c.includes('person');

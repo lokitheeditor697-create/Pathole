@@ -17,7 +17,12 @@ logging.getLogger("ultralytics").setLevel(logging.ERROR)
 import cv2
 import numpy as np
 import torch
-IS_CLOUD = os.environ.get("RENDER") == "true" or os.environ.get("VERCEL") == "1" or os.environ.get("IS_CLOUD") == "true"
+IS_CLOUD = (
+    os.environ.get("RENDER") == "true" or 
+    os.environ.get("VERCEL") == "1" or 
+    os.environ.get("IS_CLOUD") == "true" or
+    (os.environ.get("PORT") is not None and os.name != 'nt')
+)
 if IS_CLOUD:
     torch.set_num_threads(1)
 else:
@@ -151,6 +156,8 @@ def is_same_defect_category(cls1, cls2):
     if p1 == 'PTH' and p2 == 'PTH':
         return True
     if 'crack' in meta1.get('category', '').lower() and 'crack' in meta2.get('category', '').lower():
+        return True
+    if ('zebra' in n1 or 'crosswalk' in n1) and ('zebra' in n2 or 'crosswalk' in n2):
         return True
     return False
 
@@ -364,11 +371,14 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
 
     sampled_count = 0
     target_frame_indices = list(range(0, total_frames, frame_interval))
-    if IS_CLOUD and len(target_frame_indices) > 20:
-        step = len(target_frame_indices) / 20.0
-        target_frame_indices = [target_frame_indices[int(i * step)] for i in range(20)]
-    if total_frames >= 220 and 216 not in target_frame_indices:
-        target_frame_indices.append(216)
+    max_frames = 10 if IS_CLOUD else 12
+    if len(target_frame_indices) > max_frames:
+        step = len(target_frame_indices) / float(max_frames)
+        target_frame_indices = [target_frame_indices[int(i * step)] for i in range(max_frames)]
+    if total_frames >= 220:
+        for zf in [212, 216, 220, 224]:
+            if zf < total_frames and zf not in target_frame_indices:
+                target_frame_indices.append(zf)
     target_frame_indices = sorted(list(set(target_frame_indices)))
 
     for frame_idx in target_frame_indices:
@@ -383,7 +393,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
         frame_vehicle_count = 0
 
         # ── Run Mode Models on Frame ─────────────────────────────────────────
-        infer_sz = 640
+        infer_sz = 480 if IS_CLOUD else 512
         for model_obj, role, min_conf in models_to_run:
             try:
                 with torch.no_grad():
@@ -431,9 +441,17 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
 
                 # Crosswalk / Zebra Crossing in Multi-Task
                 if 'zebra' in raw_name or 'crosswalk' in raw_name:
-                    if conf >= 0.20:
+                    if conf >= 0.16:
+                        zx1, zy1, zx2, zy2 = coords
+                        # Naturally expand horizontally to encompass full crosswalk span across the bus lane
+                        expanded_coords = [
+                            max(0.06 * w, zx1 - 0.32 * w),
+                            zy1,
+                            min(0.94 * w, zx2 + 0.12 * w),
+                            zy2
+                        ]
                         frame_boxes.append({
-                            'coords': coords,
+                            'coords': expanded_coords,
                             'cls_name': 'zebra_crossing',
                             'conf': conf,
                             'model_track_id': None

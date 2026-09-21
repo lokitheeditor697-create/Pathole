@@ -5,7 +5,7 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import https from "https";
-import { exec } from "child_process";
+import { exec, execFile } from "child_process";
 import { municipalDB, DefectCase, CaseStatus, CasePriority } from "./server/db";
 import { postgresDB } from "./server/postgres_db";
 
@@ -2471,9 +2471,12 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
 
     // 100% Genuine Natural Real-Time YOLOv8 Neural Network Video Inference
     if (videoFilePath && fs.existsSync(scriptPath) && fs.existsSync(modelPath)) {
-      const cmd = `"${pythonExe}" "${scriptPath}" "${videoFilePath}" "${modelPath}" 0.28 "${model_mode || "multitask"}"`;
+      const isCloudEnv = process.env.RENDER === "true" || process.env.VERCEL === "1" || process.env.NODE_ENV === "production" || !!process.env.PORT;
+      const procTimeout = isCloudEnv ? 38000 : 75000;
+      console.log("[VideoScan] isCloudEnv:", isCloudEnv, "procTimeout:", procTimeout);
       const env = { ...process.env, YOLO_OFFLINE: "True", ULTRALYTICS_AUTOINSTALL: "0" };
-      const child = exec(cmd, { maxBuffer: 20 * 1024 * 1024, timeout: 80000, env }, (error, stdout, stderr) => {
+      const args = [scriptPath, videoFilePath, modelPath, "0.28", model_mode || "multitask"];
+      const child = execFile(pythonExe, args, { maxBuffer: 20 * 1024 * 1024, timeout: procTimeout, env }, (error, stdout, stderr) => {
         let moments: any[] = [];
         let uniqueDefectsList: any[] = [];
         let trafficSummary: any = null;
@@ -2498,8 +2501,9 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
             if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
           }
         } else if (error) {
-          console.warn("[VideoScan] Python inference process warning (falling back gracefully):", error.message);
-          if (stderr) console.error("Python inference stderr:", stderr.slice(0, 500));
+          console.warn("[VideoScan] Python inference process warning:", error.message, "killed:", error.killed, "signal:", error.signal, "code:", error.code);
+          if (stderr) console.error("Python inference stderr:", stderr);
+          if (stdout) console.log("Python inference stdout:", stdout.slice(0, 500));
         }
 
         // Never let Render return 500 or 502! If python had an error or timeout, return graceful valid payload
