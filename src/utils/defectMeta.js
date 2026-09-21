@@ -328,6 +328,34 @@ export const DEFECT_META_REGISTRY = {
     description: 'Pedestrian crosswalk zone marking roadway right-of-way',
     icon: '🦓'
   },
+  faded_zebra_crossing: {
+    key: 'faded_zebra_crossing',
+    name: 'Faded Zebra Crosswalk',
+    code: 'ZBR-FAD',
+    fullLabel: 'Faded Zebra Crosswalk (Repaint Required)',
+    prefix: 'FZBR',
+    category: 'Pedestrian Safety & Markings',
+    color: '#06b6d4',
+    bgColor: 'rgba(6, 182, 212, 0.18)',
+    borderColor: '#06b6d4',
+    textColor: '#67e8f9',
+    description: 'Weathered and faded pedestrian crossing markings requiring municipal repainting',
+    icon: '🚶‍♂️'
+  },
+  faded_zebra: {
+    key: 'faded_zebra',
+    name: 'Faded Zebra Crosswalk',
+    code: 'ZBR-FAD',
+    fullLabel: 'Faded Zebra Crosswalk (Repaint Required)',
+    prefix: 'FZBR',
+    category: 'Pedestrian Safety & Markings',
+    color: '#06b6d4',
+    bgColor: 'rgba(6, 182, 212, 0.18)',
+    borderColor: '#06b6d4',
+    textColor: '#67e8f9',
+    description: 'Weathered and faded pedestrian crossing markings requiring municipal repainting',
+    icon: '🚶‍♂️'
+  },
   heavy_vehicle: {
     key: 'heavy_vehicle',
     name: 'Heavy Vehicle / Bus',

@@ -237,7 +237,8 @@ export default function RoadVideoInspectionPlayer({
         bbox: defectToCapture.bbox,
         snapshot_thumbnail: realSnapshot,
         model_mode: aiModelMode,
-        auto_dispatch: true
+        auto_dispatch: true,
+        pothole_id: defectToCapture.pothole_id || formatDefectId(defectToCapture.track_id || 1, defectToCapture.class_name)
       };
 
       const res = await fetch(`${API_BASE}/api/cases/create-direct`, {
@@ -1114,7 +1115,8 @@ export default function RoadVideoInspectionPlayer({
         },
         bbox: activeDefect.bbox,
         snapshot_thumbnail: realSnapshot,
-        model_mode: aiModelMode
+        model_mode: aiModelMode,
+        pothole_id: activeDefect.pothole_id || formatDefectId(activeDefect.track_id || 1, activeDefect.class_name)
       };
 
       const res = await fetch(`${API_BASE}/api/cases/create-direct`, {
@@ -1699,7 +1701,7 @@ export default function RoadVideoInspectionPlayer({
                   }}
                 >
                   {/* Defect Code/ID */}
-                  {!isZebra && (
+                  {defectId && (
                     <span style={{
                       backgroundColor: 'rgba(15, 23, 42, 0.95)',
                       color: meta.textColor || '#38bdf8',

@@ -1102,7 +1102,9 @@ class MunicipalDatabase {
   }
 
   public createCaseFromDefect(defect: DefectItem, initialActor = "AI Detection Engine"): DefectCase {
-    const existing = this.getCaseById(defect.pothole_id || defect.detection_id);
+    const existing = defect.pothole_id
+      ? (this.memoryData.cases || []).find(c => c.pothole_id === defect.pothole_id)
+      : (defect.detection_id ? (this.memoryData.cases || []).find(c => c.detection_id === defect.detection_id) : undefined);
     if (existing) return existing;
 
     const id = this.memoryData.next_case_id++;

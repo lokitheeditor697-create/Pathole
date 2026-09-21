@@ -29,6 +29,7 @@ import {
   Download
 } from 'lucide-react';
 import { API_BASE } from '../config';
+import { getDefectMeta } from '../utils/defectMeta';
 
 const STATUS_COLORS = {
   DETECTED: { bg: 'rgba(56, 189, 248, 0.15)', border: '#38bdf8', text: '#38bdf8' },
@@ -168,7 +169,8 @@ export default function CaseDetailModal({
   const latStr4 = latNum.toFixed(4);
   const lngStr4 = lngNum.toFixed(4);
   const mapsUrl = `https://maps.google.com/?q=${latStr5},${lngStr5}`;
-  const defectTypeUpper = String(caseItem.defect_type || 'pothole').replace(/_/g, ' ').toUpperCase();
+  const defectMeta = getDefectMeta(caseItem.defect_type || caseItem.class_name);
+  const defectTypeUpper = (defectMeta.fullLabel || defectMeta.name || String(caseItem.defect_type || 'pothole').replace(/_/g, ' ')).toUpperCase();
   const severityUpper = String(caseItem.severity || 'Medium').toUpperCase();
 
   // ── Actions ─────────────────────────────────────────────────────────────
@@ -1842,7 +1844,7 @@ export default function CaseDetailModal({
                     <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '8px 10px' }}>
                       <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>RDD 2022 Defect Standard</span>
                       <strong style={{ fontSize: '12px', color: '#0284c7' }}>
-                        {caseItem.defect_type === 'pothole' ? 'CRDDC D40 (Pothole / Surface Crater)' : 'CRDDC D00-D20 (Structural Fatigue Crack)'}
+                        {defectMeta.code ? `${defectMeta.code} (${defectMeta.name})` : (caseItem.defect_type === 'pothole' ? 'CRDDC D40 (Pothole / Surface Crater)' : 'CRDDC D00-D20 (Structural Fatigue Crack)')}
                       </strong>
                     </div>
 

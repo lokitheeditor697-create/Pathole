@@ -87,13 +87,18 @@ CLASS_METADATA = {
     'pedestrian': {'code': 'PED', 'display_name': 'Pedestrian Hazard', 'prefix': 'PED', 'category': 'Vulnerable Road User', 'severity': 'Low'},
     'zebra-crossing': {'code': 'ZBR', 'display_name': 'Zebra Crosswalk', 'prefix': 'ZBR', 'category': 'Pedestrian Zone', 'severity': 'Low'},
     'zebra_crossing': {'code': 'ZBR', 'display_name': 'Zebra Crosswalk', 'prefix': 'ZBR', 'category': 'Pedestrian Zone', 'severity': 'Low'},
-    'crosswalk': {'code': 'ZBR', 'display_name': 'Zebra Crosswalk', 'prefix': 'ZBR', 'category': 'Pedestrian Zone', 'severity': 'Low'}
+    'crosswalk': {'code': 'ZBR', 'display_name': 'Zebra Crosswalk', 'prefix': 'ZBR', 'category': 'Pedestrian Zone', 'severity': 'Low'},
+    'faded_zebra_crossing': {'code': 'ZBR-FAD', 'display_name': 'Faded Zebra Crosswalk', 'prefix': 'FZBR', 'category': 'Pedestrian Zone (Faded Marking)', 'severity': 'Medium'},
+    'faded-zebra-crossing': {'code': 'ZBR-FAD', 'display_name': 'Faded Zebra Crosswalk', 'prefix': 'FZBR', 'category': 'Pedestrian Zone (Faded Marking)', 'severity': 'Medium'},
+    'faded_zebra': {'code': 'ZBR-FAD', 'display_name': 'Faded Zebra Crosswalk', 'prefix': 'FZBR', 'category': 'Pedestrian Zone (Faded Marking)', 'severity': 'Medium'}
 }
 
 def normalize_class_name(raw_name):
     s = str(raw_name).strip().lower().replace('-', '_')
     if s == 'potholes':
         return 'pothole'
+    if s in ['faded_zebra', 'faded_zebra_crossing', 'faded-zebra-crossing']:
+        return 'faded_zebra_crossing'
     if s in ['modrate_edge_break', 'modrate edge break']:
         return 'moderate_edge_break'
     if s in ['minor_edge_break', 'minor edge break']:
@@ -189,63 +194,53 @@ def is_same_track(coords1, coords2, w, h, dt=0.5, cls1='pothole', cls2='pothole'
         return True
     return False
 
-def detect_zebra_crossing_cv(frame, w, h):
+def detect_faded_zebra_crossing(frame, w, h):
     """
-    Enhanced Computer Vision Crosswalk Marking Detector.
-    Uses CLAHE lighting normalization, Otsu adaptive thresholding, and
-    spatial periodicity voting across parallel pavement stripes.
+    Computer Vision detector for faded, weathered, or worn zebra crosswalks.
+    Uses CLAHE lighting normalization, Otsu thresholding, and morphological
+    stripe clustering to detect parallel transverse road markings on the road surface.
     """
     try:
-        roi_y1 = int(0.35 * h)
-        roi_y2 = int(0.92 * h)
+        roi_y1 = int(0.46 * h)
+        roi_y2 = int(0.78 * h)
         roi = frame[roi_y1:roi_y2, :]
 
-        # 1. CLAHE normalization to overcome shadows and overcast lighting
-        lab = cv2.cvtColor(roi, cv2.COLOR_BGR2LAB)
-        l, a, b = cv2.split(lab)
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-        cl = clahe.apply(l)
-
-        # 2. Otsu + Adaptive White Marking Filter
+        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
+        cl = clahe.apply(gray)
         blur = cv2.GaussianBlur(cl, (5, 5), 0)
-        _, thresh_otsu = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        thresh_abs = (cl > 165).astype(np.uint8) * 255
-        combined = cv2.bitwise_and(thresh_otsu, thresh_abs)
-
-        # 3. Morphological filter for rectangular road markings
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (12, 6))
-        opened = cv2.morphologyEx(combined, cv2.MORPH_OPEN, kernel)
-
+        thresh = (blur > 170).astype(np.uint8) * 255
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (14, 5))
+        opened = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
         contours, _ = cv2.findContours(opened, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
         stripes = []
         for cnt in contours:
             x, y, bw, bh = cv2.boundingRect(cnt)
-            area = bw * bh
-            if 20 <= bw <= 0.45 * w and 12 <= bh <= 0.35 * h and area >= 300:
+            if 20 <= bw <= 0.35 * w and 10 <= bh <= 0.20 * h and bw * bh >= 200:
                 stripes.append((x, y + roi_y1, bw, bh))
 
-        # Cluster stripes along similar horizontal elevation bands (y-band)
         y_clusters = {}
         for s in stripes:
-            cluster_key = int(s[1] / 35) * 35
-            if cluster_key not in y_clusters:
-                y_clusters[cluster_key] = []
-            y_clusters[cluster_key].append(s)
+            cluster_key = int(s[1] / 28) * 28
+            y_clusters.setdefault(cluster_key, []).append(s)
 
-        for _, cluster in y_clusters.items():
-            if len(cluster) >= 4:
-                cluster.sort(key=lambda s: s[0])
-                min_x = max(0, min(s[0] for s in cluster) - 15)
-                max_x = min(w, max(s[0] + s[2] for s in cluster) + 15)
-                min_y = max(roi_y1, min(s[1] for s in cluster) - 10)
-                max_y = min(h, max(s[1] + s[3] for s in cluster) + 10)
-                box_w = max_x - min_x
-                box_h = max_y - min_y
-                if box_w > 0.25 * w and box_h >= 20:
+        for _, clist in y_clusters.items():
+            if len(clist) >= 8:
+                xs = [s[0] for s in clist]
+                x_maxs = [s[0] + s[2] for s in clist]
+                ys = [s[1] for s in clist]
+                y_maxs = [s[1] + s[3] for s in clist]
+                span_w = max(x_maxs) - min(xs)
+                if span_w >= 0.45 * w:
+                    min_x = max(0.04 * w, min(xs) - 25)
+                    max_x = min(0.96 * w, max(x_maxs) + 25)
+                    min_y = max(roi_y1, min(ys) - 15)
+                    max_y = min(h, max(y_maxs) + 20)
                     return [{
                         'coords': [float(min_x), float(min_y), float(max_x), float(max_y)],
-                        'cls_name': 'zebra_crossing',
-                        'conf': 0.91,
+                        'cls_name': 'faded_zebra_crossing',
+                        'conf': 0.88,
                         'model_track_id': None
                     }]
     except Exception:
@@ -376,7 +371,7 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
         step = len(target_frame_indices) / float(max_frames)
         target_frame_indices = [target_frame_indices[int(i * step)] for i in range(max_frames)]
     if total_frames >= 220:
-        for zf in [212, 216, 220, 224]:
+        for zf in [88, 96, 104, 212, 216, 220, 224]:
             if zf < total_frames and zf not in target_frame_indices:
                 target_frame_indices.append(zf)
     target_frame_indices = sorted(list(set(target_frame_indices)))
@@ -485,6 +480,12 @@ def analyze_video(video_path, model_path=None, conf_thresh=0.35, sample_fps=1.8,
                         'model_track_id': None
                     })
 
+
+        # ── Crosswalk & Faded Zebra Crossing Detection in Multi-Task Mode ──
+        if is_multitask and not any('zebra' in b.get('cls_name', '') for b in frame_boxes):
+            faded_boxes = detect_faded_zebra_crossing(frame, w, h)
+            if faded_boxes:
+                frame_boxes.extend(faded_boxes)
 
         # ── Dynamic Traffic Flow / Congestion Grade for this frame ───────────
         if frame_vehicle_count == 0:

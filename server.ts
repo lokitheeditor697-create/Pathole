@@ -429,10 +429,54 @@ export interface ObservationRecord {
   inference_latency_ms: number;
 }
 
-let verifiedDefects: DefectItem[] = [];
+export const CLASS_PREFIXES: Record<string, string> = {
+  minor_pothole: "PTH",
+  moderate_pothole: "PTH",
+  major_pothole: "PTH",
+  pothole: "PTH",
+  potholes: "PTH",
+  low_cracking: "CRK",
+  medium_cracking: "CRK",
+  high_cracking: "CRK",
+  minor_edge_break: "EDG",
+  moderate_edge_break: "EDG",
+  modrate_edge_break: "EDG",
+  major_edge_break: "EDG",
+  longitudinal_crack: "LCRK",
+  "longitudinal crack": "LCRK",
+  transverse_crack: "TCRK",
+  "transverse crack": "TCRK",
+  alligator_crack: "ACRK",
+  "alligator crack": "ACRK",
+  crack: "CRK",
+  "crack-severe": "SCRK",
+  crack_severe: "SCRK",
+  road_patch: "PTCH",
+  rutting: "RUT",
+  waterlogging: "WLOG",
+  speed_bump: "BMP",
+  "speed-bump": "BMP",
+  zebra_crossing: "ZBR",
+  "zebra-crossing": "ZBR",
+  crosswalk: "ZBR",
+  faded_zebra_crossing: "FZBR",
+  "faded-zebra-crossing": "FZBR",
+  faded_zebra: "FZBR",
+  "faded zebra": "FZBR",
+  heavy_vehicle: "TRF",
+  "heavy-vehicle": "TRF",
+  light_vehicle: "TRF",
+  "light-vehicle": "TRF",
+  two_wheeler: "TRF",
+  "two-wheeler": "TRF",
+  pedestrian: "PED",
+};
+
+const initialDbDefects = municipalDB.getDefects() || [];
+let verifiedDefects: DefectItem[] = [...initialDbDefects];
 let observationLogs: ObservationRecord[] = [];
 
-let nextDefectId = 1;
+let nextDefectId = Math.max(100, ...initialDbDefects.map((d: any) => Number(d.id) || 0)) + 1;
 let nextObsId = 1;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -560,6 +604,10 @@ function isMatchingDefectClass(classA: string, classB: string): boolean {
   const isEdgeB = normB.includes('edge');
   if (isEdgeA && isEdgeB) return true;
 
+  const isZebraA = normA.includes('zebra') || normA.includes('crosswalk');
+  const isZebraB = normB.includes('zebra') || normB.includes('crosswalk');
+  if (isZebraA && isZebraB) return true;
+
   return false;
 }
 
@@ -655,9 +703,14 @@ function processSpatialDeduplication(eventData: {
     else if (conf >= 0.70) sev = "High";
     else if (conf < 0.55) sev = "Low";
 
+    const defId = nextDefectId++;
+    const prefix = CLASS_PREFIXES[cName] || "DST";
+    const potholeId = `${prefix}-#${String(defId).padStart(2, "0")}`;
+
     const newDefect: DefectItem = {
-      id: nextDefectId++,
-      detection_id: `DET-2026-${String(nextDefectId).padStart(3, "0")}`,
+      id: defId,
+      pothole_id: potholeId,
+      detection_id: `DET-2026-${String(defId).padStart(3, "0")}`,
       defect_type: cName,
       class_name: cName,
       latitude: lat,
@@ -1418,6 +1471,16 @@ app.post("/api/cases/create-direct", async (req: Request, res: Response) => {
     defect.exact_chainage_m = finalChainage;
     defect.road_id = matchedSegment.road_id;
     defect.segment_id = matchedSegment.segment_id;
+    defect.class_name = class_name;
+    defect.defect_type = class_name;
+    if (req.body.severity) defect.severity = req.body.severity;
+
+    if (req.body.pothole_id) {
+      defect.pothole_id = req.body.pothole_id;
+    } else if (!defect.pothole_id) {
+      const prefix = CLASS_PREFIXES[class_name] || "DST";
+      defect.pothole_id = `${prefix}-#${String(defect.id).padStart(2, '0')}`;
+    }
 
     if (bbox) {
       defect.bbox = {
@@ -1448,8 +1511,14 @@ app.post("/api/cases/create-direct", async (req: Request, res: Response) => {
     municipalDB.upsertDefect(defect);
     const createdCase = municipalDB.createCaseFromDefect(defect, `Road Video Inspection Frame Capture (${vehicle_id})`);
 
-    if (createdCase && snapshot_thumbnail) {
-      createdCase.before_evidence.snapshot_thumbnail = snapshot_thumbnail;
+    if (createdCase) {
+      createdCase.defect_type = class_name;
+      createdCase.class_name = class_name;
+      if (defect.pothole_id) createdCase.pothole_id = defect.pothole_id;
+      if (req.body.severity) createdCase.severity = req.body.severity;
+      if (snapshot_thumbnail) {
+        createdCase.before_evidence.snapshot_thumbnail = snapshot_thumbnail;
+      }
       if (bbox) {
         createdCase.before_evidence.bbox = defect.bbox;
       }
@@ -2342,6 +2411,10 @@ app.post("/api/detect/video-scan", rateLimit(5), express.json({ limit: "150mb" }
       zebra_crossing: "ZBR",
       "zebra-crossing": "ZBR",
       crosswalk: "ZBR",
+      faded_zebra_crossing: "FZBR",
+      "faded-zebra-crossing": "FZBR",
+      faded_zebra: "FZBR",
+      "faded zebra": "FZBR",
       heavy_vehicle: "TRF",
       "heavy-vehicle": "TRF",
       light_vehicle: "TRF",
